@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?00f7a1a63984a784171e5fe4762d98bb";
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<title>节能测算Pro - 工业节能测算平台</title>
+<style>
+:root{--primary:#0d9488;--primary-dark:#0f766e;--primary-light:#ccfbf1;--accent:#f59e0b;--bg:#f0fdfa;--card:#fff;--text:#1e293b;--text2:#64748b;--border:#e2e8f0;--danger:#ef4444;--success:#10b981;--shadow:0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.04);--shadow-lg:0 4px 24px rgba(0,0,0,.1);--radius:12px;--nav-h:60px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+a{color:var(--primary);text-decoration:none}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:linear-gradient(135deg,var(--primary-dark),var(--primary));color:#fff;display:flex;align-items:center;padding:0 24px;z-index:1000;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.nav .logo{font-size:18px;font-weight:700;cursor:pointer;white-space:nowrap}
+.nav .logo span{opacity:.7;font-size:12px;font-weight:400;margin-left:4px}
+.nav-links{display:flex;gap:6px;margin-left:32px;flex:1}
+.nav-links a{color:rgba(255,255,255,.85);font-size:13px;padding:6px 12px;border-radius:6px;transition:all .2s;cursor:pointer;white-space:nowrap}
+.nav-links a:hover,.nav-links a.active{background:rgba(255,255,255,.15);color:#fff}
+.nav-right{display:flex;align-items:center;gap:10px;margin-left:auto}
+.nav-right .user-info{font-size:13px;opacity:.9}
+.btn-nav{padding:6px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-nav.outline{background:transparent;border:1.5px solid rgba(255,255,255,.5);color:#fff}
+.btn-nav.outline:hover{border-color:#fff;background:rgba(255,255,255,.1)}
+.btn-nav.danger{background:rgba(255,255,255,.15);color:#fff}
+.btn-nav.danger:hover{background:rgba(239,68,68,.7)}
+.hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:#fff;border-radius:2px;transition:all .3s}
+
+/* MAIN */
+.main{margin-top:var(--nav-h);min-height:calc(100vh - var(--nav-h))}
+.page{display:none;animation:fadeUp .4s ease}
+.page.show{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.container{max-width:760px;margin:0 auto;padding:24px 16px 40px}
+.container-wide{max-width:960px}
+
+/* LANDING */
+.hero{background:linear-gradient(135deg,var(--primary-dark),var(--primary),#14b8a6);color:#fff;padding:80px 20px 120px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,.06) 0%,transparent 60%)}
+.hero h1{font-size:36px;font-weight:800;position:relative;margin-bottom:12px}
+.hero .sub{font-size:18px;opacity:.9;margin-bottom:40px;position:relative}
+
+/* MODULE CARDS */
+.module-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;max-width:900px;margin:-60px auto 60px;padding:0 20px;position:relative;z-index:1}
+.module-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:32px 28px;cursor:pointer;transition:all .3s;border:2px solid transparent;position:relative;overflow:hidden}
+.module-card:hover{transform:translateY(-6px);box-shadow:0 12px 32px rgba(0,0,0,.15);border-color:var(--primary)}
+.module-card .mc-icon{font-size:48px;margin-bottom:14px}
+.module-card h3{font-size:18px;font-weight:700;margin-bottom:8px;color:var(--primary-dark)}
+.module-card p{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px}
+.module-card .mc-tag{display:inline-block;background:var(--primary-light);color:var(--primary-dark);font-size:11px;font-weight:600;padding:3px 10px;border-radius:12px;margin-bottom:8px}
+.btn-module{padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-module.primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff}
+.btn-module.primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(13,148,136,.3)}
+.module-card .mc-arrow{position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:24px;color:var(--primary-light);transition:all .3s}
+.module-card:hover .mc-arrow{color:var(--primary);right:24px}
+
+/* CALCULATOR */
+.calc-header{background:linear-gradient(135deg,var(--primary-dark),var(--primary));color:#fff;padding:28px 20px 40px;text-align:center;position:relative;overflow:hidden}
+.calc-header::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,.08) 0%,transparent 60%)}
+.calc-header h1{font-size:22px;font-weight:700;position:relative}
+.calc-header p{font-size:14px;opacity:.85;margin-top:6px;position:relative}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;margin-bottom:16px}
+.section-title{font-size:16px;font-weight:700;color:var(--primary-dark);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.section-title .icon{font-size:20px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:0}
+.form-group.full{grid-column:1/-1}
+.form-group label{font-size:13px;color:var(--text2);font-weight:500}
+.form-group label .unit{color:#94a3b8;font-weight:400;font-size:12px}
+.form-group input,.form-group select,.form-group textarea{padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;color:var(--text);background:#f8fafc;transition:all .2s;outline:none;width:100%;font-family:inherit}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(13,148,136,.1)}
+.form-group input[readonly]{background:#f1f5f9;cursor:default}
+.btn-calc{width:100%;padding:14px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:8px}
+.btn-calc:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(13,148,136,.3)}
+
+/* RESULTS */
+.results{display:none}
+.results.show{display:block;animation:fadeUp .4s ease}
+.result-highlight{text-align:center;padding:20px;margin-bottom:16px}
+.result-highlight .big-num{font-size:48px;font-weight:800;color:var(--primary);line-height:1.1}
+.result-highlight .big-num .pct{font-size:28px}
+.result-highlight .label{font-size:14px;color:var(--text2);margin-top:4px}
+.metric-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.metric-row.three{grid-template-columns:1fr 1fr 1fr}
+.metric-card{background:#f8fafc;border-radius:10px;padding:16px;text-align:center;border:1px solid var(--border)}
+.metric-card .value{font-size:24px;font-weight:700}
+.metric-card .value.good{color:var(--success)}
+.metric-card .value.warn{color:var(--accent)}
+.metric-card .desc{font-size:12px;color:var(--text2);margin-top:2px}
+.detail-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+.detail-table th,.detail-table td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.detail-table th{background:#f1f5f9;font-weight:600;color:var(--text2);font-size:12px}
+.detail-table td:last-child{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.detail-table tr:last-child td{border-bottom:none}
+.compare-bar{display:flex;align-items:center;gap:12px;margin:12px 0;font-size:13px}
+.compare-bar .bar-bg{flex:1;height:24px;background:#f1f5f9;border-radius:12px;overflow:hidden;display:flex}
+.compare-bar .bar-old{height:100%;background:#fecaca;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#991b1b;transition:width .6s ease}
+.compare-bar .bar-new{height:100%;background:#a7f3d0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#065f46;transition:width .6s ease}
+.btn-export{width:100%;padding:12px;background:#fff;color:var(--primary);border:2px solid var(--primary);border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:8px}
+.btn-export:hover{background:var(--primary-light)}
+.btn-doc{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),#d97706);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:12px}
+.btn-doc:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(245,158,11,.3)}
+
+/* AUTH */
+.auth-wrap{max-width:400px;margin:60px auto;padding:0 16px}
+.auth-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:36px 28px}
+.auth-card h2{font-size:22px;font-weight:700;text-align:center;margin-bottom:24px;color:var(--primary-dark)}
+.auth-card .tab-row{display:flex;gap:0;margin-bottom:24px;border-radius:8px;overflow:hidden;border:1.5px solid var(--border)}
+.auth-card .tab-row button{flex:1;padding:10px;font-size:14px;font-weight:600;border:none;background:#f8fafc;color:var(--text2);cursor:pointer;transition:all .2s}
+.auth-card .tab-row button.active{background:var(--primary);color:#fff}
+.btn-auth{width:100%;padding:12px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:8px}
+.btn-auth:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(13,148,136,.3)}
+.auth-error{color:var(--danger);font-size:13px;text-align:center;margin-top:8px;min-height:20px}
+
+/* HISTORY */
+.history-list{display:flex;flex-direction:column;gap:12px}
+.history-item{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 24px;cursor:pointer;transition:all .2s;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.history-item:hover{box-shadow:var(--shadow-lg);transform:translateY(-1px)}
+.history-item .hi-left{flex:1;min-width:200px}
+.history-item .hi-project{font-size:15px;font-weight:600;margin-bottom:4px}
+.history-item .hi-time{font-size:12px;color:var(--text2)}
+.history-item .hi-metrics{display:flex;gap:24px;flex-wrap:wrap}
+.history-item .hi-metric{text-align:center}
+.history-item .hi-metric .val{font-size:20px;font-weight:700;color:var(--primary)}
+.history-item .hi-metric .lbl{font-size:11px;color:var(--text2)}
+.history-item .hi-actions{display:flex;gap:8px}
+.btn-sm{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-sm.primary{background:var(--primary-light);color:var(--primary-dark)}
+.btn-sm.danger{background:#fef2f2;color:var(--danger)}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text2)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+
+.note{font-size:12px;color:var(--text2);margin-top:8px;line-height:1.5}
+.divider{height:1px;background:var(--border);margin:20px 0}
+
+/* TOAST */
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999;display:none;box-shadow:var(--shadow-lg);white-space:nowrap}
+.toast.show{display:block;animation:fadeUp .3s ease}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);max-width:500px;width:100%;max-height:80vh;overflow-y:auto;padding:28px}
+.modal h3{font-size:18px;font-weight:700;margin-bottom:16px}
+.modal-close{float:right;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2)}
+
+/* LANDING FOOTER */
+.landing-footer{text-align:center;padding:32px 20px;color:#94a3b8;font-size:13px;border-top:1px solid var(--border)}
+
+/* BACK BTN */
+.back-bar{padding:16px 20px;background:#f8fafc;border-bottom:1px solid var(--border)}
+.back-bar a{color:var(--primary);font-size:14px;font-weight:600;cursor:pointer}
+.back-bar a:hover{text-decoration:underline}
+
+/* EFFICIENCY TABLE */
+.eff-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.eff-table th,.eff-table td{padding:8px 10px;border:1px solid var(--border);text-align:center;font-size:13px}
+.eff-table th{background:#f1f5f9;font-weight:600;color:var(--text2);font-size:12px}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .nav-links{display:none;position:absolute;top:var(--nav-h);left:0;right:0;background:var(--primary-dark);flex-direction:column;padding:12px;box-shadow:var(--shadow-lg)}
+  .nav-links.open{display:flex}
+  .hamburger{display:flex}
+  .module-grid{grid-template-columns:1fr;max-width:400px}
+  .hero h1{font-size:26px}
+  .hero .sub{font-size:15px}
+  .form-grid{grid-template-columns:1fr}
+  .metric-row,.metric-row.three{grid-template-columns:1fr}
+  .result-highlight .big-num{font-size:40px}
+}
+@media print{.nav,.toast,.modal-overlay{display:none!important}.main{margin-top:0}.calc-header{background:#fff!important;color:#000!important;padding:20px}.btn-calc,.btn-export,.btn-doc{display:none!important}.results{display:block!important}.card{box-shadow:none;border:1px solid #e2e8f0}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="navbar">
+  <div class="logo" onclick="navigate('home')">⚡节能测算Pro<span>v2.0</span></div>
+  <div class="nav-links" id="navLinks">
+    <a onclick="navigate('home')" data-page="home">首页</a>
+    <a onclick="navigate('pump')" data-page="pump">⚙️ 柱塞泵</a>
+    <a onclick="navigate('fan')" data-page="fan">🌬 风机</a>
+    <a onclick="navigate('water')" data-page="water">💧 水泵</a>
+    <a onclick="navigate('mill')" data-page="mill">🔨 磨机</a>
+    <a onclick="navigate('history')" data-page="history">📊 历史记录</a>
+  </div>
+  <div class="nav-right" id="navRight">
+    <button class="btn-nav outline" onclick="navigate('auth')">登录</button>
+  </div>
+  <div class="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- ==================== HOME ==================== -->
+  <div class="page show" id="page-home">
+    <div class="hero">
+      <h1>工业节能测算平台</h1>
+      <div class="sub">专业、精准、高效</div>
+    </div>
+    <div class="module-grid">
+      <div class="module-card" onclick="navigate('pump')">
+        <div class="mc-icon">⚙️</div>
+        <div class="mc-tag">注水泵 · 高压泵</div>
+        <h3>柱塞泵节能测算</h3>
+        <p>基于泵效率提升和变频调速技术，计算柱塞泵系统综合节能效果，生成技术方案</p>
+        <button class="btn-module primary">开始测算</button>
+        <div class="mc-arrow">→</div>
+      </div>
+      <div class="module-card" onclick="navigate('fan')">
+        <div class="mc-icon">🌬</div>
+        <div class="mc-tag">离心风机 · 鼓风机</div>
+        <h3>风机节能测算</h3>
+        <p>基于电机效率提升和风机相似定律（P∝n³），计算风机系统综合节能效果，生成技术方案</p>
+        <button class="btn-module primary">开始测算</button>
+        <div class="mc-arrow">→</div>
+      </div>
+      <div class="module-card" onclick="navigate('water')">
+        <div class="mc-icon">💧</div>
+        <div class="mc-tag">离心泵 · 混流泵</div>
+        <h3>水泵节能测算</h3>
+        <p>基于电机效率提升和水泵相似定律，计算水泵系统节能率，考虑静扬程和管网阻力修正</p>
+        <button class="btn-module primary">开始测算</button>
+        <div class="mc-arrow">→</div>
+      </div>
+      <div class="module-card" onclick="navigate('mill')">
+        <div class="mc-icon">🔨</div>
+        <div class="mc-tag">球磨机 · 立磨</div>
+        <h3>磨机节能测算</h3>
+        <p>基于电机效率提升和磨机工况优化，计算磨机系统节能率，生成技术方案</p>
+        <button class="btn-module primary">开始测算</button>
+        <div class="mc-arrow">→</div>
+      </div>
+    </div>
+    <div class="landing-footer">
+      <p>© 2026 节能测算Pro | 技术支持热线: 18041136555</p>
+    </div>
+  </div>
+
+  <!-- ==================== AUTH ==================== -->
+  <div class="page" id="page-auth">
+    <div class="auth-wrap">
+      <div class="auth-card">
+        <h2>用户登录/注册</h2>
+        <div class="tab-row">
+          <button class="active" onclick="switchAuthTab('login',this)">登录</button>
+          <button onclick="switchAuthTab('register',this)">注册</button>
+        </div>
+        <div id="auth-login">
+          <div class="form-group"><label>手机号</label><input type="tel" id="loginPhone" placeholder="请输入手机号"></div>
+          <div class="form-group"><label>密码</label><input type="password" id="loginPwd" placeholder="请输入密码"></div>
+          <div class="auth-error" id="loginError"></div>
+          <button class="btn-auth" onclick="doLogin()">登录</button>
+        </div>
+        <div id="auth-register" style="display:none">
+          <div class="form-group"><label>手机号</label><input type="tel" id="regPhone" placeholder="请输入手机号"></div>
+          <div class="form-group"><label>密码</label><input type="password" id="regPwd" placeholder="请输入密码（至少6位）"></div>
+          <div class="form-group"><label>确认密码</label><input type="password" id="regPwd2" placeholder="请再次输入密码"></div>
+          <div class="auth-error" id="regError"></div>
+          <button class="btn-auth" onclick="doRegister()">注册</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PUMP ==================== -->
+  <div class="page" id="page-pump">
+    <div class="calc-header">
+      <h1>⚙️ 柱塞泵节能测算</h1>
+      <p>泵效率提升 + 变频调速技术，生成技术方案</p>
+    </div>
+    <div class="back-bar"><a onclick="navigate('home')">← 返回首页</a></div>
+    <div class="container" style="margin-top:-28px;position:relative;z-index:1">
+      <div class="card">
+        <div class="section-title"><span class="icon">⚙️</span> 一、设备参数</div>
+        <div class="form-grid">
+          <div class="form-group"><label>设备名称（旧设备）</label><input type="text" id="pump_oldName" value="旧注水泵"></div>
+          <div class="form-group"><label>匹配设备名称（新设备）</label><input type="text" id="pump_newName" value="永磁变频注水泵"></div>
+          <div class="form-group"><label>平均日注水量 <span class="unit">m³</span></label><input type="number" id="pump_dailyWater" value="500"></div>
+          <div class="form-group"><label>平均日耗电量 <span class="unit">kWh</span></label><input type="number" id="pump_dailyPower" value="1200"></div>
+          <div class="form-group"><label>平均流量 <span class="unit">m³/h</span></label><input type="number" id="pump_avgFlow" value="25" oninput="pumpAutoCalc()"></div>
+          <div class="form-group"><label>平均输入功率 <span class="unit">kW</span></label><input type="number" id="pump_avgInputPower" value="50"></div>
+          <div class="form-group"><label>进口压力 <span class="unit">MPa</span></label><input type="number" id="pump_inPressure" value="0.1" step="0.01" oninput="pumpAutoCalc()"></div>
+          <div class="form-group"><label>出口压力 <span class="unit">MPa</span></label><input type="number" id="pump_outPressure" value="15" step="0.01" oninput="pumpAutoCalc()"></div>
+          <div class="form-group"><label>运行天数 <span class="unit">天</span></label><input type="number" id="pump_runDays" value="300"></div>
+          <div class="form-group"><label>电价 <span class="unit">元/kWh</span></label><input type="number" id="pump_elecPrice" value="0.6" step="0.01"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title"><span class="icon">⚡</span> 二、效率参数</div>
+        <div class="form-grid">
+          <div class="form-group"><label>泵效率 <span class="unit">%</span></label><input type="number" id="pump_pumpEff" value="0.85" step="0.01" min="0.1" max="1" oninput="pumpAutoCalc()"></div>
+          <div class="form-group"><label>电机效率 <span class="unit">%</span></label><input type="number" id="pump_motorEff" value="0.92" step="0.01" min="0.1" max="1"></div>
+          <div class="form-group"><label>变频器效率 <span class="unit">%</span></label><input type="number" id="pump_vfdEff" value="0.97" step="0.01" min="0.1" max="1"></div>
+          <div class="form-group"><label>配套电机功率 <span class="unit">kW</span></label><input type="number" id="pump_motorPower" value="55" readonly></div>
+        </div>
+        <div class="note">注：配套电机功率根据流量和压力自动计算</div>
+      </div>
+      <button class="btn-calc" onclick="calcPump()">🔍 开始测算</button>
+      <div class="results" id="pump_results">
+        <div class="card">
+          <div class="result-highlight">
+            <div class="big-num" id="pump_savingRate">0<span class="pct">%</span></div>
+            <div class="label">综合节电率</div>
+          </div>
+          <div class="metric-row three">
+            <div class="metric-card"><div class="value good" id="pump_dailySave">0</div><div class="desc">日节电量 kWh</div></div>
+            <div class="metric-card"><div class="value warn" id="pump_yearlySave">0</div><div class="desc">年节电量 万kWh</div></div>
+            <div class="metric-card"><div class="value" style="color:var(--primary)" id="pump_yearlyMoney">0</div><div class="desc">年节电费 万元</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title"><span class="icon">📊</span> 详细计算结果</div>
+          <table class="detail-table"><thead><tr><th>项目</th><th>数值</th></tr></thead>
+          <tbody id="pump_detailTable"></tbody></table>
+        </div>
+        <button class="btn-doc" onclick="generateSimpleDoc('pump')">📄 生成技术方案（简易版）</button>
+        <button class="btn-export" onclick="exportPumpReport()">📤 保存测算报告（HTML）</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== FAN ==================== -->
+  <div class="page" id="page-fan">
+    <div class="calc-header">
+      <h1>🌬 风机负载节能测算</h1>
+      <p>电机效率提升 + 风机相似定律 + 阀门开度修正，生成技术方案</p>
+    </div>
+    <div class="back-bar"><a onclick="navigate('home')">← 返回首页</a></div>
+    <div class="container" style="margin-top:-28px;position:relative;z-index:1">
+      <div class="card">
+        <div class="section-title"><span class="icon">🌬</span> 一、设备参数</div>
+        <div class="form-grid">
+          <div class="form-group full"><label>风机型号</label><input type="text" id="fan_model" value="FAN-203YXKK710-12"></div>
+          <div class="form-group"><label>电机额定功率 <span class="unit">kW</span></label><input type="number" id="fan_PN" value="710"></div>
+          <div class="form-group"><label>额定转速 <span class="unit">rpm</span></label><input type="number" id="fan_ratedRPM" value="1500"></div>
+          <div class="form-group"><label>工作电流 <span class="unit">A</span></label><input type="number" id="fan_curI" value="85" step="0.1"></div>
+          <div class="form-group"><label>工作电压 <span class="unit">kV</span></label><input type="number" id="fan_curV" value="6" step="0.1"></div>
+          <div class="form-group"><label>当前流量 <span class="unit">m³/h</span></label><input type="number" id="fan_curFlow" value="120000"></div>
+          <div class="form-group"><label>目标流量 <span class="unit">m³/h</span></label><input type="number" id="fan_targetFlow" value="100000"></div>
+          <div class="form-group"><label>阀门开度 <span class="unit">%</span></label><input type="number" id="fan_valveOpen" value="80"></div>
+          <div class="form-group"><label>气体密度修正</label><input type="number" id="fan_densityMod" value="1.0" step="0.01"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title"><span class="icon">⚡</span> 二、电机效率参数</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>参考功率（自动填充效率值）</label>
+            <select id="fan_refPower" onchange="autoFillFanEff()">
+              <option value="">手动输入</option>
+              <option value="200">200 kW</option>
+              <option value="315">315 kW</option>
+              <option value="500">500 kW</option>
+              <option value="710" selected>710 kW</option>
+              <option value="1000">1000 kW</option>
+              <option value="1250">1250 kW</option>
+              <option value="1600">1600 kW</option>
+              <option value="2000">2000 kW</option>
+              <option value="2500">2500 kW</option>
+              <option value="3550">3550 kW</option>
+              <option value="5000">5000 kW</option>
+            </select>
+          </div>
+          <div class="form-group"></div>
+          <div class="form-group"><label>原异步电机效率 η1 <span class="unit">%</span></label><input type="number" id="fan_eta1" value="95.3" step="0.1"></div>
+          <div class="form-group"><label>永磁电机效率 η2 <span class="unit">%</span></label><input type="number" id="fan_eta2" value="97.6" step="0.1"></div>
+          <div class="form-group"><label>原功率因数 PF1</label><input type="number" id="fan_pf1" value="0.85" step="0.01"></div>
+          <div class="form-group"><label>永磁功率因数 PF2</label><input type="number" id="fan_pf2" value="0.98" step="0.01"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title"><span class="icon">⏱️</span> 三、运行参数</div>
+        <div class="form-grid">
+          <div class="form-group"><label>年运行时间 <span class="unit">h</span></label><input type="number" id="fan_annualH" value="6000"></div>
+          <div class="form-group"><label>电价 <span class="unit">元/kWh</span></label><input type="number" id="fan_elecPrice" value="0.6" step="0.01"></div>
+        </div>
+      </div>
+      <button class="btn-calc" onclick="calcFan()">🔍 开始测算</button>
+      <div class="results" id="fan_results">
+        <div class="card">
+          <div class="result-highlight">
+            <div class="big-num" id="fan_totalRate">0<span class="pct">%</span></div>
+            <div class="label">综合节电率</div>
+          </div>
+          <div class="metric-row three">
+            <div class="metric-card"><div class="value good" id="fan_totalSave">0</div><div class="desc">年节电量 万kWh</div></div>
+            <div class="metric-card"><div class="value warn" id="fan_totalMoney">0</div><div class="desc">年节电费 万元</div></div>
+            <div class="metric-card"><div class="value" style="color:var(--primary)" id="fan_totalCO2">0</div><div class="desc">CO₂减排 吨</div></div>
+          </div>
+        </div>
+        <div class="card" style="border-left:4px solid var(--primary)">
+          <div class="section-title"><span class="icon">⚡</span> 第一部分：电机效率提升</div>
+          <table class="detail-table"><thead><tr><th>项目</th><th>数值</th></tr></thead>
+          <tbody id="fan_motorTable"></tbody></table>
+        </div>
+        <div class="card" style="border-left:4px solid var(--accent)">
+          <div class="section-title"><span class="icon">🌬</span> 第二部分：风机工况优化</div>
+          <table class="detail-table"><thead><tr><th>项目</th><th>数值</th></tr></thead>
+          <tbody id="fan_loadTable"></tbody></table>
+        </div>
+        <div class="card" style="border-left:4px solid #8b5cf6">
+          <div class="section-title"><span class="icon">📊</span> 第三部分：综合节能效果</div>
+          <table class="detail-table"><thead><tr><th>对比项</th><th>改造前</th><th>改造后</th><th>节约</th></tr></thead>
+          <tbody id="fan_compareTable"></tbody></table>
+        </div>
+        <button class="btn-doc" onclick="generateSimpleDoc('fan')">📄 生成技术方案（简易版）</button>
+        <button class="btn-export" onclick="exportFanReport()">📤 保存测算报告（HTML）</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== WATER PUMP ==================== -->
+  <div class="page" id="page-water">
+    <div class="calc-header">
+      <h1>💧 水泵负载节能测算</h1>
+      <p>电机效率提升 + 水泵相似定律 + 静扬程修正，生成技术方案</p>
+    </div>
+    <div class="back-bar"><a onclick="navigate('home')">← 返回首页</a></div>
+    <div class="container" style="margin-top:-28px;position:relative;z-index:1">
+      <div class="card">
+        <div class="section-title"><span class="icon">💧</span> 一、设备参数</div>
+        <div class="form-grid">
+          <div class="form-group full"><label>水泵型号</label><input type="text" id="wp_model" value="PUMP-307"></div>
+          <div class="form-group"><label>电机额定功率 <span class="unit">kW</span></label><input type="number" id="wp_PN" value="500"></div>
+          <div class="form-group"><label>额定转速 <span class="unit">rpm</span></label><input type="number" id="wp_ratedRPM" value="1500"></div>
+          <div class="form-group"><label>工作电流 <span class="unit">A</span></label><input type="number" id="wp_curI" value="45" step="0.1"></div>
+          <div class="form-group"><label>工作电压 <span class="unit">kV</span></label><input type="number" id="wp_curV" value="6" step="0.1"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title"><span class="icon">⚡</span> 二、电机效率参数</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>参考功率（自动填充效率值）</label>
+            <select id="wp_refPower" onchange="autoFillWpEff()">
+              <option value="">手动输入</option>
+              <option value="200">200 kW</option>
+              <option value="315">315 kW</option>
+              <option value="500" selected>500 kW</option>
+              <option value="710">710 kW</option>
+              <option value="1000">1000 kW</option>
+              <option value="1250">1250 kW</option>
+              <option value="1600">1600 kW</option>
+              <option value="2000">2000 kW</option>
+              <option value="2500">2500 kW</option>
+            </select>
+          </div>
+          <div class="form-group"></div>
+          <div class="form-group"><label>原异步电机效率 η1 <span class="unit">%</span></label><input type="number" id="wp_eta1" value="94.5" step="0.1"></div>
+          <div class="form-group"><label>永磁电机效率 η2 <span class="unit">%</span></label><input type="number" id="wp_eta2" value="97.2" step="0.1"></div>
+          <div class="form-group"><label>原功率因数 PF1</label><input type="number" id="wp_pf1" value="0.85" step="0.01"></div>
+          <div class="form-group"><label>永磁功率因数 PF2</label><input type="number" id="wp_pf2" value="0.98" step="0.01"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title"><span class="icon">💧</span> 三、水泵系统参数</div>
+        <div class="form-grid">
+          <div class="form-group"><label>当前流量 <span class="unit">m³/h</span></label><input type="number" id="wp_curFlow" value="800"></div>
+          <div class="form-group"><label>目标流量 <span class="unit">m³/h</span></label><input type="number" id="wp_targetFlow" value="650"></div>
+          <div class="form-group"><label>当前扬程 <span class="unit">m</span></label><input type="number" id="wp_curHead" value="50"></div>
+          <div class="form-group"><label>静扬程占比 <span class="unit">%</span></label><input type="number" id="wp_staticHeadRatio" value="25"></div>
+          <div class="form-group"><label>当前转速 <span class="unit">rpm</span></label><input type="number" id="wp_curRPM" value="1500"></div>
+          <div class="form-group"><label>最小安全流量 <span class="unit">m³/h</span></label><input type="number" id="wp_minFlow" value="400"></div>
+        </div>
+        <div class="note">说明：水泵相似定律 Q∝n，P∝n³。静扬程占比超过30%时，降速节电空间受限，需乘以修正系数0.8。最小安全流量防止水泵汽蚀。</div>
+      </div>
+      <div class="card">
+        <div class="section-title"><span class="icon">⏱️</span> 四、运行参数</div>
+        <div class="form-grid">
+          <div class="form-group"><label>年运行时间 <span class="unit">h</span></label><input type="number" id="wp_annualH" value="6000"></div>
+          <div class="form-group"><label>电价 <span class="unit">元/kWh</span></label><input type="number" id="wp_elecPrice" value="0.6" step="0.01"></div>
+        </div>
+      </div>
+      <button class="btn-calc" onclick="calcWaterPump()">🔍 开始测算</button>
+      <div class="results" id="wp_results">
+        <div class="card">
+          <div class="result-highlight">
+            <div class="big-num" id="wp_totalRate">0<span class="pct">%</span></div>
+            <div class="label">综合节电率</div>
+          </div>
+          <div class="metric-row three">
+            <div class="metric-card"><div class="value good" id="wp_totalSave">0</div><div class="desc">年节电量 万kWh</div></div>
+            <div class="metric-card"><div class="value warn" id="wp_totalMoney">0</div><div class="desc">年节电费 万元</div></div>
+            <div class="metric-card"><div class="value" style="color:var(--primary)" id="wp_totalCO2">0</div><div class="desc">CO₂减排 吨</div></div>
+          </div>
+        </div>
+        <div class="card" style="border-left:4px solid var(--primary)">
+          <div class="section-title"><span class="icon">⚡</span> 第一部分：电机效率提升</div>
+          <table class="detail-table"><thead><tr><th>项目</th><th>数值</th></tr></thead>
+          <tbody id="wp_motorTable"></tbody></table>
+        </div>
+        <div class="card" style="border-left:4px solid var(--accent)">
+          <div class="section-title"><span class="icon">💧</span> 第二部分：水泵工况优化</div>
+          <table class="detail-table"><thead><tr><th>项目</th><th>数值</th></tr></thead>
+          <tbody id="wp_loadTable"></tbody></table>
+        </div>
+        <div class="card" style="border-left:4px solid #8b5cf6">
+          <div class="section-title"><span class="icon">📊</span> 第三部分：综合节能效果</div>
+          <table class="detail-table"><thead><tr><th>对比项</th><th>改造前</th><th>改造后</th><th>节约</th></tr></thead>
+          <tbody id="wp_compareTable"></tbody></table>
+        </div>
+        <button class="btn-doc" onclick="generateSimpleDoc('water')">📄 生成技术方案（简易版）</button>
+        <button class="btn-export" onclick="exportWpReport()">📤 保存测算报告（HTML）</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MILL ==================== -->
+  <div class="page" id="page-mill">
+    <div class="calc-header">
+      <h1>🔨 磨机节能测算</h1>
+      <p>电机效率提升 + 磨机工况优化，生成技术方案</p>
+    </div>
+    <div class="back-bar"><a onclick="navigate('home')">← 返回首页</a></div>
+    <div class="container" style="margin-top:-28px;position:relative;z-index:1">
+      <div class="card">
+        <div class="section-title"><span class="icon">🔨</span> 一、设备参数</div>
+        <div class="form-grid">
+          <div class="form-group full"><label>磨机型号</label><input type="text" id="mill_model" value="BM-3830球磨机"></div>
+          <div class="form-group"><label>电机额定功率 <span class="unit">kW</span></label><input type="number" id="mill_PN" value="1600"></div>
+          <div class="form-group"><label>额定转速 <span class="unit">rpm</span></label><input type="number" id="mill_ratedRPM" value="200"></div>
+          <div class="form-group"><label>工作电流 <span class="unit">A</span></label><input type="number" id="mill_curI" value="175" step="0.1"></div>
+          <div class="form-group"><label>工作电压 <span class="unit">kV</span></label><input type="number" id="mill_curV" value="6" step="0.1"></div>
+          <div class="form-group"><label>磨机类型</label><select id="mill_type"><option value="ball">球磨机</option><option value="vertical">立磨</option><option value="rod">棒磨机</option><option value="sag">半自磨机</option></select></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title"><span class="icon">⚡</span> 二、电机效率参数</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>参考功率（自动填充效率值）</label>
+            <select id="mill_refPower" onchange="autoFillMillEff()">
+              <option value="">手动输入</option>
+              <option value="500">500 kW</option>
+              <option value="710">710 kW</option>
+              <option value="1000">1000 kW</option>
+              <option value="1250">1250 kW</option>
+              <option value="1600" selected>1600 kW</option>
+              <option value="2000">2000 kW</option>
+              <option value="2500">2500 kW</option>
+              <option value="3550">3550 kW</option>
+              <option value="5000">5000 kW</option>
+            </select>
+          </div>
+          <div class="form-group"></div>
+          <div class="form-group"><label>原异步电机效率 η1 <span class="unit">%</span></label><input type="number" id="mill_eta1" value="95.9" step="0.1"></div>
+          <div class="form-group"><label>永磁电机效率 η2 <span class="unit">%</span></label><input type="number" id="mill_eta2" value="98.0" step="0.1"></div>
+          <div class="form-group"><label>原功率因数 PF1</label><input type="number" id="mill_pf1" value="0.82" step="0.01"></div>
+          <div class="form-group"><label>永磁功率因数 PF2</label><input type="number" id="mill_pf2" value="0.97" step="0.01"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title"><span class="icon">🔨</span> 三、磨机系统参数</div>
+        <div class="form-grid">
+          <div class="form-group"><label>当前负荷率 <span class="unit">%</span></label><input type="number" id="mill_loadRate" value="85"></div>
+          <div class="form-group"><label>台时产量 <span class="unit">t/h</span></label><input type="number" id="mill_output" value="65"></div>
+          <div class="form-group"><label>研磨体装载量 <span class="unit">t</span></label><input type="number" id="mill_grindingMedia" value="130"></div>
+          <div class="form-group"><label>目标负荷率 <span class="unit">%</span></label><input type="number" id="mill_targetLoadRate" value="92"></div>
+        </div>
+        <div class="note">说明：磨机节能主要来自：①永磁电机效率提升3-5个百分点；②功率因数提高减少无功损耗；③优化负荷率至最佳工作区间（85-95%）。</div>
+      </div>
+      <div class="card">
+        <div class="section-title"><span class="icon">⏱️</span> 四、运行参数</div>
+        <div class="form-grid">
+          <div class="form-group"><label>年运行时间 <span class="unit">h</span></label><input type="number" id="mill_annualH" value="6000"></div>
+          <div class="form-group"><label>电价 <span class="unit">元/kWh</span></label><input type="number" id="mill_elecPrice" value="0.6" step="0.01"></div>
+        </div>
+      </div>
+      <button class="btn-calc" onclick="calcMill()">🔍 开始测算</button>
+      <div class="results" id="mill_results">
+        <div class="card">
+          <div class="result-highlight">
+            <div class="big-num" id="mill_totalRate">0<span class="pct">%</span></div>
+            <div class="label">综合节电率</div>
+          </div>
+          <div class="metric-row three">
+            <div class="metric-card"><div class="value good" id="mill_totalSave">0</div><div class="desc">年节电量 万kWh</div></div>
+            <div class="metric-card"><div class="value warn" id="mill_totalMoney">0</div><div class="desc">年节电费 万元</div></div>
+            <div class="metric-card"><div class="value" style="color:var(--primary)" id="mill_totalCO2">0</div><div class="desc">CO₂减排 吨</div></div>
+          </div>
+        </div>
+        <div class="card" style="border-left:4px solid var(--primary)">
+          <div class="section-title"><span class="icon">⚡</span> 第一部分：电机效率提升</div>
+          <table class="detail-table"><thead><tr><th>项目</th><th>数值</th></tr></thead>
+          <tbody id="mill_motorTable"></tbody></table>
+        </div>
+        <div class="card" style="border-left:4px solid var(--accent)">
+          <div class="section-title"><span class="icon">🔨</span> 第二部分：磨机工况优化</div>
+          <table class="detail-table"><thead><tr><th>项目</th><th>数值</th></tr></thead>
+          <tbody id="mill_loadTable"></tbody></table>
+        </div>
+        <div class="card" style="border-left:4px solid #8b5cf6">
+          <div class="section-title"><span class="icon">📊</span> 第三部分：综合节能效果</div>
+          <table class="detail-table"><thead><tr><th>对比项</th><th>改造前</th><th>改造后</th><th>节约</th></tr></thead>
+          <tbody id="mill_compareTable"></tbody></table>
+        </div>
+        <button class="btn-doc" onclick="generateSimpleDoc('mill')">📄 生成技术方案（简易版）</button>
+        <button class="btn-export" onclick="exportMillReport()">📤 保存测算报告（HTML）</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== HISTORY ==================== -->
+  <div class="page" id="page-history">
+    <div class="container container-wide">
+      <h2 style="font-size:22px;font-weight:700;margin-bottom:20px;color:var(--primary-dark)">📊 测算历史</h2>
+      <div id="historyContent"></div>
+    </div>
+  </div>
+
+</div><!-- end main -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== STATE ====================
+let currentUser = JSON.parse(localStorage.getItem('pump_user') || 'null');
+const MODULES = {pump:'柱塞泵',fan:'风机',water:'水泵',mill:'磨机'};
+
+// ==================== ROUTING ====================
+function navigate(page) {
+  if (page === 'history' && !currentUser) { navigate('auth'); showToast('请先登录'); return; }
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('show'));
+  const el = document.getElementById('page-' + page);
+  if (el) el.classList.add('show');
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.toggle('active', a.dataset.page === page));
+  document.getElementById('navLinks').classList.remove('open');
+  window.scrollTo(0, 0);
+  if (page === 'history') renderHistory();
+}
+function toggleMenu() { document.getElementById('navLinks').classList.toggle('open'); }
+
+// ==================== NAV ====================
+function renderNav() {
+  const right = document.getElementById('navRight');
+  if (currentUser) {
+    const phone = currentUser.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+    right.innerHTML = '<span class="user-info">📱 '+phone+'</span><button class="btn-nav danger" onclick="doLogout()">退出</button>';
+  } else {
+    right.innerHTML = '<button class="btn-nav outline" onclick="navigate(\'auth\')">登录</button>';
+  }
+}
+
+// ==================== AUTH ====================
+function switchAuthTab(tab, btn) {
+  btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('auth-login').style.display = tab==='login'?'block':'none';
+  document.getElementById('auth-register').style.display = tab==='register'?'block':'none';
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('regError').textContent = '';
+}
+function getUsers() { return JSON.parse(localStorage.getItem('pump_users')||'{}'); }
+function saveUsers(u) { localStorage.setItem('pump_users', JSON.stringify(u)); }
+function doLogin() {
+  const phone=document.getElementById('loginPhone').value.trim(), pwd=document.getElementById('loginPwd').value, err=document.getElementById('loginError');
+  if(!/^1\d{10}$/.test(phone)){err.textContent='请输入正确的手机号';return;}
+  if(pwd.length<6){err.textContent='密码至少6位';return;}
+  const users=getUsers();
+  if(!users[phone]){err.textContent='该手机号未注册';return;}
+  if(users[phone].password!==pwd){err.textContent='密码错误';return;}
+  currentUser={phone,regTime:users[phone].regTime};
+  localStorage.setItem('pump_user',JSON.stringify(currentUser));
+  renderNav();showToast('✅ 登录成功');navigate('home');
+}
+function doRegister() {
+  const phone=document.getElementById('regPhone').value.trim(), pwd=document.getElementById('regPwd').value, pwd2=document.getElementById('regPwd2').value, err=document.getElementById('regError');
+  if(!/^1\d{10}$/.test(phone)){err.textContent='请输入正确的手机号';return;}
+  if(pwd.length<6){err.textContent='密码至少6位';return;}
+  if(pwd!==pwd2){err.textContent='两次密码不一致';return;}
+  const users=getUsers();
+  if(users[phone]){err.textContent='该手机号已注册';return;}
+  users[phone]={password:pwd,regTime:Date.now()}; saveUsers(users);
+  showToast('✅ 注册成功，请登录');
+  switchAuthTab('login',document.querySelector('.tab-row button'));
+  document.getElementById('loginPhone').value=phone;
+}
+function doLogout() { currentUser=null; localStorage.removeItem('pump_user'); renderNav(); navigate('home'); showToast('已退出登录'); }
+
+// ==================== EFFICIENCY AUTO-FILL ====================
+const EFF_TABLE = [[200,94.0,96.5],[315,94.5,96.8],[500,95.0,97.2],[710,95.3,97.6],[1000,95.6,97.8],[1250,95.8,97.9],[1400,95.9,98.0],[1600,95.9,98.0],[2000,96.0,98.1],[2500,96.1,98.2],[3550,96.3,98.4],[5000,96.5,98.5]];
+const MILL_EFF_TABLE = [[500,95.0,97.2],[710,95.3,97.6],[1000,95.6,97.8],[1250,95.8,97.9],[1600,95.9,98.0],[2000,96.0,98.1],[2500,96.1,98.2],[3550,96.3,98.4],[5000,96.5,98.5]];
+function fillEff(table,pw,prefix){
+  if(!pw)return;
+  let e1,e2;
+  if(pw<=table[0][0]){e1=table[0][1];e2=table[0][2];}
+  else if(pw>=table[table.length-1][0]){e1=table[table.length-1][1];e2=table[table.length-1][2];}
+  else{for(let i=0;i<table.length-1;i++){if(pw>=table[i][0]&&pw<table[i+1][0]){const r=(pw-table[i][0])/(table[i+1][0]-table[i][0]);e1=table[i][1]+r*(table[i+1][1]-table[i][1]);e2=table[i][2]+r*(table[i+1][2]-table[i][2]);break;}}}
+  if(e1){document.getElementById(prefix+'_eta1').value=e1.toFixed(1);document.getElementById(prefix+'_eta2').value=e2.toFixed(1);}
+}
+function autoFillFanEff(){fillEff(EFF_TABLE,+document.getElementById('fan_refPower').value,'fan');}
+function autoFillWpEff(){fillEff(EFF_TABLE,+document.getElementById('wp_refPower').value,'wp');}
+function autoFillMillEff(){fillEff(MILL_EFF_TABLE,+document.getElementById('mill_refPower').value,'mill');}
+
+// ==================== PUMP CALC ====================
+function pumpAutoCalc(){
+  const V=id=>+document.getElementById(id).value;
+  const avgFlow=V('pump_avgFlow'), inPressure=V('pump_inPressure'), outPressure=V('pump_outPressure');
+  const pumpEff=V('pump_pumpEff');
+  // 流量 = 原设备平均流量
+  // 出口压力 = 原设备出口压力
+  // 自动计算电机功率
+  // 公式：电机功率 = 平均流量 * 压差 / 3.6 / 泵的效率 * 1.1
+  if(avgFlow > 0 && outPressure > 0 && pumpEff > 0){
+    const pressureDiff = outPressure - (inPressure || 0);
+    const motorPower = avgFlow * pressureDiff / 3.6 / pumpEff * 1.1;
+    document.getElementById('pump_motorPower').value = Math.round(motorPower);
+  }
+}
+function calcPump(){
+  const V=id=>+document.getElementById(id).value;
+  const dailyWater=V('pump_dailyWater'),dailyPower=V('pump_dailyPower'),avgFlow=V('pump_avgFlow');
+  const avgInputPower=V('pump_avgInputPower'),inPressure=V('pump_inPressure'),outPressure=V('pump_outPressure');
+  const motorEff=V('pump_motorEff'),vfdEff=V('pump_vfdEff'),pumpEff=V('pump_pumpEff');
+  const runDays=V('pump_runDays'),elecPrice=V('pump_elecPrice');
+  if(!dailyWater||!dailyPower||!avgFlow||!avgInputPower){showToast('请填写所有必填参数');return;}
+  const pShaft=avgFlow*(outPressure-inPressure)/3.6/pumpEff;
+  const pMotor=pShaft/motorEff;
+  const pVfd=pMotor/vfdEff;
+  const dailySave=(avgInputPower-pVfd)*24;
+  const savingRate=dailySave/dailyPower;
+  const yearlySave=dailySave*runDays;
+  const yearlyMoney=yearlySave*elecPrice;
+  const coalSave=yearlySave*0.4/1000, co2=coalSave*2.493;
+  document.getElementById('pump_savingRate').innerHTML=(savingRate*100).toFixed(1)+'<span class="pct">%</span>';
+  document.getElementById('pump_dailySave').textContent=dailySave.toFixed(0);
+  document.getElementById('pump_yearlySave').textContent=(yearlySave/10000).toFixed(1);
+  document.getElementById('pump_yearlyMoney').textContent=(yearlyMoney/10000).toFixed(1);
+  document.getElementById('pump_detailTable').innerHTML=
+    tr('原设备单耗(kWh/m³)',(dailyPower/dailyWater).toFixed(2))+
+    tr('泵轴功率 (kW)',pShaft.toFixed(2))+
+    tr('电机输入功率 (kW)',pMotor.toFixed(2))+
+    tr('变频器输入功率 (kW)',pVfd.toFixed(2))+
+    tr('日节电量 (kWh)',dailySave.toFixed(0))+
+    tr('年节电量 (万kWh)',(yearlySave/10000).toFixed(2))+
+    tr('年节电费 (万元)',(yearlyMoney/10000).toFixed(2))+
+    tr('节约标准煤 (吨)',coalSave.toFixed(1))+
+    tr('减排CO₂ (吨)',co2.toFixed(1));
+  saveHistory('pump',document.getElementById('pump_oldName').value,savingRate,yearlyMoney);
+  document.getElementById('pump_results').classList.add('show');
+  setTimeout(()=>document.getElementById('pump_results').scrollIntoView({behavior:'smooth'}),100);
+  showToast('✅ 测算完成');
+}
+
+// ==================== FAN CALC ====================
+function calcFan(){
+  const V=id=>+document.getElementById(id).value;
+  const eta1=V('fan_eta1'),eta2=V('fan_eta2'),pf1=V('fan_pf1'),pf2=V('fan_pf2');
+  const curI=V('fan_curI'),curV=V('fan_curV'),annualH=V('fan_annualH'),elecPrice=V('fan_elecPrice');
+  const curFlow=V('fan_curFlow'),targetFlow=V('fan_targetFlow'),valveOpen=V('fan_valveOpen'),densityMod=V('fan_densityMod');
+  if(!eta1||!eta2||!curI){showToast('请填写所有必填参数');return;}
+  const e1=eta1/100,e2=eta2/100;
+  const inputPower=curI*curV*1.732*e1*Math.min(pf1,0.99);
+  // Part 1: Motor
+  const motorRate=1-e1/e2;
+  const motorSave=inputPower*annualH*motorRate;
+  const motorMoney=motorSave*elecPrice;
+  // Part 2: Fan load
+  const speedRatio=targetFlow/curFlow;
+  const fanTheoreticalRate=1-Math.pow(speedRatio,3);
+  const valveMod=valveOpen<70?1.15:1.0;
+  const fanRate=Math.min(fanTheoreticalRate*valveMod*densityMod,0.6);
+  const fanSave=inputPower*annualH*fanRate;
+  const fanMoney=fanSave*elecPrice;
+  // Total
+  const totalRate=Math.min(motorRate+fanRate,0.6);
+  const totalSave=inputPower*annualH*totalRate;
+  const totalMoney=totalSave*elecPrice;
+  const totalCO2=totalSave*0.4/1000;
+  document.getElementById('fan_totalRate').innerHTML=(totalRate*100).toFixed(2)+'<span class="pct">%</span>';
+  document.getElementById('fan_totalSave').textContent=(totalSave/10000).toFixed(1);
+  document.getElementById('fan_totalMoney').textContent=(totalMoney/10000).toFixed(1);
+  document.getElementById('fan_totalCO2').textContent=totalCO2.toFixed(1);
+  document.getElementById('fan_motorTable').innerHTML=
+    tr('原异步电机效率 η1',eta1+'%')+
+    tr('永磁电机效率 η2',eta2+'%')+
+    tr('效率提升',((eta2-eta1).toFixed(1))+'个百分点')+
+    tr('原功率因数 PF1',pf1)+
+    tr('永磁功率因数 PF2',pf2)+
+    tr('电机节电率',(motorRate*100).toFixed(2)+'%')+
+    tr('年节电量（电机）',(motorSave/10000).toFixed(1)+'万kWh')+
+    tr('年节电费（电机部分）',(motorMoney/10000).toFixed(1)+'万元');
+  document.getElementById('fan_loadTable').innerHTML=
+    tr('当前流量',curFlow+' m³/h')+
+    tr('目标流量',targetFlow+' m³/h')+
+    tr('转速比',speedRatio.toFixed(3))+
+    tr('理论节电率（P∝n³）',(fanTheoreticalRate*100).toFixed(2)+'%')+
+    tr('阀门修正（开度'+valveOpen+'%）','×'+valveMod.toFixed(2))+
+    tr('密度修正','×'+densityMod.toFixed(2))+
+    tr('风机工况节电率',(fanRate*100).toFixed(2)+'%')+
+    tr('年节电量（风机）',(fanSave/10000).toFixed(1)+'万kWh');
+  const oldAnnual=inputPower*annualH/10000;
+  const newAnnual=oldAnnual*(1-totalRate);
+  document.getElementById('fan_compareTable').innerHTML=
+    tr('年用电量',oldAnnual.toFixed(1)+'万kWh',newAnnual.toFixed(1)+'万kWh',(totalSave/10000).toFixed(1)+'万kWh')+
+    tr('年电费',(oldAnnual*elecPrice).toFixed(1)+'万元',(newAnnual*elecPrice).toFixed(1)+'万元',(totalMoney/10000).toFixed(1)+'万元')+
+    tr('综合节电率','—','—',(totalRate*100).toFixed(2)+'%')+
+    tr('CO₂减排','—','—',totalCO2.toFixed(1)+'吨');
+  saveHistory('fan',document.getElementById('fan_model').value,totalRate,totalMoney);
+  document.getElementById('fan_results').classList.add('show');
+  setTimeout(()=>document.getElementById('fan_results').scrollIntoView({behavior:'smooth'}),100);
+  showToast('✅ 测算完成');
+}
+
+// ==================== WATER PUMP CALC ====================
+function calcWaterPump(){
+  const V=id=>+document.getElementById(id).value;
+  const eta1=V('wp_eta1'),eta2=V('wp_eta2'),pf1=V('wp_pf1'),pf2=V('wp_pf2');
+  const curI=V('wp_curI'),curV=V('wp_curV'),annualH=V('wp_annualH'),elecPrice=V('wp_elecPrice');
+  const curFlow=V('wp_curFlow'),targetFlow=V('wp_targetFlow'),curRPM=V('wp_curRPM');
+  const staticHeadRatio=V('wp_staticHeadRatio'),minFlow=V('wp_minFlow'),curHead=V('wp_curHead');
+  if(!eta1||!eta2||!curI){showToast('请填写所有必填参数');return;}
+  const e1=eta1/100,e2=eta2/100;
+  const inputPower=curI*curV*1.732*e1*Math.min(pf1,0.99);
+  // Part 1: Motor
+  const motorRate=1-e1/e2;
+  const motorSave=inputPower*annualH*motorRate;
+  const motorMoney=motorSave*elecPrice;
+  // Part 2: Pump load
+  const actualTarget=Math.max(targetFlow,minFlow);
+  const targetRPM=curRPM*(actualTarget/curFlow);
+  const pumpTheoreticalRate=1-Math.pow(targetRPM/curRPM,3);
+  const staticMod=staticHeadRatio>30?0.8:1.0;
+  const pumpRate=Math.min(pumpTheoreticalRate*staticMod,0.5);
+  const pumpSave=inputPower*annualH*pumpRate;
+  const pumpMoney=pumpSave*elecPrice;
+  // Total
+  const totalRate=Math.min(motorRate+pumpRate,0.5);
+  const totalSave=inputPower*annualH*totalRate;
+  const totalMoney=totalSave*elecPrice;
+  const totalCO2=totalSave*0.4/1000;
+  document.getElementById('wp_totalRate').innerHTML=(totalRate*100).toFixed(2)+'<span class="pct">%</span>';
+  document.getElementById('wp_totalSave').textContent=(totalSave/10000).toFixed(1);
+  document.getElementById('wp_totalMoney').textContent=(totalMoney/10000).toFixed(1);
+  document.getElementById('wp_totalCO2').textContent=totalCO2.toFixed(1);
+  document.getElementById('wp_motorTable').innerHTML=
+    tr('原异步电机效率 η1',eta1+'%')+
+    tr('永磁电机效率 η2',eta2+'%')+
+    tr('效率提升',((eta2-eta1).toFixed(1))+'个百分点')+
+    tr('原功率因数 PF1',pf1)+
+    tr('永磁功率因数 PF2',pf2)+
+    tr('电机节电率',(motorRate*100).toFixed(2)+'%')+
+    tr('年节电量（电机）',(motorSave/10000).toFixed(1)+'万kWh')+
+    tr('年节电费（电机部分）',(motorMoney/10000).toFixed(1)+'万元');
+  document.getElementById('wp_loadTable').innerHTML=
+    tr('当前流量',curFlow+' m³/h')+
+    tr('目标流量',actualTarget+' m³/h'+(actualTarget>targetFlow?' (受最小流量限制)':''))+
+    tr('当前转速',curRPM+' rpm')+
+    tr('目标转速',targetRPM.toFixed(0)+' rpm')+
+    tr('理论节电率（P∝n³）',(pumpTheoreticalRate*100).toFixed(2)+'%')+
+    tr('静扬程修正（占比'+staticHeadRatio+'%）','×'+staticMod.toFixed(1))+
+    tr('水泵工况节电率',(pumpRate*100).toFixed(2)+'%')+
+    tr('年节电量（水泵）',(pumpSave/10000).toFixed(1)+'万kWh');
+  const oldAnnual=inputPower*annualH/10000;
+  const newAnnual=oldAnnual*(1-totalRate);
+  document.getElementById('wp_compareTable').innerHTML=
+    tr('年用电量',oldAnnual.toFixed(1)+'万kWh',newAnnual.toFixed(1)+'万kWh',(totalSave/10000).toFixed(1)+'万kWh')+
+    tr('年电费',(oldAnnual*elecPrice).toFixed(1)+'万元',(newAnnual*elecPrice).toFixed(1)+'万元',(totalMoney/10000).toFixed(1)+'万元')+
+    tr('综合节电率','—','—',(totalRate*100).toFixed(2)+'%')+
+    tr('CO₂减排','—','—',totalCO2.toFixed(1)+'吨');
+  saveHistory('water',document.getElementById('wp_model').value,totalRate,totalMoney);
+  document.getElementById('wp_results').classList.add('show');
+  setTimeout(()=>document.getElementById('wp_results').scrollIntoView({behavior:'smooth'}),100);
+  showToast('✅ 测算完成');
+}
+
+// ==================== MILL CALC ====================
+function calcMill(){
+  const V=id=>+document.getElementById(id).value;
+  const eta1=V('mill_eta1'),eta2=V('mill_eta2'),pf1=V('mill_pf1'),pf2=V('mill_pf2');
+  const curI=V('mill_curI'),curV=V('mill_curV'),annualH=V('mill_annualH'),elecPrice=V('mill_elecPrice');
+  const PN=V('mill_PN'),loadRate=V('mill_loadRate'),targetLoadRate=V('mill_targetLoadRate');
+  const output=V('mill_output'),grindingMedia=V('mill_grindingMedia'),millType=document.getElementById('mill_type').value;
+  if(!eta1||!eta2||!curI){showToast('请填写所有必填参数');return;}
+  const e1=eta1/100,e2=eta2/100;
+  const inputPower=curI*curV*1.732*e1*Math.min(pf1,0.99);
+  // Part 1: Motor
+  const motorRate=1-e1/e2;
+  const motorSave=inputPower*annualH*motorRate;
+  const motorMoney=motorSave*elecPrice;
+  // Part 2: Load optimization
+  const currentSpecificPower=inputPower/output; // kWh/t
+  const optimizedSpecificPower=currentSpecificPower*(loadRate/targetLoadRate)*0.98; // 2% grinding optimization
+  const loadSaveRate=1-optimizedSpecificPower/currentSpecificPower;
+  const loadSave=inputPower*annualH*loadSaveRate;
+  const loadMoney=loadSave*elecPrice;
+  // Total
+  const totalRate=Math.min(motorRate+loadSaveRate,0.4);
+  const totalSave=inputPower*annualH*totalRate;
+  const totalMoney=totalSave*elecPrice;
+  const totalCO2=totalSave*0.4/1000;
+  document.getElementById('mill_totalRate').innerHTML=(totalRate*100).toFixed(2)+'<span class="pct">%</span>';
+  document.getElementById('mill_totalSave').textContent=(totalSave/10000).toFixed(1);
+  document.getElementById('mill_totalMoney').textContent=(totalMoney/10000).toFixed(1);
+  document.getElementById('mill_totalCO2').textContent=totalCO2.toFixed(1);
+  document.getElementById('mill_motorTable').innerHTML=
+    tr('原异步电机效率 η1',eta1+'%')+
+    tr('永磁电机效率 η2',eta2+'%')+
+    tr('效率提升',((eta2-eta1).toFixed(1))+'个百分点')+
+    tr('原功率因数 PF1',pf1)+
+    tr('永磁功率因数 PF2',pf2)+
+    tr('电机节电率',(motorRate*100).toFixed(2)+'%')+
+    tr('年节电量（电机）',(motorSave/10000).toFixed(1)+'万kWh')+
+    tr('年节电费（电机部分）',(motorMoney/10000).toFixed(1)+'万元');
+  document.getElementById('mill_loadTable').innerHTML=
+    tr('当前负荷率',loadRate+'%')+
+    tr('目标负荷率',targetLoadRate+'%')+
+    tr('当前吨电耗',currentSpecificPower.toFixed(2)+' kWh/t')+
+    tr('优化后吨电耗',optimizedSpecificPower.toFixed(2)+' kWh/t')+
+    tr('台时产量',output+' t/h')+
+    tr('研磨体装载量',grindingMedia+' t')+
+    tr('工况优化节电率',(loadSaveRate*100).toFixed(2)+'%')+
+    tr('年节电量（工况）',(loadSave/10000).toFixed(1)+'万kWh');
+  const oldAnnual=inputPower*annualH/10000;
+  const newAnnual=oldAnnual*(1-totalRate);
+  document.getElementById('mill_compareTable').innerHTML=
+    tr('年用电量',oldAnnual.toFixed(1)+'万kWh',newAnnual.toFixed(1)+'万kWh',(totalSave/10000).toFixed(1)+'万kWh')+
+    tr('年电费',(oldAnnual*elecPrice).toFixed(1)+'万元',(newAnnual*elecPrice).toFixed(1)+'万元',(totalMoney/10000).toFixed(1)+'万元')+
+    tr('综合节电率','—','—',(totalRate*100).toFixed(2)+'%')+
+    tr('CO₂减排','—','—',totalCO2.toFixed(1)+'吨');
+  saveHistory('mill',document.getElementById('mill_model').value,totalRate,totalMoney);
+  document.getElementById('mill_results').classList.add('show');
+  setTimeout(()=>document.getElementById('mill_results').scrollIntoView({behavior:'smooth'}),100);
+  showToast('✅ 测算完成');
+}
+
+// ==================== HELPERS ====================
+function tr(label,val){return '<tr><td>'+label+'</td><td>'+val+'</td></tr>';}
+
+// ==================== HISTORY ====================
+function saveHistory(module,name,rate,money){
+  if(!currentUser)return;
+  const key='pump_history_'+currentUser.phone;
+  const list=JSON.parse(localStorage.getItem(key)||'[]');
+  list.unshift({id:Date.now(),time:Date.now(),module,name,savingRate:rate,yearlyMoney:money});
+  if(list.length>50)list.length=50;
+  localStorage.setItem(key,JSON.stringify(list));
+}
+function getHistory(){if(!currentUser)return[];return JSON.parse(localStorage.getItem('pump_history_'+currentUser.phone)||'[]');}
+function renderHistory(){
+  const list=getHistory(),el=document.getElementById('historyContent');
+  if(!list.length){el.innerHTML='<div class="empty-state"><div class="icon">📭</div><p>暂无测算记录</p></div>';return;}
+  el.innerHTML='<div class="history-list">'+list.map(r=>{
+    const date=new Date(r.time).toLocaleString('zh-CN');
+    const icon={pump:'⚙️',fan:'🌬',water:'💧',mill:'🔨'}[r.module]||'📊';
+    const label=MODULES[r.module]||'测算';
+    return '<div class="history-item"><div class="hi-left"><div class="hi-project">'+icon+' ['+label+'] '+(r.name||'未命名')+'</div><div class="hi-time">'+date+'</div></div><div class="hi-metrics"><div class="hi-metric"><div class="val">'+(r.savingRate*100).toFixed(1)+'%</div><div class="lbl">节电率</div></div><div class="hi-metric"><div class="val">'+(r.yearlyMoney/10000).toFixed(1)+'</div><div class="lbl">年省电费(万元)</div></div></div><div class="hi-actions"><button class="btn-sm danger" onclick="delHistory('+r.id+')">删除</button></div></div>';
+  }).join('')+'</div>';
+}
+function delHistory(id){
+  if(!confirm('确认删除？'))return;
+  const key='pump_history_'+currentUser.phone;
+  let list=JSON.parse(localStorage.getItem(key)||'[]');
+  list=list.filter(x=>x.id!==id);
+  localStorage.setItem(key,JSON.stringify(list));
+  renderHistory();showToast('已删除');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show');}
+
+// ==================== SIMPLE WORD DOC GENERATOR ====================
+function generateSimpleDoc(moduleType){
+  const G=id=>document.getElementById(id).value;
+  const date=new Date().toLocaleDateString('zh-CN');
+  let title='', content='';
+  
+  if(moduleType==='fan'){
+    title='风机节能改造技术方案';
+    content='<h1>'+title+'</h1><h2>一、项目概况</h2><p>项目名称：'+G('fan_model')+'永磁电机改造</p><p>改造内容：异步电机替换为永磁同步电机</p><h2>二、节能效果</h2><p>综合节电率：'+document.getElementById('fan_totalRate').textContent+'</p><p>年节电量：'+document.getElementById('fan_totalSave').textContent+'万kWh</p><p>年节电费：'+document.getElementById('fan_totalMoney').textContent+'万元</p><h2>三、技术参数</h2><p>原电机效率：'+G('fan_eta1')+'%</p><p>永磁电机效率：'+G('fan_eta2')+'%</p><p>效率提升：'+(parseFloat(G('fan_eta2'))-parseFloat(G('fan_eta1'))).toFixed(1)+'个百分点</p>';
+  }else if(moduleType==='water'){
+    title='水泵节能改造技术方案';
+    content='<h1>'+title+'</h1><h2>一、项目概况</h2><p>项目名称：'+G('wp_model')+'永磁电机改造</p><p>改造内容：异步电机替换为永磁同步电机</p><h2>二、节能效果</h2><p>综合节电率：'+document.getElementById('wp_totalRate').textContent+'</p><p>年节电量：'+document.getElementById('wp_totalSave').textContent+'万kWh</p><p>年节电费：'+document.getElementById('wp_totalMoney').textContent+'万元</p><h2>三、技术参数</h2><p>原电机效率：'+G('wp_eta1')+'%</p><p>永磁电机效率：'+G('wp_eta2')+'%</p><p>效率提升：'+(parseFloat(G('wp_eta2'))-parseFloat(G('wp_eta1'))).toFixed(1)+'个百分点</p>';
+  }else if(moduleType==='mill'){
+    title='磨机节能改造技术方案';
+    content='<h1>'+title+'</h1><h2>一、项目概况</h2><p>项目名称：'+G('mill_model')+'永磁电机改造</p><p>改造内容：异步电机替换为永磁同步电机</p><h2>二、节能效果</h2><p>综合节电率：'+document.getElementById('mill_totalRate').textContent+'</p><p>年节电量：'+document.getElementById('mill_totalSave').textContent+'万kWh</p><p>年节电费：'+document.getElementById('mill_totalMoney').textContent+'万元</p><h2>三、技术参数</h2><p>原电机效率：'+G('mill_eta1')+'%</p><p>永磁电机效率：'+G('mill_eta2')+'%</p><p>效率提升：'+(parseFloat(G('mill_eta2'))-parseFloat(G('mill_eta1'))).toFixed(1)+'个百分点</p>';
+  }else if(moduleType==='pump'){
+    title='柱塞泵节能改造技术方案';
+    content='<h1>'+title+'</h1><h2>一、项目概况</h2><p>项目名称：'+G('pump_oldName')+'改造为'+G('pump_newName')+'</p><p>改造内容：永磁变频技术改造</p><h2>二、节能效果</h2><p>综合节电率：'+document.getElementById('pump_savingRate').textContent+'</p><p>年节电量：'+document.getElementById('pump_yearlySave').textContent+'万kWh</p><p>年节电费：'+document.getElementById('pump_yearlyMoney').textContent+'万元</p><h2>三、技术参数</h2><p>泵效率：'+(parseFloat(G('pump_pumpEff'))*100).toFixed(0)+'%</p><p>电机效率：'+(parseFloat(G('pump_motorEff'))*100).toFixed(0)+'%</p><p>变频器效率：'+(parseFloat(G('pump_vfdEff'))*100).toFixed(0)+'%</p>';
+  }
+  
+  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title><style>body{font-family:"宋体",SimSun,serif;font-size:14pt;line-height:1.8;margin:2cm}h1{font-size:22pt;text-align:center}h2{font-size:16pt;margin-top:24pt}h3{font-size:14pt;margin-top:18pt}p{margin:6pt 0;text-indent:2em}table{border-collapse:collapse;width:100%;margin:10pt 0}th,td{border:1px solid #000;padding:6pt 8pt;text-align:center}</style></head><body>'+content+'<h2>四、服务承诺</h2><p>质保期：2年</p><p>维护服务：提供定期巡检</p><p>培训服务：提供操作培训</p><p style="text-align:center;margin-top:40pt">编制单位：____________________</p><p style="text-align:center">编制人：____________________</p><p style="text-align:center">日期：'+date+'</p></body></html>';
+  
+  downloadWord(html,title+'_'+date+'.doc');
+  showToast('✅ 技术方案已生成');
+}
+
+function downloadWord(htmlContent, fileName) {
+    const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ==================== EXPORT FUNCTIONS ====================
+function exportPumpReport(){
+  const html=document.getElementById('page-pump').innerHTML;
+  const blob=new Blob(['\ufeff'+html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='柱塞泵测算报告_'+new Date().toLocaleDateString('zh-CN')+'.html';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  showToast('✅ 报告已保存');
+}
+function exportFanReport(){
+  const html=document.getElementById('page-fan').innerHTML;
+  const blob=new Blob(['\ufeff'+html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='风机测算报告_'+new Date().toLocaleDateString('zh-CN')+'.html';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  showToast('✅ 报告已保存');
+}
+function exportWpReport(){
+  const html=document.getElementById('page-water').innerHTML;
+  const blob=new Blob(['\ufeff'+html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='水泵测算报告_'+new Date().toLocaleDateString('zh-CN')+'.html';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  showToast('✅ 报告已保存');
+}
+function exportMillReport(){
+  const html=document.getElementById('page-mill').innerHTML;
+  const blob=new Blob(['\ufeff'+html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='磨机测算报告_'+new Date().toLocaleDateString('zh-CN')+'.html';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  showToast('✅ 报告已保存');
+}
+
+// ==================== TOAST ====================
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+// ==================== INIT ====================
+renderNav();
+// 页面加载时初始化计算
+window.addEventListener('DOMContentLoaded', function() {
+  pumpAutoCalc();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 临时文件
+*.tmp
+*.temp
+*.log
+
+# 备份文件
+*.bak
+*.backup
+*_backup*
+*_before_fix*
+
+# 测试文件
+test_*
+debug*
+
+# 文档文件
+*.docx
+*.pdf
+
+# 数据文件
+*.xlsx
+*.csv
+
+# 图片文件（除非是项目资源）
+*.jpg
+*.png
+*.gif
+
+# 特定文件
+快速启动.bat
+永磁电机替代异步电机节能测算表.docx
