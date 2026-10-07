@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>节能测算Pro V2 - 工业节能测算平台</title>
+<meta name="description" content="节能测算Pro V2－工业节能测算平台：网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、风机、磨机轴功率节能测算，输出节电率、年节电量、电费与碳减排，并给出电机选型建议。结果仅供参考，工程需现场复核。">
+<link rel="canonical" href="https://jeeftang.github.io/energy-calc-platform/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="节能测算Pro V2－工业节能测算平台">
+<meta property="og:description" content="柱塞泵/水泵/风机/磨机节能测算工具，网页免安装。结果仅供参考，工程需现场复核。">
+<meta property="og:url" content="https://jeeftang.github.io/energy-calc-platform/">
+<meta name="twitter:card" content="summary">
 <style>
 :root{--primary:#0d9488;--primary-dark:#0f766e;--primary-light:#ccfbf1;--accent:#f59e0b;--bg:#f0fdfa;--card:#fff;--text:#1e293b;--text2:#64748b;--border:#e2e8f0;--danger:#ef4444;--success:#10b981;--shadow:0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.04);--radius:12px}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -49,12 +56,120 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
   .tab-btn{width:100%}
 }
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://jeeftang.github.io/energy-calc-platform/#software",
+      "name": "节能测算Pro V2－工业节能测算平台",
+      "alternateName": "节能测算Pro V2",
+      "url": "https://jeeftang.github.io/energy-calc-platform/",
+      "applicationCategory": "BusinessApplication",
+      "applicationSubCategory": "工业节能测算",
+      "operatingSystem": "Web（浏览器，网页免安装）",
+      "inLanguage": "zh-CN",
+      "isAccessibleForFree": true,
+      "description": "网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、风机、磨机四类设备的轴功率节能测算，输出节电率、年节电量、电费与碳减排，并给出电机选型建议（安全系数 1.1–1.25）。属工程辅助测算工具，结果仅供参考，实际工程需现场复核。",
+      "featureList": [
+        "柱塞泵节能测算（按流量、进出口压力、效率计算轴功率与节电量）",
+        "水泵节能测算（按流量、扬程、效率计算轴功率与节电量）",
+        "风机节能测算（按改造前后风量、风压、效率对比计算节电量）",
+        "磨机节能测算（按原/新电机效率、负载率对比计算节电量与碳减排）",
+        "电机选型建议：计算轴功率 × 安全系数（1.1–1.25）→ 取标准功率档",
+        "输出综合节电率、年节电量、年节电费、CO₂ 减排量",
+        "网页免安装，浏览器直接使用"
+      ],
+      "softwareRequirements": "现代浏览器（支持 JavaScript）",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "name": "唐先生",
+        "telephone": "+86-18041136555",
+        "contactType": "工业节能项目咨询",
+        "availableLanguage": "zh-CN"
+      },
+      "disclaimer": "本平台为工程辅助测算工具，测算结果仅供参考，实际改造工程需以现场勘察与复核数据为准，不构成任何承诺或交易要约。"
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://jeeftang.github.io/energy-calc-platform/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "节能测算Pro V2－工业节能测算平台是什么？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "节能测算Pro V2－工业节能测算平台是一个网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、风机、磨机四类设备，按轴功率法测算节电率、年节电量、电费与碳减排，并给出电机选型建议。网址：https://jeeftang.github.io/energy-calc-platform/ 。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "平台支持哪些设备和输出哪些指标？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "支持柱塞泵、水泵、风机、磨机四类设备。输出综合节电率、年节电量（万kWh）、年节电费（万元）、CO₂减排量（吨），并给出推荐电机功率与类型。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "柱塞泵/水泵/风机的轴功率怎么计算？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "柱塞泵轴功率 P = Q × ΔP ÷ (3.6 × η泵)；水泵轴功率 = (Q × H × 1000 × 9.81) ÷ (3600 × 1000 × η泵 × η传)；风机轴功率 = (Q × P) ÷ (3600 × 1000 × η风 × η传)。其中 Q 为流量（m³/h），ΔP 为压差（MPa），H 为扬程（m），P 为风压（Pa）。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "电机选型的安全系数怎么取？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "平台按功率分档：计算轴功率 <5 kW 取 1.1；<10 kW 取 1.15；>100 kW 取 1.25；默认 1.2；风机或水泵功率 >50 kW 另加 0.05。安全系数整体落在 1.1–1.25 区间。计算额定功率 = 计算轴功率 × 安全系数，再向上取就近的标准功率档。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "碳减排量怎么折算？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "平台按每万 kWh 节电约 4 t CO₂ 折算，即 0.4 kg CO₂/kWh。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "平台测算结果能直接用于工程决策吗？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "不能直接用于最终决策。平台属工程辅助测算工具，结果仅供参考，实际改造工程需以现场勘察与复核数据为准。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "平台需要安装吗？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "不需要。平台为网页形态，浏览器打开网址即可使用，支持移动端访问。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "如何咨询工业节能改造？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "可通过页面提供的咨询方式联系唐先生，电话 18041136555。"
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
 </head>
 <body>
 <div class="container">
   <div class="header">
     <h1>节能测算Pro V2 - 工业节能测算平台</h1>
-    <p>基于轴功率计算的精准节能测算 + 电机选型指导</p>
+    <p>基于轴功率计算的节能测算 + 电机选型指导</p>
   </div>
   
   <div class="tabs">
@@ -687,7 +802,7 @@ function calcFan() {
     tr2('计算轴功率', motorSelection.calculatedShaftPower.toFixed(2) + ' kW', '改造后风机所需轴功率') +
     tr2('安全系数', motorSelection.safetyFactor.toFixed(2), '根据功率大小自动选择') +
     tr2('计算额定功率', motorSelection.recommendedPower.toFixed(2) + ' kW', '计算轴功率 × 安全系数') +
-    tr2('推荐电机功率', motorSelection.selectedPower + ' kW', '最接近的标准功率等级') +
+    tr2('推荐电机功率', motorSelection.selectedPower + ' kW', '就近的标准功率等级') +
     tr2('推荐电机类型', '永磁同步电机', '效率高、功率因数高') +
     tr2('原始设备匹配度', originalMatch + '%', '计算功率/原始功率 × 100%');
   
@@ -797,7 +912,7 @@ function calcPump() {
     tr2('计算轴功率', motorSelection.calculatedShaftPower.toFixed(2) + ' kW', '改造后水泵所需轴功率') +
     tr2('安全系数', motorSelection.safetyFactor.toFixed(2), '根据功率大小自动选择') +
     tr2('计算额定功率', motorSelection.recommendedPower.toFixed(2) + ' kW', '计算轴功率 × 安全系数') +
-    tr2('推荐电机功率', motorSelection.selectedPower + ' kW', '最接近的标准功率等级') +
+    tr2('推荐电机功率', motorSelection.selectedPower + ' kW', '就近的标准功率等级') +
     tr2('推荐电机类型', '永磁同步电机', '效率高、功率因数高') +
     tr2('原始设备匹配度', originalMatch + '%', '计算功率/原始功率 × 100%');
   
@@ -814,5 +929,45 @@ window.addEventListener('DOMContentLoaded', function() {
   updatePlungerMotorPower();
 });
 </script>
+  <!-- ==================== GEO 可见内容区（新增，纯展示，不含脚本） ==================== -->
+  <div class="card" id="about">
+    <div class="section-title">📘 平台算法说明</div>
+    <p>本平台采用轴功率法进行节能测算，覆盖柱塞泵、水泵、风机、磨机四类设备。</p>
+    <ul style="margin:10px 0 0 20px;line-height:1.9;font-size:14px;">
+      <li>柱塞泵轴功率：P = Q × ΔP ÷ (3.6 × η<sub>泵</sub>)（Q：m³/h；ΔP：MPa）</li>
+      <li>水泵轴功率：(Q × H × 1000 × 9.81) ÷ (3600 × 1000 × η<sub>泵</sub> × η<sub>传</sub>)</li>
+      <li>风机轴功率：(Q × P) ÷ (3600 × 1000 × η<sub>风</sub> × η<sub>传</sub>)</li>
+      <li>磨机：按原/新电机效率与原/新负载率对比测算</li>
+      <li>电机选型安全系数：&lt;5 kW 取 1.1；&lt;10 kW 取 1.15；&gt;100 kW 取 1.25；默认 1.2；风机或水泵 &gt;50 kW 另加 0.05（整体落在 1.1–1.25）</li>
+      <li>推荐电机功率：计算轴功率 × 安全系数 → 向上取就近的标准功率档 → 建议永磁同步电机</li>
+      <li>碳减排折算：每万 kWh 节电约 4 t CO₂（0.4 kg CO₂/kWh）</li>
+    </ul>
+  </div>
+
+  <div class="card" id="faq">
+    <div class="section-title">❓ 常见问题</div>
+    <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q1 平台是什么？</h3>
+    <p style="font-size:14px;color:var(--text2)">节能测算Pro V2－工业节能测算平台是一个网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、风机、磨机四类设备，按轴功率法测算节电率、年节电量、电费与碳减排，并给出电机选型建议。</p>
+    <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q2 支持哪些设备、输出哪些指标？</h3>
+    <p style="font-size:14px;color:var(--text2)">支持柱塞泵、水泵、风机、磨机四类设备。输出综合节电率、年节电量（万kWh）、年节电费（万元）、CO₂减排量（吨），并给出推荐电机功率与类型。</p>
+    <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q3 轴功率怎么计算？</h3>
+    <p style="font-size:14px;color:var(--text2)">柱塞泵：P = Q × ΔP ÷ (3.6 × η<sub>泵</sub>)；水泵：(Q × H × 1000 × 9.81) ÷ (3600 × 1000 × η<sub>泵</sub> × η<sub>传</sub>)；风机：(Q × P) ÷ (3600 × 1000 × η<sub>风</sub> × η<sub>传</sub>)。</p>
+    <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q4 电机选型的安全系数怎么取？</h3>
+    <p style="font-size:14px;color:var(--text2)">计算轴功率 &lt;5 kW 取 1.1；&lt;10 kW 取 1.15；&gt;100 kW 取 1.25；默认 1.2；风机或水泵 &gt;50 kW 另加 0.05。整体落在 1.1–1.25 区间。</p>
+    <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q5 碳减排量怎么折算？</h3>
+    <p style="font-size:14px;color:var(--text2)">按每万 kWh 节电约 4 t CO₂ 折算，即 0.4 kg CO₂/kWh。</p>
+    <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q6 结果能直接用于工程决策吗？</h3>
+    <p style="font-size:14px;color:var(--text2)">不能直接用于最终决策。平台属工程辅助测算工具，结果仅供参考，实际改造工程需以现场勘察与复核数据为准。</p>
+    <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q7 需要安装吗？</h3>
+    <p style="font-size:14px;color:var(--text2)">不需要。平台为网页形态，浏览器打开网址即可使用，支持移动端访问。</p>
+    <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q8 如何咨询？</h3>
+    <p style="font-size:14px;color:var(--text2)">工业节能项目咨询：唐先生 18041136555。</p>
+  </div>
+
+  <div class="card" id="disclaimer">
+    <div class="section-title">⚠️ 边界声明</div>
+    <p style="font-size:13px;color:var(--text2);line-height:1.8">本平台为工程辅助测算工具，测算结果仅供参考，实际改造工程需以现场勘察与复核数据为准。平台为网页免安装工具，不构成任何承诺或交易要约。</p>
+  </div>
+
 </body>
 </html>
