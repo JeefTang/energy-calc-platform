@@ -1530,12 +1530,12 @@ function calcHealth() {
 // ==================== 能效参数按设备类型动态切换 ====================
 const H_EFF = {
   pump:       [['h_q', '实测流量', 'm³/h', 180, 0.1], ['h_pin', '进口压力', 'MPa', 0.2, 0.01], ['h_pout', '出口压力', 'MPa', 4.0, 0.01], ['h_eta', '泵效率', '%（离心泵约60~80）', 70, 1]],
-  fan:        [['h_q', '风量', 'm³/h', 180, 0.1], ['h_pt', '全压', 'Pa', 3000, 1], ['h_eta', '风机效率', '%（约60~80）', 70, 1]],
-  compressor: [['h_q', '排气量', 'm³/min', 20, 0.1], ['h_pout', '排气压力', 'MPa', 0.8, 0.01], ['h_eta', '电机效率', '%（默认95）', 95, 1]],
+  fan:        [['h_q', '风量', 'm³/h', 240000, 100], ['h_pt', '全压', 'Pa', 3000, 10], ['h_eta', '风机效率', '%（约60~80）', 70, 1]],
+  compressor: [['h_q', '排气量', 'm³/min', 45, 1], ['h_pout', '排气压力', 'MPa', 0.8, 0.01], ['h_eta', '电机效率', '%（默认95）', 95, 1]],
   motor:      [['h_eta', '电机效率', '%（默认95）', 95, 1]],
   other:      [['h_q', '实测流量', 'm³/h', 180, 0.1], ['h_pin', '进口压力', 'MPa', 0.2, 0.01], ['h_pout', '出口压力', 'MPa', 4.0, 0.01], ['h_eta', '泵效率', '%（约70）', 70, 1]]
 };
-let hvals = {};
+let hvals = {}, hPrevType = null;
 function renderEff() {
   const g = document.getElementById('h-eff-grid');
   if (!g) return;
@@ -1543,11 +1543,16 @@ function renderEff() {
   const sel = document.getElementById('h_type');
   const t = (sel && sel.value) || 'pump';
   const def = H_EFF[t] || H_EFF.pump;
+  const prev = H_EFF[hPrevType] || [];
   g.innerHTML = def.map(function (d) {
-    const v = (hvals[d[0]] !== undefined && hvals[d[0]] !== '') ? hvals[d[0]] : d[3];
+    // 仅当上一类中存在「同 id 且同名称」的字段时才沿用已填值；否则用该类默认值
+    // （避免泵的「实测流量」被带到风机的「风量」等跨类串值）
+    const sameField = prev.some(function (x) { return x[0] === d[0] && x[1] === d[1]; });
+    const v = (sameField && hvals[d[0]] !== undefined && hvals[d[0]] !== '') ? hvals[d[0]] : d[3];
     return '<div class="form-group"><label>' + d[1] + ' <span class="unit">' + d[2] + '</span></label>'
       + '<input type="number" id="' + d[0] + '" value="' + v + '" step="' + d[4] + '"></div>';
   }).join('');
+  hPrevType = t;
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderEff);
 else renderEff();
