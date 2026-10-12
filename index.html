@@ -650,6 +650,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         <div class="form-group"><label>实测流量 <span class="unit">m³/h</span></label><input type="number" id="h_q" value="180" step="0.1"></div>
         <div class="form-group"><label>进口压力 <span class="unit">MPa</span></label><input type="number" id="h_pin" value="0.2" step="0.01"></div>
         <div class="form-group"><label>出口压力 <span class="unit">MPa</span></label><input type="number" id="h_pout" value="4.0" step="0.01"></div>
+        <div class="form-group"><label>泵效率 <span class="unit">%（选填，默认70）</span></label><input type="number" id="h_eta" value="70" step="1" min="30" max="95"></div>
       </div>
       <button class="btn-calc" onclick="calcHealth()">开始设备运行健康评测</button>
       <div class="note">依据公开标准做方向性初判：振动烈度 ISO 10816 / GB/T 6075；绕组温度 GB/T 755 绝缘等级限值；三相不平衡 GB/T 755；能效按 ρgQH / 输入功率 估算。结果为方向性参考，非设备诊断结论。</div>
@@ -665,7 +666,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           <div class="metric-card"><div class="value" id="h-n">0</div><div class="desc">判据项数</div></div>
           <div class="metric-card"><div class="value" id="h-warn">0</div><div class="desc">预警 / 异常项</div></div>
           <div class="metric-card"><div class="value" id="h-plate">—</div><div class="desc">机组综合效率</div></div>
-          <div class="metric-card"><div class="value" id="h-axis">—</div><div class="desc">估算轴功率 kW<br><span style="font-size:11px">按泵效率 90%</span></div></div>
+          <div class="metric-card"><div class="value" id="h-axis">—</div><div class="desc">估算轴功率 kW<br><span style="font-size:11px" id="h-axis-note">按泵效率 70%</span></div></div>
         </div>
       </div>
 
@@ -1462,9 +1463,12 @@ function calcHealth() {
   if (q && pin !== null && pout !== null && pact) {
     const h = (pout - pin) * 101.97;                 // 扬程估算（仅展示）
     const pHyd = q * (pout - pin) / 3.6;             // 与节能测算引擎同式：Q[m³/h]·ΔP[MPa]/3.6
-    const pAxis = pHyd / 0.90;                       // 估算轴功率（按泵效率 90%，与引擎 ETA_PUMP_NEW 一致）
+    // 泵效率：可填（离心泵约60~80，柱塞泵约90）；未填按普通泵 70% 兜底
+    let etaP = f('h_eta');
+    if (!etaP || etaP <= 0) etaP = 70;
+    const pAxis = pHyd / (etaP / 100);               // 估算轴功率 kW
     const eff = pact ? pHyd / pact * 100 : 0;
-    extra.head = h; extra.eff = eff; extra.axis = pAxis;
+    extra.head = h; extra.eff = eff; extra.axis = pAxis; extra.axisEta = etaP;
     let lv = eff >= 75 ? '正常' : eff >= 60 ? '关注' : eff >= 40 ? '预警' : '异常';
     let note = 'ρgQH/输入功率（含电机）';
     if (eff > 95) { lv = '关注'; note += ' · 数值偏高，请核对功率口径/单位'; push(suspects, '效率偏高(>95%)：功率口径可能不是电机输入功率，或单位/扬程有误'); }
@@ -1491,6 +1495,7 @@ function calcHealth() {
   document.getElementById('h-warn').textContent = warn;
   document.getElementById('h-plate').textContent = extra.eff !== undefined ? extra.eff.toFixed(1) + '%' : '—';
   document.getElementById('h-axis').textContent = extra.axis !== undefined ? extra.axis.toFixed(1) : '—';
+  if (extra.axisEta) { const nAx = document.getElementById('h-axis-note'); if (nAx) nAx.textContent = '按泵效率 ' + extra.axisEta + '%'; }
 
   document.getElementById('h-items').innerHTML = items.map(it =>
     '<tr><td>' + it.cat + '</td><td>' + it.name + '</td><td>' + it.value + ' ' + it.unit + '</td><td style="font-size:12px;color:#64748b">' + it.limit + (it.note ? '<br>' + it.note : '') + '</td><td style="text-align:center;font-weight:700;color:' +
