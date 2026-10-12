@@ -179,7 +179,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     <button class="tab-btn" onclick="showTab('heat')">♨️ 余热回收</button>
     <button class="tab-btn" onclick="showTab('fan')">🌬 风机</button>
     <button class="tab-btn" onclick="showTab('pump')">💧 水泵</button>
-    <button class="tab-btn" onclick="showTab('health')">🩺 健康评测</button>
+    <button class="tab-btn" onclick="showTab('health')">🩺 设备运行健康评测</button>
   </div>
   
   <!-- ==================== 柱塞泵模块 ==================== -->
@@ -651,7 +651,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         <div class="form-group"><label>进口压力 <span class="unit">MPa</span></label><input type="number" id="h_pin" value="0.2" step="0.01"></div>
         <div class="form-group"><label>出口压力 <span class="unit">MPa</span></label><input type="number" id="h_pout" value="4.0" step="0.01"></div>
       </div>
-      <button class="btn-calc" onclick="calcHealth()">开始设备健康评测</button>
+      <button class="btn-calc" onclick="calcHealth()">开始设备运行健康评测</button>
       <div class="note">依据公开标准做方向性初判：振动烈度 ISO 10816 / GB/T 6075；绕组温度 GB/T 755 绝缘等级限值；三相不平衡 GB/T 755；能效按 ρgQH / 输入功率 估算。结果为方向性参考，非设备诊断结论。</div>
     </div>
 
@@ -1499,7 +1499,7 @@ function calcHealth() {
   document.getElementById('h-disclaimer').innerHTML = '<strong>免责声明：</strong>本报告为基于现场单一工况参数的「方向性初判」，非设备诊断结论；数值受测点、工况、仪器影响，重要决策请结合频谱/趋势/解体检查复测。';
 
   document.getElementById('health-results').classList.add('show');
-  showToast('✅ 设备健康评测完成');
+  showToast('✅ 设备运行健康评测完成');
 }
 
 // 页面加载时初始化
@@ -1521,7 +1521,7 @@ window.addEventListener('DOMContentLoaded', function() {
       <li>磨机：按原/新电机效率与原/新负载率对比测算</li>
       <li>空压机：按加载率做时间加权求平均功率，对比改造后节电率；并估算可回收余热</li>
       <li>余热回收：热功率 Q = 流量 × 比热 × 温差 ÷ 3600，按利用方式折算年热收益</li>
-      <li>设备健康评测：振动烈度（ISO 10816）、绝缘温度限值、三相不平衡、负载率、功率因数、机组效率 ρgQH/P</li>
+      <li>设备运行健康评测：振动烈度（ISO 10816）、绝缘温度限值、三相不平衡、负载率、功率因数、机组效率 ρgQH/P</li>
       <li>电机选型安全系数：&lt;5 kW 取 1.1；&lt;10 kW 取 1.15；&gt;100 kW 取 1.25；默认 1.2；风机或水泵 &gt;50 kW 另加 0.05（整体落在 1.1–1.25）</li>
       <li>推荐电机功率：计算轴功率 × 安全系数 → 向上取就近的标准功率档 → 建议永磁同步电机</li>
       <li>碳减排折算：每万 kWh 节电约 4 t CO₂（0.4 kg CO₂/kWh）</li>
