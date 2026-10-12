@@ -1366,7 +1366,7 @@ function calcHeat() {
 
 // ==================== 设备运行健康评测模块（新增，2026-10-12） ====================
 function calcHealth() {
-  const f = id => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; };
+  const f = id => { const el = document.getElementById(id); if (!el) return null; const v = parseFloat(el.value); return isNaN(v) ? null : v; };
   const ORDER = { '正常': 0, '关注': 1, '预警': 2, '异常': 3 };
   const items = [], suspects = [], actions = [], extra = {};
   const add = (cat, name, level, value, unit, limit, note) => items.push({ cat, name, level, value, unit, limit, note: note || '' });
