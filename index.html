@@ -603,7 +603,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       <div class="form-grid">
         <div class="form-group"><label>设备名称 / 位号</label><input type="text" id="h_name" value="1#给水泵"></div>
         <div class="form-group"><label>设备类型</label>
-          <select id="h_type">
+          <select id="h_type" onchange="renderEff()">
             <option value="pump">水泵 / 给水泵</option>
             <option value="fan">风机</option>
             <option value="motor">电机</option>
@@ -645,15 +645,10 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     </div>
 
     <div class="card">
-      <div class="section-title">📈 四、能效工况参数（可留空）</div>
-      <div class="form-grid">
-        <div class="form-group"><label>实测流量 <span class="unit">m³/h</span></label><input type="number" id="h_q" value="180" step="0.1"></div>
-        <div class="form-group"><label>进口压力 <span class="unit">MPa</span></label><input type="number" id="h_pin" value="0.2" step="0.01"></div>
-        <div class="form-group"><label>出口压力 <span class="unit">MPa</span></label><input type="number" id="h_pout" value="4.0" step="0.01"></div>
-        <div class="form-group"><label>泵效率 <span class="unit">%（选填，默认70）</span></label><input type="number" id="h_eta" value="70" step="1" min="30" max="95"></div>
-      </div>
+      <div class="section-title">📈 四、能效工况参数（按设备类型 · 可留空）</div>
+      <div class="form-grid" id="h-eff-grid"></div>
       <button class="btn-calc" onclick="calcHealth()">开始设备运行健康评测</button>
-      <div class="note">依据公开标准做方向性初判：振动烈度 ISO 10816 / GB/T 6075；绕组温度 GB/T 755 绝缘等级限值；三相不平衡 GB/T 755；能效按 ρgQH / 输入功率 估算。结果为方向性参考，非设备诊断结论。</div>
+      <div class="note">依据公开标准做方向性初判：振动烈度 ISO 10816 / GB/T 6075；绕组温度 GB/T 755 绝缘等级限值；三相不平衡 GB/T 755；能效按 有效功率（泵/风机/空压机）或 电机效率 估算轴功率。结果为方向性参考，非设备诊断结论。</div>
     </div>
 
     <div id="health-results" class="results">
@@ -1458,22 +1453,44 @@ function calcHealth() {
     if (lv === '预警' || lv === '异常') { push(suspects, '功率因数偏低：电机轻载或励磁不足'); push(actions, '考虑无功补偿，或调整负载使其经济运行'); }
   }
 
-  // 8. 机组综合效率（能效）
-  const q = f('h_q'), pin = f('h_pin'), pout = f('h_pout');
-  if (q && pin !== null && pout !== null && pact) {
-    const h = (pout - pin) * 101.97;                 // 扬程估算（仅展示）
-    const pHyd = q * (pout - pin) / 3.6;             // 与节能测算引擎同式：Q[m³/h]·ΔP[MPa]/3.6
-    // 泵效率：可填（离心泵约60~80，柱塞泵约90）；未填按普通泵 70% 兜底
-    let etaP = f('h_eta');
-    if (!etaP || etaP <= 0) etaP = 70;
-    const pAxis = pHyd / (etaP / 100);               // 估算轴功率 kW
-    const eff = pact ? pHyd / pact * 100 : 0;
-    extra.head = h; extra.eff = eff; extra.axis = pAxis; extra.axisEta = etaP;
+  // 8. 机组综合效率 / 估算轴功率（按设备类型）
+  const dtype = (document.getElementById('h_type') || {}).value || 'pump';
+  const q = f('h_q'), pin = f('h_pin'), pout = f('h_pout'), pt = f('h_pt');
+  const etaIn = f('h_eta');
+  let pHyd = null, etaUsed = null, effNote = '';
+  if (dtype === 'motor') {
+    etaUsed = etaIn || 95;
+    if (pact) extra.axis = pact * etaUsed / 100;                 // 电机输出(轴)功率 = 输入 × η
+    effNote = '电机效率';
+  } else if (dtype === 'fan') {
+    etaUsed = etaIn || 70;
+    if (q && pt) { pHyd = q * pt / 3.6e6; extra.axis = pHyd / (etaUsed / 100); }   // 风功率 = Q[m³/h]·Pt[Pa]/3.6e6
+    effNote = '风功率/输入功率';
+  } else if (dtype === 'compressor') {
+    etaUsed = etaIn || 95;
+    if (pact) extra.axis = pact * etaUsed / 100;                 // 空压机：轴(输出)功率 = 输入 × η电机
+    if (pact && q) {
+      const sp = pact / q;                                       // 比功率 kW/(m³/min)
+      extra.spec = sp;
+      let lvS = sp <= 7.5 ? '正常' : sp <= 8.5 ? '关注' : sp <= 9.5 ? '预警' : '异常';
+      add('能效', '比功率', lvS, sp.toFixed(2), 'kW/(m³/min)', '≤7.5(优) / ≤8.5(良) / ≤9.5(关注)', '按 0.7~0.8MPa 级参考；排气量按 m³/min');
+      if (lvS === '预警' || lvS === '异常') { push(suspects, '空压机比功率偏高：机组老化 / 卸载频繁 / 管网压损大 / 选型偏大'); push(actions, '查泄漏与管网压损，评估变频/余热回收与节能测算'); }
+    }
+    effNote = '';
+  } else {
+    etaUsed = etaIn || 70;
+    if (q && pin !== null && pout !== null) { pHyd = q * (pout - pin) / 3.6; extra.axis = pHyd / (etaUsed / 100); extra.head = (pout - pin) * 101.97; }
+    effNote = 'ρgQH/输入功率';
+  }
+  if (etaUsed) extra.axisEta = etaUsed;
+  if (pHyd !== null && pact) {
+    const eff = pHyd / pact * 100;
+    extra.eff = eff;
     let lv = eff >= 75 ? '正常' : eff >= 60 ? '关注' : eff >= 40 ? '预警' : '异常';
-    let note = 'ρgQH/输入功率（含电机）';
+    let note = effNote + '（含电机）';
     if (eff > 95) { lv = '关注'; note += ' · 数值偏高，请核对功率口径/单位'; push(suspects, '效率偏高(>95%)：功率口径可能不是电机输入功率，或单位/扬程有误'); }
     add('能效', '机组综合效率', lv, eff.toFixed(1), '%', '≥75%(正常) / ≥60%(关注)', note);
-    if (lv === '预警' || lv === '异常') { push(suspects, '机组效率偏低：泵磨损 / 选型偏大 / 节流损失大 / 与工况不匹配'); push(actions, '做完整节能测算，评估柱塞泵替换或变速改造（走「节能测算」入口）'); }
+    if (lv === '预警' || lv === '异常') { push(suspects, '机组效率偏低：泵/风机磨损、选型偏大、节流损失大、与工况不匹配'); push(actions, '做完整节能测算，评估改造（走「节能测算」入口）'); }
   }
 
   // 9. 转速偏差（机械）
@@ -1509,6 +1526,31 @@ function calcHealth() {
   document.getElementById('health-results').classList.add('show');
   showToast('✅ 设备运行健康评测完成');
 }
+
+// ==================== 能效参数按设备类型动态切换 ====================
+const H_EFF = {
+  pump:       [['h_q', '实测流量', 'm³/h', 180, 0.1], ['h_pin', '进口压力', 'MPa', 0.2, 0.01], ['h_pout', '出口压力', 'MPa', 4.0, 0.01], ['h_eta', '泵效率', '%（离心泵约60~80）', 70, 1]],
+  fan:        [['h_q', '风量', 'm³/h', 180, 0.1], ['h_pt', '全压', 'Pa', 3000, 1], ['h_eta', '风机效率', '%（约60~80）', 70, 1]],
+  compressor: [['h_q', '排气量', 'm³/min', 20, 0.1], ['h_pout', '排气压力', 'MPa', 0.8, 0.01], ['h_eta', '电机效率', '%（默认95）', 95, 1]],
+  motor:      [['h_eta', '电机效率', '%（默认95）', 95, 1]],
+  other:      [['h_q', '实测流量', 'm³/h', 180, 0.1], ['h_pin', '进口压力', 'MPa', 0.2, 0.01], ['h_pout', '出口压力', 'MPa', 4.0, 0.01], ['h_eta', '泵效率', '%（约70）', 70, 1]]
+};
+let hvals = {};
+function renderEff() {
+  const g = document.getElementById('h-eff-grid');
+  if (!g) return;
+  g.querySelectorAll('input').forEach(function (i) { hvals[i.id] = i.value; });
+  const sel = document.getElementById('h_type');
+  const t = (sel && sel.value) || 'pump';
+  const def = H_EFF[t] || H_EFF.pump;
+  g.innerHTML = def.map(function (d) {
+    const v = (hvals[d[0]] !== undefined && hvals[d[0]] !== '') ? hvals[d[0]] : d[3];
+    return '<div class="form-group"><label>' + d[1] + ' <span class="unit">' + d[2] + '</span></label>'
+      + '<input type="number" id="' + d[0] + '" value="' + v + '" step="' + d[4] + '"></div>';
+  }).join('');
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderEff);
+else renderEff();
 
 // 页面加载时初始化
 window.addEventListener('DOMContentLoaded', function() {
