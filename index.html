@@ -661,10 +661,11 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           <div class="big-num" id="h-grade" style="font-size:42px">—</div>
           <div class="label">综合健康分级（取最严项）</div>
         </div>
-        <div class="metric-row">
+        <div class="metric-row" style="grid-template-columns:repeat(2,1fr)">
           <div class="metric-card"><div class="value" id="h-n">0</div><div class="desc">判据项数</div></div>
           <div class="metric-card"><div class="value" id="h-warn">0</div><div class="desc">预警 / 异常项</div></div>
           <div class="metric-card"><div class="value" id="h-plate">—</div><div class="desc">机组综合效率</div></div>
+          <div class="metric-card"><div class="value" id="h-axis">—</div><div class="desc">估算轴功率 kW<br><span style="font-size:11px">按泵效率 90%</span></div></div>
         </div>
       </div>
 
@@ -1459,10 +1460,11 @@ function calcHealth() {
   // 8. 机组综合效率（能效）
   const q = f('h_q'), pin = f('h_pin'), pout = f('h_pout');
   if (q && pin !== null && pout !== null && pact) {
-    const h = (pout - pin) * 101.97;
-    const pHyd = q * h * 9.81 / 3600;
+    const h = (pout - pin) * 101.97;                 // 扬程估算（仅展示）
+    const pHyd = q * (pout - pin) / 3.6;             // 与节能测算引擎同式：Q[m³/h]·ΔP[MPa]/3.6
+    const pAxis = pHyd / 0.90;                       // 估算轴功率（按泵效率 90%，与引擎 ETA_PUMP_NEW 一致）
     const eff = pact ? pHyd / pact * 100 : 0;
-    extra.head = h; extra.eff = eff;
+    extra.head = h; extra.eff = eff; extra.axis = pAxis;
     let lv = eff >= 75 ? '正常' : eff >= 60 ? '关注' : eff >= 40 ? '预警' : '异常';
     let note = 'ρgQH/输入功率（含电机）';
     if (eff > 95) { lv = '关注'; note += ' · 数值偏高，请核对功率口径/单位'; push(suspects, '效率偏高(>95%)：功率口径可能不是电机输入功率，或单位/扬程有误'); }
@@ -1488,6 +1490,7 @@ function calcHealth() {
   document.getElementById('h-n').textContent = items.length;
   document.getElementById('h-warn').textContent = warn;
   document.getElementById('h-plate').textContent = extra.eff !== undefined ? extra.eff.toFixed(1) + '%' : '—';
+  document.getElementById('h-axis').textContent = extra.axis !== undefined ? extra.axis.toFixed(1) : '—';
 
   document.getElementById('h-items').innerHTML = items.map(it =>
     '<tr><td>' + it.cat + '</td><td>' + it.name + '</td><td>' + it.value + ' ' + it.unit + '</td><td style="font-size:12px;color:#64748b">' + it.limit + (it.note ? '<br>' + it.note : '') + '</td><td style="text-align:center;font-weight:700;color:' +
