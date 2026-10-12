@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>节能测算Pro V2 - 工业节能测算平台</title>
-<meta name="description" content="节能测算Pro V2－工业节能测算平台：网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、风机、磨机轴功率节能测算，输出节电率、年节电量、电费与碳减排，并给出电机选型建议。结果仅供参考，工程需现场复核。">
+<meta name="description" content="节能测算Pro V2－工业节能测算平台：网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、风机、磨机、空压机、余热回收的节能测算，以及设备运行健康评测（机械/电气/能效），输出节电率、年节电量、电费与碳减排，并给出电机选型建议。结果仅供参考，工程需现场复核。">
 <link rel="canonical" href="https://jeeftang.github.io/energy-calc-platform/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="节能测算Pro V2－工业节能测算平台">
-<meta property="og:description" content="柱塞泵/水泵/风机/磨机节能测算工具，网页免安装。结果仅供参考，工程需现场复核。">
+<meta property="og:description" content="柱塞泵/水泵/风机/磨机/空压机/余热回收 节能测算 + 设备运行健康评测，网页免安装。结果仅供参考，工程需现场复核。">
 <meta property="og:url" content="https://jeeftang.github.io/energy-calc-platform/">
 <meta name="twitter:card" content="summary">
 <style>
@@ -156,7 +156,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           "name": "如何咨询工业节能改造？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "可通过页面提供的咨询方式联系唐先生，电话 18041136555。"
+            "text": "免费获取节能改造技术方案，请联系零碳小助手 18041136555（加好友二维码见页面底部）。"
           }
         }
       ]
@@ -175,8 +175,11 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
   <div class="tabs">
     <button class="tab-btn active" onclick="showTab('plunger')">⚙️ 柱塞泵</button>
     <button class="tab-btn" onclick="showTab('mill')">🔨 磨机</button>
+    <button class="tab-btn" onclick="showTab('air')">🗜️ 空压机</button>
+    <button class="tab-btn" onclick="showTab('heat')">♨️ 余热回收</button>
     <button class="tab-btn" onclick="showTab('fan')">🌬 风机</button>
     <button class="tab-btn" onclick="showTab('pump')">💧 水泵</button>
+    <button class="tab-btn" onclick="showTab('health')">🩺 健康评测</button>
   </div>
   
   <!-- ==================== 柱塞泵模块 ==================== -->
@@ -230,8 +233,8 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           <tbody id="plunger-detailTable"></tbody>
         </table>
         <div style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #0d9488, #0f766e); color: white; border-radius: 8px; text-align: center;">
-          <strong style="font-size: 16px;">工业节能项目欢迎咨询</strong><br>
-          <span style="font-size: 14px;">零碳小助手 18041136555 唐先生</span>
+          <strong style="font-size: 16px;">免费获取节能改造技术方案</strong><br>
+          <span style="font-size: 14px;">请联系 零碳小助手 18041136555（加好友二维码见页尾）</span>
         </div>
       </div>
     </div>
@@ -283,13 +286,165 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           <tbody id="mill-detailTable"></tbody>
         </table>
         <div style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #0d9488, #0f766e); color: white; border-radius: 8px; text-align: center;">
-          <strong style="font-size: 16px;">工业节能项目欢迎咨询</strong><br>
-          <span style="font-size: 14px;">零碳小助手 18041136555 唐先生</span>
+          <strong style="font-size: 16px;">免费获取节能改造技术方案</strong><br>
+          <span style="font-size: 14px;">请联系 零碳小助手 18041136555（加好友二维码见页尾）</span>
         </div>
       </div>
     </div>
   </div>
   
+  <!-- ==================== 空压机模块（新增，2026-10-12） ==================== -->
+  <div id="air-tab" class="tab-content" style="display:none">
+    <div class="card">
+      <div class="section-title">🗜️ 一、改造前空压机参数</div>
+      <div class="form-grid">
+        <div class="form-group"><label>运行台数 <span class="unit">台</span></label><input type="number" id="air_count" value="2" step="1"></div>
+        <div class="form-group"><label>单台输入功率 P₁ <span class="unit">kW</span></label><input type="number" id="air_p1" value="132"></div>
+        <div class="form-group"><label>单台排气量 Q₁ <span class="unit">m³/min</span></label><input type="number" id="air_q1" value="24" step="0.1"></div>
+        <div class="form-group"><label>排气压力 <span class="unit">MPa</span></label><input type="number" id="air_press" value="0.8" step="0.05"></div>
+        <div class="form-group"><label>平均加载率 <span class="unit">%</span></label><input type="number" id="air_load" value="60" step="1"></div>
+        <div class="form-group"><label>卸载功率占比 <span class="unit">%（占额定）</span></label><input type="number" id="air_unload" value="35" step="1"></div>
+      </div>
+      <div class="note">加卸载控制的螺杆机，卸载时段仍消耗额定功率的 25%~40%（默认 35%）。这部分空载损耗，是变频改造与集中联控的主要节电空间。</div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">⚡ 二、改造方案</div>
+      <div class="form-grid">
+        <div class="form-group"><label>改造方式</label>
+          <select id="air_method">
+            <option value="vfd">变频改造（永磁变频 / 加装变频器）</option>
+            <option value="ctrl">集中联控（多台联动按需供气）</option>
+            <option value="replace">整机高效替换（一级能效）</option>
+            <option value="pipe">管路与泄漏治理</option>
+          </select>
+        </div>
+        <div class="form-group"><label>改造后节电率 <span class="unit">%</span></label><input type="number" id="air_save" value="22" step="1"></div>
+        <div class="form-group"><label>余热回收率 <span class="unit">%（0 = 不做）</span></label><input type="number" id="air_heat" value="70" step="5"></div>
+        <div class="form-group"><label>回收热利用价值 <span class="unit">元/kWh(热)</span></label><input type="number" id="air_heatPrice" value="0.30" step="0.01"></div>
+      </div>
+      <div class="note">节电率参考区间：变频改造 15%~30%（视加卸载频度）；集中联控 10%~20%；一级能效整机替换 10%~25%；泄漏治理 5%~15%。</div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">⏱️ 三、运行与价格</div>
+      <div class="form-grid">
+        <div class="form-group"><label>年运行小时 <span class="unit">h</span></label><input type="number" id="air_hours" value="6000"></div>
+        <div class="form-group"><label>电价 <span class="unit">元/kWh</span></label><input type="number" id="air_price" value="0.65" step="0.01"></div>
+      </div>
+      <button class="btn-calc" onclick="calcAir()">开始空压机节能测算</button>
+    </div>
+
+    <div id="air-results" class="results">
+      <div class="card">
+        <div class="result-highlight">
+          <div class="big-num"><span id="air-savingRate">0</span><span class="pct">%</span></div>
+          <div class="label">综合节电率（含空载损耗治理）</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-card"><div class="value" id="air-annualSave">0</div><div class="desc">年节电量 万kWh</div></div>
+          <div class="metric-card"><div class="value" id="air-annualMoney">0</div><div class="desc">年节电费 万元</div></div>
+          <div class="metric-card"><div class="value" id="air-CO2">0</div><div class="desc">CO₂减排 吨</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">📊 详细计算结果</div>
+        <table class="detail-table">
+          <thead><tr><th>项目</th><th>数值</th></tr></thead>
+          <tbody id="air-detailTable"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="section-title">♻️ 空压机余热回收（可选）</div>
+        <table class="detail-table">
+          <thead><tr><th>项目</th><th>数值</th></tr></thead>
+          <tbody id="air-heatTable"></tbody>
+        </table>
+        <div class="note">空压机约 90% 的输入电能最终转化为热量，其中 70%~80% 可回收用于生活热水、供暖或工艺预热（回收率 ≥75% 时可产出 60℃ 以上热水）。</div>
+      </div>
+
+      <div class="card" style="background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;text-align:center">
+        <div style="font-size:18px;font-weight:700;margin-bottom:6px">免费获取节能改造技术方案</div>
+        <div style="font-size:14px;opacity:.95;margin-bottom:8px">请联系 零碳小助手 <b>18041136555</b>（微信同号）</div>
+        <img src="qr-kefu.png" alt="零碳小助手 · 微信加好友二维码" style="width:150px;height:150px;border-radius:10px;background:#fff;padding:6px;margin:4px 0" onerror="this.style.display='none'">
+        <div style="font-size:12px;opacity:.85">扫码加微信 · 免费出方案</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 余热回收模块（新增，2026-10-12） ==================== -->
+  <div id="heat-tab" class="tab-content" style="display:none">
+    <div class="card">
+      <div class="section-title">♨️ 一、余热源参数</div>
+      <div class="form-grid">
+        <div class="form-group"><label>余热介质</label>
+          <select id="heat_media" onchange="heatMediaChange()">
+            <option value="flue">烟气（锅炉 / 窑炉 / 加热炉排烟）</option>
+            <option value="water">热水 / 循环水</option>
+            <option value="steam">蒸汽凝结水 / 疏水</option>
+          </select>
+        </div>
+        <div class="form-group"><label id="heat_flowLabel">烟气流量 <span class="unit">Nm³/h</span></label><input type="number" id="heat_flow" value="30000"></div>
+        <div class="form-group"><label>进口温度 t₁ <span class="unit">℃</span></label><input type="number" id="heat_t1" value="320"></div>
+        <div class="form-group"><label>回收后出口温度 t₂ <span class="unit">℃</span></label><input type="number" id="heat_t2" value="150"></div>
+        <div class="form-group"><label id="heat_cpLabel">烟气比热 <span class="unit">kJ/(Nm³·℃)</span></label><input type="number" id="heat_cp" value="1.34" step="0.01"></div>
+        <div class="form-group"><label>年运行小时 <span class="unit">h</span></label><input type="number" id="heat_hours" value="7000"></div>
+      </div>
+      <div class="note">烟气比热通常取 1.30~1.45 kJ/(Nm³·℃)；水比热 4.18 kJ/(kg·℃)。t₂ 需高于酸露点（燃煤烟气一般 ≥120℃），避免低温腐蚀。</div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">⚡ 二、回收利用方案</div>
+      <div class="form-grid">
+        <div class="form-group"><label>回收用途</label>
+          <select id="heat_use" onchange="heatUseChange()">
+            <option value="preheat">预热助燃空气 / 工艺物料</option>
+            <option value="hotwater">产生活热水 / 供暖</option>
+            <option value="steam">替代蒸汽（产低压蒸汽）</option>
+            <option value="orc">ORC 低温余热发电</option>
+          </select>
+        </div>
+        <div class="form-group"><label>回收效率 η <span class="unit">%（换热器效率）</span></label><input type="number" id="heat_eff" value="85" step="1"></div>
+        <div class="form-group"><label id="heat_priceLabel">热价 <span class="unit">元/GJ</span></label><input type="number" id="heat_price" value="55" step="1"></div>
+        <div class="form-group"><label>ORC 发电效率 <span class="unit">%（仅发电用）</span></label><input type="number" id="heat_orcEff" value="12" step="1"></div>
+        <div class="form-group"><label>系统投资 <span class="unit">万元（留空自动估算）</span></label><input type="number" id="heat_invest" value="" placeholder="留空按右下单价估算" step="1"></div>
+        <div class="form-group"><label>投资估算单价 <span class="unit">元/kW（留空时用）</span></label><input type="number" id="heat_unitCost" value="1500" step="50"></div>
+      </div>
+      <button class="btn-calc" onclick="calcHeat()">开始余热回收测算</button>
+    </div>
+
+    <div id="heat-results" class="results">
+      <div class="card">
+        <div class="result-highlight">
+          <div class="big-num"><span id="heat-power">0</span><span class="pct"> kW</span></div>
+          <div class="label">可回收热功率（有效）</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-card"><div class="value" id="heat-annualHeat">0</div><div class="desc">年回收热量 GJ</div></div>
+          <div class="metric-card"><div class="value" id="heat-money">0</div><div class="desc">年效益 万元</div></div>
+          <div class="metric-card"><div class="value" id="heat-co2">0</div><div class="desc">CO₂减排 吨</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">📊 详细计算结果</div>
+        <table class="detail-table">
+          <thead><tr><th>项目</th><th>数值</th></tr></thead>
+          <tbody id="heat-detailTable"></tbody>
+        </table>
+      </div>
+
+      <div class="card" style="background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;text-align:center">
+        <div style="font-size:18px;font-weight:700;margin-bottom:6px">免费获取节能改造技术方案</div>
+        <div style="font-size:14px;opacity:.95;margin-bottom:8px">请联系 零碳小助手 <b>18041136555</b>（微信同号）</div>
+        <img src="qr-kefu.png" alt="零碳小助手 · 微信加好友二维码" style="width:150px;height:150px;border-radius:10px;background:#fff;padding:6px;margin:4px 0" onerror="this.style.display='none'">
+        <div style="font-size:12px;opacity:.85">扫码加微信 · 免费出方案</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== 风机模块（新） ==================== -->
   <div id="fan-tab" class="tab-content" style="display:none">
     <div class="card">
@@ -359,8 +514,8 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           3. 选择标准功率等级
         </div>
         <div style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #0d9488, #0f766e); color: white; border-radius: 8px; text-align: center;">
-          <strong style="font-size: 16px;">工业节能项目欢迎咨询</strong><br>
-          <span style="font-size: 14px;">零碳小助手 18041136555 唐先生</span>
+          <strong style="font-size: 16px;">免费获取节能改造技术方案</strong><br>
+          <span style="font-size: 14px;">请联系 零碳小助手 18041136555（加好友二维码见页尾）</span>
         </div>
       </div>
     </div>
@@ -435,12 +590,112 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           3. 选择标准功率等级
         </div>
         <div style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #0d9488, #0f766e); color: white; border-radius: 8px; text-align: center;">
-          <strong style="font-size: 16px;">工业节能项目欢迎咨询</strong><br>
-          <span style="font-size: 14px;">零碳小助手 18041136555 唐先生</span>
+          <strong style="font-size: 16px;">免费获取节能改造技术方案</strong><br>
+          <span style="font-size: 14px;">请联系 零碳小助手 18041136555（加好友二维码见页尾）</span>
         </div>
       </div>
     </div>
   </div>
+  <!-- ==================== 设备运行健康评测模块（新增，2026-10-12） ==================== -->
+  <div id="health-tab" class="tab-content" style="display:none">
+    <div class="card">
+      <div class="section-title">🩺 一、设备档案</div>
+      <div class="form-grid">
+        <div class="form-group"><label>设备名称 / 位号</label><input type="text" id="h_name" value="1#给水泵"></div>
+        <div class="form-group"><label>设备类型</label>
+          <select id="h_type">
+            <option value="pump">水泵 / 给水泵</option>
+            <option value="fan">风机</option>
+            <option value="motor">电机</option>
+            <option value="compressor">空压机</option>
+            <option value="other">其他旋转设备</option>
+          </select>
+        </div>
+        <div class="form-group"><label>额定功率 <span class="unit">kW</span></label><input type="number" id="h_prated" value="315"></div>
+        <div class="form-group"><label>额定转速 <span class="unit">rpm</span></label><input type="number" id="h_nrated" value="2980"></div>
+        <div class="form-group"><label>绝缘等级</label>
+          <select id="h_insul"><option value="B">B 级（130℃）</option><option value="F" selected>F 级（155℃）</option><option value="H">H 级（180℃）</option></select>
+        </div>
+        <div class="form-group"><label>年运行小时 <span class="unit">h</span></label><input type="number" id="h_hours" value="7000"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">🔧 二、机械运转参数</div>
+      <div class="form-grid">
+        <div class="form-group"><label>振动烈度 <span class="unit">mm/s（速度有效值）</span></label><input type="number" id="h_vib" value="3.2" step="0.1"></div>
+        <div class="form-group"><label>实测转速 <span class="unit">rpm</span></label><input type="number" id="h_nact" value="2965"></div>
+        <div class="form-group"><label>噪声 <span class="unit">dB(A)（设备旁1m）</span></label><input type="number" id="h_noise" value="88" step="0.5"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">⚡ 三、电气运转参数</div>
+      <div class="form-grid">
+        <div class="form-group"><label>绕组 / 线圈温度 <span class="unit">℃</span></label><input type="number" id="h_temp" value="78" step="0.5"></div>
+        <div class="form-group"><label>电流 A 相 <span class="unit">A</span></label><input type="number" id="h_ia" value="52" step="0.1"></div>
+        <div class="form-group"><label>电流 B 相 <span class="unit">A</span></label><input type="number" id="h_ib" value="54" step="0.1"></div>
+        <div class="form-group"><label>电流 C 相 <span class="unit">A</span></label><input type="number" id="h_ic" value="55" step="0.1"></div>
+        <div class="form-group"><label>电压 A 相 <span class="unit">V</span></label><input type="number" id="h_ua" value="6000" step="1"></div>
+        <div class="form-group"><label>电压 B 相 <span class="unit">V</span></label><input type="number" id="h_ub" value="6050" step="1"></div>
+        <div class="form-group"><label>电压 C 相 <span class="unit">V</span></label><input type="number" id="h_uc" value="6020" step="1"></div>
+        <div class="form-group"><label>有功功率 <span class="unit">kW</span></label><input type="number" id="h_pact" value="285" step="0.1"></div>
+        <div class="form-group"><label>功率因数 <span class="unit">cosφ</span></label><input type="number" id="h_pf" value="0.86" step="0.01"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">📈 四、能效工况参数（可留空）</div>
+      <div class="form-grid">
+        <div class="form-group"><label>实测流量 <span class="unit">m³/h</span></label><input type="number" id="h_q" value="180" step="0.1"></div>
+        <div class="form-group"><label>进口压力 <span class="unit">MPa</span></label><input type="number" id="h_pin" value="0.2" step="0.01"></div>
+        <div class="form-group"><label>出口压力 <span class="unit">MPa</span></label><input type="number" id="h_pout" value="4.0" step="0.01"></div>
+      </div>
+      <button class="btn-calc" onclick="calcHealth()">开始设备健康评测</button>
+      <div class="note">依据公开标准做方向性初判：振动烈度 ISO 10816 / GB/T 6075；绕组温度 GB/T 755 绝缘等级限值；三相不平衡 GB/T 755；能效按 ρgQH / 输入功率 估算。结果为方向性参考，非设备诊断结论。</div>
+    </div>
+
+    <div id="health-results" class="results">
+      <div class="card">
+        <div class="result-highlight">
+          <div class="big-num" id="h-grade" style="font-size:42px">—</div>
+          <div class="label">综合健康分级（取最严项）</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-card"><div class="value" id="h-n">0</div><div class="desc">判据项数</div></div>
+          <div class="metric-card"><div class="value" id="h-warn">0</div><div class="desc">预警 / 异常项</div></div>
+          <div class="metric-card"><div class="value" id="h-plate">—</div><div class="desc">机组综合效率</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">📊 逐项判据</div>
+        <table class="detail-table">
+          <thead><tr><th>类别</th><th>项目</th><th>实测</th><th>判据</th><th>结论</th></tr></thead>
+          <tbody id="h-items"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="section-title">🔎 可疑方向</div>
+        <ul id="h-suspects" style="margin:8px 0 0 20px;line-height:1.9;font-size:14px;"></ul>
+      </div>
+
+      <div class="card">
+        <div class="section-title">🛠 建议动作</div>
+        <ul id="h-actions" style="margin:8px 0 0 20px;line-height:1.9;font-size:14px;"></ul>
+        <div class="note" id="h-disclaimer"></div>
+      </div>
+
+      <div class="card" style="background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;text-align:center">
+        <div style="font-size:18px;font-weight:700;margin-bottom:6px">免费获取节能改造技术方案</div>
+        <div style="font-size:14px;opacity:.95;margin-bottom:8px">请联系 零碳小助手 <b>18041136555</b>（微信同号）</div>
+        <img src="qr-kefu.png" alt="零碳小助手 · 微信加好友二维码" style="width:150px;height:150px;border-radius:10px;background:#fff;padding:6px;margin:4px 0" onerror="this.style.display='none'">
+        <div style="font-size:12px;opacity:.85">扫码加微信 · 免费出方案</div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -921,6 +1176,332 @@ function calcPump() {
   showToast('✅ 水泵节能测算完成');
 }
 
+// ==================== 空压机模块（新增，2026-10-12） ====================
+function calcAir() {
+  const n = parseFloat(document.getElementById('air_count').value) || 1;
+  const p1 = parseFloat(document.getElementById('air_p1').value) || 0;
+  const q1 = parseFloat(document.getElementById('air_q1').value) || 0;
+  const press = parseFloat(document.getElementById('air_press').value) || 0;
+  const load = parseFloat(document.getElementById('air_load').value) || 0;
+  const unload = parseFloat(document.getElementById('air_unload').value) || 0;
+  const save = parseFloat(document.getElementById('air_save').value) || 0;
+  const heatR = parseFloat(document.getElementById('air_heat').value) || 0;
+  const heatPrice = parseFloat(document.getElementById('air_heatPrice').value) || 0;
+  const hours = parseFloat(document.getElementById('air_hours').value) || 0;
+  const price = parseFloat(document.getElementById('air_price').value) || 0;
+
+  if (!p1 || !q1 || !hours) { showToast('请填写必填参数'); return; }
+
+  // 现状：按加载率做时间加权 → 单台平均输入功率
+  const lr = Math.min(Math.max(load, 0), 100) / 100;
+  const avgP1 = p1 * (lr + (1 - lr) * (unload / 100));
+  const sysPower1 = n * avgP1;
+  const sysEnergy1 = sysPower1 * hours;
+
+  // 改造后
+  const avgP2 = avgP1 * (1 - save / 100);
+  const sysPower2 = n * avgP2;
+  const annualSaveKwh = (sysPower1 - sysPower2) * hours;
+  const annualMoney = annualSaveKwh * price / 10000;
+  const co2 = annualSaveKwh * 0.4 / 1000;
+  const savingRate = sysPower1 > 0 ? (sysPower1 - sysPower2) / sysPower1 * 100 : 0;
+
+  // 比功率 kW/(m³/min)
+  const sp1 = p1 / q1;
+  const sp2 = avgP2 / q1;
+
+  document.getElementById('air-savingRate').textContent = savingRate.toFixed(1);
+  document.getElementById('air-annualSave').textContent = (annualSaveKwh / 10000).toFixed(2);
+  document.getElementById('air-annualMoney').textContent = annualMoney.toFixed(2);
+  document.getElementById('air-CO2').textContent = co2.toFixed(1);
+
+  const methodText = { vfd: '变频改造', ctrl: '集中联控', replace: '整机高效替换', pipe: '管路与泄漏治理' }[document.getElementById('air_method').value] || '改造';
+
+  document.getElementById('air-detailTable').innerHTML =
+    tr('运行台数', n.toFixed(0) + ' 台') +
+    tr('单台输入功率 P₁', p1.toFixed(1) + ' kW') +
+    tr('单台排气量 Q₁', q1.toFixed(1) + ' m³/min') +
+    tr('排气压力', press.toFixed(2) + ' MPa') +
+    tr('平均加载率', load.toFixed(0) + ' %') +
+    tr('卸载功率占比', unload.toFixed(0) + ' %（占额定）') +
+    tr('现状单台平均功率', avgP1.toFixed(2) + ' kW') +
+    tr('现状系统平均功率', sysPower1.toFixed(2) + ' kW') +
+    tr('现状年耗电', (sysEnergy1 / 10000).toFixed(2) + ' 万kWh') +
+    tr('现状比功率', sp1.toFixed(2) + ' kW/(m³/min)') +
+    tr('改造方式', methodText) +
+    tr('改造后节电率', save.toFixed(1) + ' %') +
+    tr('改造后系统平均功率', sysPower2.toFixed(2) + ' kW') +
+    tr('改造后比功率', sp2.toFixed(2) + ' kW/(m³/min)') +
+    tr('年节电量', (annualSaveKwh / 10000).toFixed(2) + ' 万kWh') +
+    tr('年节电费', annualMoney.toFixed(2) + ' 万元') +
+    tr('CO₂减排', co2.toFixed(1) + ' 吨');
+
+  // 余热回收
+  const heatKW = sysPower2 * (heatR / 100);
+  const heatKwh = heatKW * hours;
+  const heatGJ = heatKwh * 0.0036;
+  const heatTce = heatGJ / 29.307;
+  const heatMoney = heatKwh * heatPrice / 10000;
+  document.getElementById('air-heatTable').innerHTML =
+    tr('改造后系统平均功率', sysPower2.toFixed(2) + ' kW') +
+    tr('余热回收率', heatR.toFixed(0) + ' %') +
+    tr('可回收热功率', heatKW.toFixed(1) + ' kW') +
+    tr('年可回收热量', heatGJ.toFixed(1) + ' GJ（' + (heatKwh / 10000).toFixed(2) + ' 万kWh热）') +
+    tr('折合标准煤', heatTce.toFixed(1) + ' tce/年') +
+    tr('年热收益', heatMoney.toFixed(2) + ' 万元（按 ' + heatPrice.toFixed(2) + ' 元/kWh热）') +
+    tr('综合年效益', (annualMoney + heatMoney).toFixed(2) + ' 万元（节电+余热）');
+
+  document.getElementById('air-results').classList.add('show');
+  showToast('✅ 空压机节能测算完成');
+}
+
+// ==================== 余热回收模块（新增，2026-10-12） ====================
+function heatMediaChange() {
+  const m = document.getElementById('heat_media').value;
+  const flowLabel = document.getElementById('heat_flowLabel');
+  const cpLabel = document.getElementById('heat_cpLabel');
+  const cp = document.getElementById('heat_cp');
+  const t1 = document.getElementById('heat_t1');
+  const t2 = document.getElementById('heat_t2');
+  if (m === 'flue') {
+    flowLabel.innerHTML = '烟气流量 <span class="unit">Nm³/h</span>';
+    cpLabel.innerHTML = '烟气比热 <span class="unit">kJ/(Nm³·℃)</span>';
+    cp.value = 1.34; t1.value = 320; t2.value = 150;
+  } else if (m === 'water') {
+    flowLabel.innerHTML = '水流量 <span class="unit">t/h</span>';
+    cpLabel.innerHTML = '水比热 <span class="unit">kJ/(kg·℃)</span>';
+    cp.value = 4.18; t1.value = 90; t2.value = 45;
+  } else {
+    flowLabel.innerHTML = '凝结水流量 <span class="unit">t/h</span>';
+    cpLabel.innerHTML = '凝结水比热 <span class="unit">kJ/(kg·℃)</span>';
+    cp.value = 4.18; t1.value = 100; t2.value = 60;
+  }
+}
+
+function heatUseChange() {
+  const u = document.getElementById('heat_use').value;
+  const label = document.getElementById('heat_priceLabel');
+  const price = document.getElementById('heat_price');
+  if (u === 'orc') {
+    label.innerHTML = '上网/自用电价 <span class="unit">元/kWh</span>';
+    price.value = 0.65;
+  } else {
+    label.innerHTML = '热价 <span class="unit">元/GJ</span>';
+    price.value = 55;
+  }
+}
+
+function calcHeat() {
+  const media = document.getElementById('heat_media').value;
+  const flow = parseFloat(document.getElementById('heat_flow').value) || 0;
+  const t1 = parseFloat(document.getElementById('heat_t1').value) || 0;
+  const t2 = parseFloat(document.getElementById('heat_t2').value) || 0;
+  const cp = parseFloat(document.getElementById('heat_cp').value) || 0;
+  const hours = parseFloat(document.getElementById('heat_hours').value) || 0;
+  const use = document.getElementById('heat_use').value;
+  const eff = parseFloat(document.getElementById('heat_eff').value) || 0;
+  const price = parseFloat(document.getElementById('heat_price').value) || 0;
+  const orcEff = parseFloat(document.getElementById('heat_orcEff').value) || 0;
+  const investIn = document.getElementById('heat_invest').value;
+  const unitCost = parseFloat(document.getElementById('heat_unitCost').value) || 0;
+
+  if (!flow || !t1 || !t2 || !cp || !hours) { showToast('请填写必填参数'); return; }
+  const dT = t1 - t2;
+  if (dT <= 0) { showToast('进口温度需高于出口温度'); return; }
+
+  // 热功率 kW
+  let qkW;
+  if (media === 'flue') {
+    qkW = flow * cp * dT / 3600;                       // Nm³/h → kW
+  } else {
+    qkW = flow * 1000 / 3600 * cp * dT;                // t/h → kW
+  }
+  const qEff = qkW * eff / 100;
+  const annualKwh = qEff * hours;
+  const annualGJ = annualKwh * 0.0036;
+  const tce = annualGJ / 29.307;
+  const co2 = tce * 2.66;
+
+  let money = 0, moneyNote = '';
+  let genKwh = 0;
+  if (use === 'orc') {
+    genKwh = qEff * (orcEff / 100) * hours;
+    money = genKwh * price / 10000;
+    moneyNote = 'ORC 发电 ' + (genKwh / 10000).toFixed(2) + ' 万kWh/年 × ' + price.toFixed(2) + ' 元/kWh';
+  } else {
+    money = annualGJ * price / 10000;
+    moneyNote = annualGJ.toFixed(1) + ' GJ × ' + price.toFixed(0) + ' 元/GJ';
+  }
+
+  const invest = investIn ? parseFloat(investIn) : (qEff * unitCost / 10000);
+  const payback = money > 0 ? invest / money : 0;
+
+  const mediaText = { flue: '烟气', water: '热水/循环水', steam: '蒸汽凝结水' }[media];
+  const useText = { preheat: '预热助燃空气/工艺物料', hotwater: '产生活热水/供暖', steam: '替代蒸汽', orc: 'ORC低温余热发电' }[use];
+
+  document.getElementById('heat-power').textContent = qEff.toFixed(0);
+  document.getElementById('heat-annualHeat').textContent = annualGJ.toFixed(0);
+  document.getElementById('heat-money').textContent = money.toFixed(2);
+  document.getElementById('heat-co2').textContent = co2.toFixed(0);
+
+  document.getElementById('heat-detailTable').innerHTML =
+    tr('余热介质', mediaText) +
+    tr('介质流量', flow.toLocaleString() + (media === 'flue' ? ' Nm³/h' : ' t/h')) +
+    tr('进口温度 t₁', t1.toFixed(0) + ' ℃') +
+    tr('回收后温度 t₂', t2.toFixed(0) + ' ℃') +
+    tr('温差 ΔT', dT.toFixed(0) + ' ℃') +
+    tr('比热容', cp + (media === 'flue' ? ' kJ/(Nm³·℃)' : ' kJ/(kg·℃)')) +
+    tr('理论可回收热功率', qkW.toFixed(1) + ' kW') +
+    tr('换热器效率', eff.toFixed(0) + ' %') +
+    tr('有效可回收热功率', qEff.toFixed(1) + ' kW') +
+    tr('回收用途', useText) +
+    tr('年回收热量', annualGJ.toFixed(1) + ' GJ（' + (annualKwh / 10000).toFixed(2) + ' 万kWh）') +
+    (use === 'orc' ? tr('年发电量', (genKwh / 10000).toFixed(2) + ' 万kWh（效率 ' + orcEff.toFixed(0) + '%）') : '') +
+    tr('折合标准煤', tce.toFixed(1) + ' tce/年') +
+    tr('年效益', money.toFixed(2) + ' 万元（' + moneyNote + '）') +
+    tr('估算投资', invest.toFixed(1) + ' 万元' + (investIn ? '（用户填写）' : '（按 ' + unitCost + ' 元/kW 估算）')) +
+    tr('投资回收期', (payback > 0 ? payback.toFixed(2) + ' 年' : '—')) +
+    tr('CO₂减排', co2.toFixed(0) + ' 吨/年');
+
+  document.getElementById('heat-results').classList.add('show');
+  showToast('✅ 余热回收测算完成');
+}
+
+// ==================== 设备运行健康评测模块（新增，2026-10-12） ====================
+function calcHealth() {
+  const f = id => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; };
+  const ORDER = { '正常': 0, '关注': 1, '预警': 2, '异常': 3 };
+  const items = [], suspects = [], actions = [], extra = {};
+  const add = (cat, name, level, value, unit, limit, note) => items.push({ cat, name, level, value, unit, limit, note: note || '' });
+  const band = (v, bands) => { for (const b of bands) { if (v <= b[0]) return b[1]; } return bands[bands.length - 1][1]; };
+  const uniq = a => a.filter((x, i) => a.indexOf(x) === i);
+  const push = (arr, x) => { if (!arr.includes(x)) arr.push(x); };
+
+  const prated = f('h_prated');
+  const nrated = f('h_nrated');
+
+  // 1. 振动烈度（机械）
+  const vib = f('h_vib');
+  if (vib !== null) {
+    const cls = (prated || 0) <= 15 ? 'I' : (prated || 0) <= 75 ? 'II' : 'III';
+    const VIB = { I: [0.71, 1.8, 4.5, '小型机组 ≤15kW'], II: [1.12, 2.8, 7.1, '中型机组 15~75kW'], III: [2.3, 4.5, 11.2, '大型机组 >75kW'] };
+    const b = VIB[cls];
+    const lv = band(vib, [[b[0], '正常'], [b[1], '关注'], [b[2], '预警'], [9e9, '异常']]);
+    add('机械', '振动烈度', lv, vib.toFixed(2), 'mm/s', '≤' + b[0].toFixed(2) + '(优) / ≤' + b[1] + '(良) / ≤' + b[2] + '(警戒)', b[3] + ' · ISO10816 ' + { '正常': 'A', '关注': 'B', '预警': 'C', '异常': 'D' }[lv] + '区');
+    if (lv === '预警' || lv === '异常') { push(suspects, '机械振动超限：优先排查 不平衡 / 对中不良 / 地脚松动 / 轴承损伤'); push(actions, '加密振动测点复测（径向/轴向），必要时做频谱定位故障频率'); }
+    else if (lv === '关注') { push(suspects, '振动偏高：留意轴承磨损早期或轻微不平衡'); push(actions, '缩短巡检周期，建立振动趋势台账'); }
+  }
+
+  // 2. 绕组温度（电气）
+  const temp = f('h_temp');
+  if (temp !== null) {
+    const ic = (document.getElementById('h_insul').value || 'F').toUpperCase();
+    const LIM = { B: 130, F: 155, H: 180 };
+    const lim = LIM[ic] || 155;
+    let lv;
+    if (temp <= lim - 25) lv = '正常'; else if (temp <= lim - 10) lv = '关注'; else if (temp <= lim) lv = '预警'; else lv = '异常';
+    add('电气', '绕组温度', lv, temp.toFixed(1), '℃', ic + '级 ≤' + lim + '℃（关注点 ' + (lim - 25) + ' / 预警点 ' + (lim - 10) + '）', '绝缘等级 ' + ic);
+    if (lv === '预警' || lv === '异常') { push(suspects, '绕组过热：冷却风道堵塞 / 过载 / 电压偏低 / 绝缘老化'); push(actions, '检查通风散热与三相电压，核对是否长期过载运行'); }
+    else if (lv === '关注') push(actions, '关注温升趋势，避免长时间高温运行');
+  }
+
+  // 3. 噪声（机械）
+  const noise = f('h_noise');
+  if (noise !== null) {
+    const lv = band(noise, [[85, '正常'], [95, '关注'], [105, '预警'], [9e9, '异常']]);
+    add('机械', '噪声', lv, noise.toFixed(1), 'dB(A)', '≤85(正常) / ≤95(关注) / ≤105(预警)', '设备旁 1m 处');
+    if (lv === '预警' || lv === '异常') { push(suspects, '噪声异常：轴承干摩擦 / 汽蚀 / 机械松动 / 叶轮碰擦'); push(actions, '结合振动与出口压力判断是否汽蚀，检查轴承润滑与紧固'); }
+    else if (lv === '关注') push(suspects, '噪声偏高：注意轴承状态与吸入条件');
+  }
+
+  // 4. 三相电流不平衡（电气）
+  const ia = f('h_ia'), ib = f('h_ib'), ic2 = f('h_ic');
+  if (ia && ib && ic2) {
+    const avg = (ia + ib + ic2) / 3;
+    const unb = avg ? (Math.max(ia, ib, ic2) - Math.min(ia, ib, ic2)) / avg * 100 : 0;
+    extra.unb = unb;
+    const lv = band(unb, [[2, '正常'], [5, '关注'], [10, '预警'], [9e9, '异常']]);
+    add('电气', '三相电流不平衡度', lv, unb.toFixed(2), '%', '≤2%(正常) / ≤5%(关注) / ≤10%(预警)', 'GB/T 755');
+    if (lv === '预警' || lv === '异常') { push(suspects, '电流不平衡偏大：电源缺相/电压不平衡 / 绕组匝间问题 / 接触不良'); push(actions, '核对三相电压与接线端子，必要时做绕组直流电阻测试'); }
+  }
+
+  // 5. 三相电压不平衡（电气）
+  const ua = f('h_ua'), ub = f('h_ub'), uc = f('h_uc');
+  if (ua && ub && uc) {
+    const uavg = (ua + ub + uc) / 3;
+    const uunb = uavg ? (Math.max(ua, ub, uc) - Math.min(ua, ub, uc)) / uavg * 100 : 0;
+    extra.uunb = uunb;
+    const lv = band(uunb, [[2, '正常'], [3, '关注'], [5, '预警'], [9e9, '异常']]);
+    add('电气', '三相电压不平衡度', lv, uunb.toFixed(2), '%', '≤2%(正常) / ≤3%(关注) / ≤5%(预警)', 'GB/T 755');
+    if (lv === '预警' || lv === '异常') { push(suspects, '电压不平衡：可能引起电机负序电流发热，需查供电侧'); push(actions, '测量进线电压与各相负载分配'); }
+  }
+
+  // 6. 负载率（能效）
+  const pact = f('h_pact');
+  if (pact !== null && prated) {
+    const load = pact / prated;
+    extra.load = load * 100;
+    let lv;
+    if (load < 0.20) lv = '预警'; else if (load < 0.40) lv = '关注'; else if (load <= 1.05) lv = '正常'; else if (load <= 1.15) lv = '关注'; else lv = '异常';
+    add('能效', '负载率', lv, (load * 100).toFixed(1), '%', '40%~105%(合理)，<20% 严重欠载', '实测有功/额定功率');
+    if (load < 0.40) { push(suspects, '长期低负载（大马拉小车）：存在节能改造空间'); push(actions, '评估变速调节 / 切小机 / 更换高效机型（可转「节能测算」入口）'); }
+    else if (load > 1.05) { push(suspects, '接近或超过额定负载，注意温升与电流'); push(actions, '核对电机选型余量，避免长期过载'); }
+  }
+
+  // 7. 功率因数（能效）
+  const pf = f('h_pf');
+  if (pf !== null) {
+    const lv = pf >= 0.85 ? '正常' : pf >= 0.75 ? '关注' : pf >= 0.60 ? '预警' : '异常';
+    add('能效', '功率因数', lv, pf.toFixed(3), '', '≥0.85(正常) / ≥0.75(关注)', 'cosφ');
+    if (lv === '预警' || lv === '异常') { push(suspects, '功率因数偏低：电机轻载或励磁不足'); push(actions, '考虑无功补偿，或调整负载使其经济运行'); }
+  }
+
+  // 8. 机组综合效率（能效）
+  const q = f('h_q'), pin = f('h_pin'), pout = f('h_pout');
+  if (q && pin !== null && pout !== null && pact) {
+    const h = (pout - pin) * 101.97;
+    const pHyd = q * h * 9.81 / 3600;
+    const eff = pact ? pHyd / pact * 100 : 0;
+    extra.head = h; extra.eff = eff;
+    let lv = eff >= 75 ? '正常' : eff >= 60 ? '关注' : eff >= 40 ? '预警' : '异常';
+    let note = 'ρgQH/输入功率（含电机）';
+    if (eff > 95) { lv = '关注'; note += ' · 数值偏高，请核对功率口径/单位'; push(suspects, '效率偏高(>95%)：功率口径可能不是电机输入功率，或单位/扬程有误'); }
+    add('能效', '机组综合效率', lv, eff.toFixed(1), '%', '≥75%(正常) / ≥60%(关注)', note);
+    if (lv === '预警' || lv === '异常') { push(suspects, '机组效率偏低：泵磨损 / 选型偏大 / 节流损失大 / 与工况不匹配'); push(actions, '做完整节能测算，评估柱塞泵替换或变速改造（走「节能测算」入口）'); }
+  }
+
+  // 9. 转速偏差（机械）
+  const nact = f('h_nact');
+  if (nact && nrated) {
+    const dev = Math.abs(nact - nrated) / nrated * 100;
+    add('机械', '转速偏差', dev > 5 ? '关注' : '正常', nact.toFixed(0), 'rpm', '额定 ' + nrated.toFixed(0) + ' rpm，偏差 ≤5%', '偏差 ' + dev.toFixed(1) + '%');
+  }
+
+  // 汇总
+  let worst = 0;
+  items.forEach(it => { worst = Math.max(worst, ORDER[it.level] || 0); });
+  const GRADE = { 0: '正常', 1: '关注', 2: '预警', 3: '异常' };
+  const grade = items.length ? GRADE[worst] : '—';
+  const warn = items.filter(it => ORDER[it.level] >= 2).length;
+
+  document.getElementById('h-grade').textContent = grade;
+  document.getElementById('h-n').textContent = items.length;
+  document.getElementById('h-warn').textContent = warn;
+  document.getElementById('h-plate').textContent = extra.eff !== undefined ? extra.eff.toFixed(1) + '%' : '—';
+
+  document.getElementById('h-items').innerHTML = items.map(it =>
+    '<tr><td>' + it.cat + '</td><td>' + it.name + '</td><td>' + it.value + ' ' + it.unit + '</td><td style="font-size:12px;color:#64748b">' + it.limit + (it.note ? '<br>' + it.note : '') + '</td><td style="text-align:center;font-weight:700;color:' +
+    ({ '正常': '#10b981', '关注': '#f59e0b', '预警': '#f97316', '异常': '#ef4444' }[it.level] || '#64748b') + '">' + it.level + '</td></tr>'
+  ).join('');
+
+  document.getElementById('h-suspects').innerHTML = suspects.length ? uniq(suspects).map(s => '<li>' + s + '</li>').join('') : '<li>未发现明显异常方向</li>';
+  document.getElementById('h-actions').innerHTML = uniq(actions).length ? uniq(actions).map(s => '<li>' + s + '</li>').join('') : '<li>保持现有巡检与运行制度即可</li>';
+  document.getElementById('h-disclaimer').innerHTML = '<strong>免责声明：</strong>本报告为基于现场单一工况参数的「方向性初判」，非设备诊断结论；数值受测点、工况、仪器影响，重要决策请结合频谱/趋势/解体检查复测。';
+
+  document.getElementById('health-results').classList.add('show');
+  showToast('✅ 设备健康评测完成');
+}
+
 // 页面加载时初始化
 window.addEventListener('DOMContentLoaded', function() {
   // 默认显示柱塞泵标签
@@ -932,12 +1513,15 @@ window.addEventListener('DOMContentLoaded', function() {
   <!-- ==================== GEO 可见内容区（新增，纯展示，不含脚本） ==================== -->
   <div class="card" id="about">
     <div class="section-title">📘 平台算法说明</div>
-    <p>本平台采用轴功率法进行节能测算，覆盖柱塞泵、水泵、风机、磨机四类设备。</p>
+    <p>本平台采用轴功率法进行节能测算，覆盖柱塞泵、水泵、风机、磨机、空压机五类设备，并支持余热回收测算与设备运行健康评测。</p>
     <ul style="margin:10px 0 0 20px;line-height:1.9;font-size:14px;">
       <li>柱塞泵轴功率：P = Q × ΔP ÷ (3.6 × η<sub>泵</sub>)（Q：m³/h；ΔP：MPa）</li>
       <li>水泵轴功率：(Q × H × 1000 × 9.81) ÷ (3600 × 1000 × η<sub>泵</sub> × η<sub>传</sub>)</li>
       <li>风机轴功率：(Q × P) ÷ (3600 × 1000 × η<sub>风</sub> × η<sub>传</sub>)</li>
       <li>磨机：按原/新电机效率与原/新负载率对比测算</li>
+      <li>空压机：按加载率做时间加权求平均功率，对比改造后节电率；并估算可回收余热</li>
+      <li>余热回收：热功率 Q = 流量 × 比热 × 温差 ÷ 3600，按利用方式折算年热收益</li>
+      <li>设备健康评测：振动烈度（ISO 10816）、绝缘温度限值、三相不平衡、负载率、功率因数、机组效率 ρgQH/P</li>
       <li>电机选型安全系数：&lt;5 kW 取 1.1；&lt;10 kW 取 1.15；&gt;100 kW 取 1.25；默认 1.2；风机或水泵 &gt;50 kW 另加 0.05（整体落在 1.1–1.25）</li>
       <li>推荐电机功率：计算轴功率 × 安全系数 → 向上取就近的标准功率档 → 建议永磁同步电机</li>
       <li>碳减排折算：每万 kWh 节电约 4 t CO₂（0.4 kg CO₂/kWh）</li>
@@ -947,9 +1531,9 @@ window.addEventListener('DOMContentLoaded', function() {
   <div class="card" id="faq">
     <div class="section-title">❓ 常见问题</div>
     <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q1 平台是什么？</h3>
-    <p style="font-size:14px;color:var(--text2)">节能测算Pro V2－工业节能测算平台是一个网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、风机、磨机四类设备，按轴功率法测算节电率、年节电量、电费与碳减排，并给出电机选型建议。</p>
+    <p style="font-size:14px;color:var(--text2)">节能测算Pro V2－工业节能测算平台是一个网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、风机、磨机、空压机五类设备的节能测算，并支持余热回收测算与设备运行健康评测，按轴功率法测算节电率、年节电量、电费与碳减排，并给出电机选型建议。</p>
     <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q2 支持哪些设备、输出哪些指标？</h3>
-    <p style="font-size:14px;color:var(--text2)">支持柱塞泵、水泵、风机、磨机四类设备。输出综合节电率、年节电量（万kWh）、年节电费（万元）、CO₂减排量（吨），并给出推荐电机功率与类型。</p>
+    <p style="font-size:14px;color:var(--text2)">支持柱塞泵、水泵、风机、磨机、空压机、余热回收六类测算，以及设备运行健康评测。输出综合节电率、年节电量（万kWh）、年节电费（万元）、CO₂减排量（吨），并给出推荐电机功率与类型。</p>
     <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q3 轴功率怎么计算？</h3>
     <p style="font-size:14px;color:var(--text2)">柱塞泵：P = Q × ΔP ÷ (3.6 × η<sub>泵</sub>)；水泵：(Q × H × 1000 × 9.81) ÷ (3600 × 1000 × η<sub>泵</sub> × η<sub>传</sub>)；风机：(Q × P) ÷ (3600 × 1000 × η<sub>风</sub> × η<sub>传</sub>)。</p>
     <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q4 电机选型的安全系数怎么取？</h3>
@@ -961,7 +1545,7 @@ window.addEventListener('DOMContentLoaded', function() {
     <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q7 需要安装吗？</h3>
     <p style="font-size:14px;color:var(--text2)">不需要。平台为网页形态，浏览器打开网址即可使用，支持移动端访问。</p>
     <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q8 如何咨询？</h3>
-    <p style="font-size:14px;color:var(--text2)">工业节能项目咨询：唐先生 18041136555。</p>
+    <p style="font-size:14px;color:var(--text2)">免费获取节能改造技术方案，请联系零碳小助手 18041136555（加好友二维码见页面底部）。</p>
   </div>
 
   <div class="card" id="disclaimer">
@@ -969,6 +1553,13 @@ window.addEventListener('DOMContentLoaded', function() {
     <p style="font-size:13px;color:var(--text2);line-height:1.8">本平台为工程辅助测算工具，测算结果仅供参考，实际改造工程需以现场勘察与复核数据为准。平台为网页免安装工具，不构成任何承诺或交易要约。</p>
   </div>
 
+
+  <div class="card" id="contact" style="text-align:center">
+    <div class="section-title" style="justify-content:center">📞 免费获取节能改造技术方案</div>
+    <p style="font-size:15px;color:var(--text2);line-height:1.9">请联系 零碳小助手 <b>18041136555</b>（微信同号）<br>扫码加微信，免费出方案</p>
+    <img src="qr-kefu.png" alt="零碳小助手 · 微信加好友二维码" style="width:170px;height:170px;border-radius:10px;border:1px solid var(--border);background:#fff;padding:6px;margin:10px 0" onerror="this.style.display='none'">
+    <p style="font-size:12px;color:var(--text2)">工业节能改造 · 泵与风机系统 · 余热余压利用 · 设备健康管理</p>
+  </div>
 
   <!-- ==================== 技术入口（新增，2026-10-11） ==================== -->
   <div class="card" id="tech">
