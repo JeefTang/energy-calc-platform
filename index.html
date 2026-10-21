@@ -341,7 +341,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         <div class="form-group"><label>余热回收率 <span class="unit">%（0 = 不做）</span></label><input type="number" id="air_heat" value="70" step="5"></div>
         <div class="form-group"><label>回收热利用价值 <span class="unit">元/kWh(热)</span></label><input type="number" id="air_heatPrice" value="0.30" step="0.01"></div>
       </div>
-      <div class="note" id="air-methodNote">变频改造：以排气量跟随用气需求，功率与流量近似成正比（P₂ ≈ P₁ × 加载率 ÷ η），原卸载空载损耗被消除；再叠加恒压控制带来的排气压力下降（每降 0.1 MPa 轴功率约降 7%）。</div>
+      <div class="note" id="air-methodNote">变频改造：先消除卸载空载损耗，再按螺杆机部分负荷功率曲线折算——变频机约 20% 功率为固定损耗（油泵/风扇/变频器），其余随排气量近似线性，故 50% 排气量约需 60% 功率（比功率劣化约 20%）；恒压控制可再降排气压力，每降 0.1 MPa 轴功率约降 7%。</div>
     </div>
 
     <div class="card">
@@ -1239,7 +1239,7 @@ function airMethodChange() {
   var defDp = { vfd: 0.05, ctrl: 0.03, replace: 0.05, pipe: 0.05 }[m];
   if (dp && typeof defDp === 'number') dp.value = defDp;
   var notes = {
-    vfd: '变频改造：排气量跟随用气需求，功率与流量近似成正比（P₂ ≈ P₁ × 加载率 ÷ η），卸载空载损耗基本消除；恒压控制可再降排气压力，每降 0.1 MPa 轴功率约降 7%。',
+    vfd: '变频改造：先消除卸载空载损耗，再按螺杆机部分负荷功率曲线折算——变频机约 20% 功率为固定损耗（油泵/风扇/变频器），其余随排气量近似线性，故 50% 排气量约需 60% 功率（比功率劣化约 20%）；恒压控制可再降排气压力，每降 0.1 MPa 轴功率约降 7%。注意：卸载功率占比低于 30% 的机器，中高负荷下变频收益有限。',
     ctrl: '集中联控：多台机按需投切，卸载功率占比由 25%~40% 降到 5% 左右；但定速分级加载仍有部分负荷匹配损失（按 +3% 计），管网压力可适度下调。',
     replace: '整机高效替换：以比功率 kW/(m³/min) 为对标口径，新机比功率 SP₂ 低于现机即产生节电；永磁变频机型同时消除卸载空载损耗。SP₂ 留空时按现机比功率改善 15% 取值（一级能效螺杆机 0.8 MPa 档参考 6.3~7.0）。',
     pipe: '管路与泄漏治理：泄漏占总用气量比例 × 可治理比例 = 实际削减的需求，加载率随之下降；同时管网压降减小可降低排气压力设定。'
