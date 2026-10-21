@@ -301,7 +301,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         <div class="form-group"><label>运行台数 <span class="unit">台</span></label><input type="number" id="air_count" value="2" step="1"></div>
         <div class="form-group"><label>单台输入功率 P₁ <span class="unit">kW</span></label><input type="number" id="air_p1" value="132"></div>
         <div class="form-group"><label>单台排气量 Q₁ <span class="unit">m³/min</span></label><input type="number" id="air_q1" value="24" step="0.1"></div>
-        <div class="form-group"><label>排气压力 <span class="unit">MPa</span></label><input type="number" id="air_press" value="0.8" step="0.05"></div>
+        <div class="form-group"><label>排气压力 <span class="unit">MPa</span></label><input type="number" id="air_press" value="0.8" step="0.05" oninput="airDpHint()"></div>
         <div class="form-group"><label>平均加载率 <span class="unit">%</span></label><input type="number" id="air_load" value="60" step="1"></div>
         <div class="form-group"><label>卸载功率占比 <span class="unit">%（占额定）</span></label><input type="number" id="air_unload" value="35" step="1"></div>
         <div class="form-group"><label>工作压力时电机功率 P₀ <span class="unit">kW（留空=用 P₁）</span></label><input type="number" id="air_p0" step="1" placeholder="留空则取 P₁"></div>
@@ -320,7 +320,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
             <option value="pipe">管路与泄漏治理</option>
           </select>
         </div>
-        <div class="form-group"><label>改造后排气压力降低 Δp <span class="unit">MPa</span></label><input type="number" id="air_dp" value="0.05" step="0.01" min="0" max="0.2"></div>
+        <div class="form-group"><label>改造后排气压力降低 Δp <span class="unit">MPa</span></label><input type="number" id="air_dp" value="0.05" step="0.01" min="0" max="0.2"><div style="font-size:12px;color:var(--text2);margin-top:4px" id="air-dpHint"></div></div>
 
         <div class="form-group air-param" data-m="vfd"><label>变频器+电机综合效率 η <span class="unit">%</span></label><input type="number" id="air_eta" value="97" step="0.5" min="80" max="100"></div>
 
@@ -1210,6 +1210,16 @@ function calcPump() {
 //   压力修正：排气压力每降低 0.1 MPa，轴功率约降低 7% → 系数 0.7 / MPa
 var AIR_KP = 0.7;
 
+function airDpHint() {
+  var pr = parseFloat(document.getElementById('air_press').value);
+  var el = document.getElementById('air-dpHint');
+  if (!el) return;
+  if (isNaN(pr) || pr <= 0) { el.textContent = ''; return; }
+  var lo = Math.max(pr * 0.10, 0.03);
+  var hi = Math.min(pr * 0.20, 0.15);
+  el.textContent = '参考：恒压控制一般可降 ' + lo.toFixed(2) + '~' + hi.toFixed(2) + ' MPa（工作压力的 10%~20%，需按管网实测校核）';
+}
+
 function airMethodChange() {
   var m = document.getElementById('air_method').value;
   var groups = document.querySelectorAll('.air-param');
@@ -1406,7 +1416,7 @@ function calcAir() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  if (document.getElementById('air_method')) airMethodChange();
+  if (document.getElementById('air_method')) { airMethodChange(); airDpHint(); }
 });
 
 // ==================== 余热回收模块（新增，2026-10-12） ====================
