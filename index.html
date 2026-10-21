@@ -293,7 +293,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     </div>
   </div>
   
-  <!-- ==================== 空压机模块（新增，2026-10-12） ==================== -->
+  <!-- ==================== 空压机模块（新增，2026-10-12；2026-10-21 综合节电率改为按参数自动计算） ==================== -->
   <div id="air-tab" class="tab-content" style="display:none">
     <div class="card">
       <div class="section-title">🗜️ 一、改造前空压机参数</div>
@@ -309,21 +309,37 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     </div>
 
     <div class="card">
-      <div class="section-title">⚡ 二、改造方案</div>
+      <div class="section-title">⚡ 二、改造方案（节电率由下列参数自动计算）</div>
       <div class="form-grid">
         <div class="form-group"><label>改造方式</label>
-          <select id="air_method">
+          <select id="air_method" onchange="airMethodChange()">
             <option value="vfd">变频改造（永磁变频 / 加装变频器）</option>
             <option value="ctrl">集中联控（多台联动按需供气）</option>
             <option value="replace">整机高效替换（一级能效）</option>
             <option value="pipe">管路与泄漏治理</option>
           </select>
         </div>
-        <div class="form-group"><label>改造后节电率 <span class="unit">%</span></label><input type="number" id="air_save" value="22" step="1"></div>
+        <div class="form-group"><label>改造后排气压力降低 Δp <span class="unit">MPa</span></label><input type="number" id="air_dp" value="0.05" step="0.01" min="0" max="0.2"></div>
+
+        <div class="form-group air-param" data-m="vfd"><label>变频器+电机综合效率 η <span class="unit">%</span></label><input type="number" id="air_eta" value="97" step="0.5" min="80" max="100"></div>
+
+        <div class="form-group air-param" data-m="ctrl"><label>联控后卸载功率占比 <span class="unit">%（占额定）</span></label><input type="number" id="air_u2" value="5" step="1" min="0" max="40"></div>
+
+        <div class="form-group air-param" data-m="replace"><label>新机比功率 SP₂ <span class="unit">kW/(m³/min)</span></label><input type="number" id="air_sp2" step="0.1" min="3" placeholder="留空 = 现机比功率改善 15%"></div>
+        <div class="form-group air-param" data-m="replace"><label>新机类型</label>
+          <select id="air_newtype">
+            <option value="pm">永磁变频（一级能效）</option>
+            <option value="fixed">定频（一级能效）</option>
+          </select>
+        </div>
+
+        <div class="form-group air-param" data-m="pipe"><label>系统泄漏率 <span class="unit">%（占总用气量）</span></label><input type="number" id="air_leak" value="20" step="1" min="0" max="60"></div>
+        <div class="form-group air-param" data-m="pipe"><label>可治理泄漏比例 <span class="unit">%</span></label><input type="number" id="air_fix" value="50" step="5" min="0" max="100"></div>
+
         <div class="form-group"><label>余热回收率 <span class="unit">%（0 = 不做）</span></label><input type="number" id="air_heat" value="70" step="5"></div>
         <div class="form-group"><label>回收热利用价值 <span class="unit">元/kWh(热)</span></label><input type="number" id="air_heatPrice" value="0.30" step="0.01"></div>
       </div>
-      <div class="note">节电率参考区间：变频改造 15%~30%（视加卸载频度）；集中联控 10%~20%；一级能效整机替换 10%~25%；泄漏治理 5%~15%。</div>
+      <div class="note" id="air-methodNote">变频改造：以排气量跟随用气需求，功率与流量近似成正比（P₂ ≈ P₁ × 加载率 ÷ η），原卸载空载损耗被消除；再叠加恒压控制带来的排气压力下降（每降 0.1 MPa 轴功率约降 7%）。</div>
     </div>
 
     <div class="card">
@@ -339,7 +355,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       <div class="card">
         <div class="result-highlight">
           <div class="big-num"><span id="air-savingRate">0</span><span class="pct">%</span></div>
-          <div class="label">综合节电率（含空载损耗治理）</div>
+          <div class="label">综合节电率（按运行参数自动计算）</div>
         </div>
         <div class="metric-row">
           <div class="metric-card"><div class="value" id="air-annualSave">0</div><div class="desc">年节电量 万kWh</div></div>
@@ -354,6 +370,15 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           <thead><tr><th>项目</th><th>数值</th></tr></thead>
           <tbody id="air-detailTable"></tbody>
         </table>
+      </div>
+
+      <div class="card">
+        <div class="section-title">🧮 节电率构成（逐项可核）</div>
+        <table class="detail-table">
+          <thead><tr><th>环节</th><th>功率 kW（前 → 后）</th><th>该环节贡献</th></tr></thead>
+          <tbody id="air-stepTable"></tbody>
+        </table>
+        <div class="note">综合节电率 = 各环节逐项作用后的最终结果，非人工填写；负值表示该环节增加能耗（如变频器自身损耗）。</div>
       </div>
 
       <div class="card">
@@ -1173,48 +1198,145 @@ function calcPump() {
   showToast('✅ 水泵节能测算完成');
 }
 
-// ==================== 空压机模块（新增，2026-10-12） ====================
+// ==================== 空压机模块（2026-10-12 建；2026-10-21 综合节电率改为按参数自动计算） ====================
+// 计算口径（不再人工输入节电率）：
+//   ① 现状单台平均功率 P₁avg = P₁ × [lr + (1-lr) × u]
+//      lr = 平均加载率，u = 卸载功率占额定的比例（卸载段仍耗电 → 空载损耗）
+//   ② 按改造方式用物理关系推算改造后平均功率 P₂avg
+//   ③ 综合节电率 = 1 − P₂avg / P₁avg
+//   压力修正：排气压力每降低 0.1 MPa，轴功率约降低 7% → 系数 0.7 / MPa
+var AIR_KP = 0.7;
+
+function airMethodChange() {
+  var m = document.getElementById('air_method').value;
+  var groups = document.querySelectorAll('.air-param');
+  for (var i = 0; i < groups.length; i++) {
+    groups[i].style.display = (groups[i].getAttribute('data-m') === m) ? '' : 'none';
+  }
+  var dp = document.getElementById('air_dp');
+  var defDp = { vfd: 0.05, ctrl: 0.03, replace: 0.05, pipe: 0.05 }[m];
+  if (dp && typeof defDp === 'number') dp.value = defDp;
+  var notes = {
+    vfd: '变频改造：排气量跟随用气需求，功率与流量近似成正比（P₂ ≈ P₁ × 加载率 ÷ η），卸载空载损耗基本消除；恒压控制可再降排气压力，每降 0.1 MPa 轴功率约降 7%。',
+    ctrl: '集中联控：多台机按需投切，卸载功率占比由 25%~40% 降到 5% 左右；但定速分级加载仍有部分负荷匹配损失（按 +3% 计），管网压力可适度下调。',
+    replace: '整机高效替换：以比功率 kW/(m³/min) 为对标口径，新机比功率 SP₂ 低于现机即产生节电；永磁变频机型同时消除卸载空载损耗。SP₂ 留空时按现机比功率改善 15% 取值（一级能效螺杆机 0.8 MPa 档参考 6.3~7.0）。',
+    pipe: '管路与泄漏治理：泄漏占总用气量比例 × 可治理比例 = 实际削减的需求，加载率随之下降；同时管网压降减小可降低排气压力设定。'
+  };
+  var noteEl = document.getElementById('air-methodNote');
+  if (noteEl) noteEl.textContent = notes[m] || '';
+}
+
 function calcAir() {
-  const n = parseFloat(document.getElementById('air_count').value) || 1;
-  const p1 = parseFloat(document.getElementById('air_p1').value) || 0;
-  const q1 = parseFloat(document.getElementById('air_q1').value) || 0;
-  const press = parseFloat(document.getElementById('air_press').value) || 0;
-  const load = parseFloat(document.getElementById('air_load').value) || 0;
-  const unload = parseFloat(document.getElementById('air_unload').value) || 0;
-  const save = parseFloat(document.getElementById('air_save').value) || 0;
-  const heatR = parseFloat(document.getElementById('air_heat').value) || 0;
-  const heatPrice = parseFloat(document.getElementById('air_heatPrice').value) || 0;
-  const hours = parseFloat(document.getElementById('air_hours').value) || 0;
-  const price = parseFloat(document.getElementById('air_price').value) || 0;
+  var g = function (id) { return document.getElementById(id); };
+  var f = function (id, d) {
+    var v = parseFloat(g(id) ? g(id).value : '');
+    return isNaN(v) ? d : v;
+  };
+  var clamp = function (v, lo, hi) { return Math.min(Math.max(v, lo), hi); };
+
+  var n = Math.max(f('air_count', 1), 1);
+  var p1 = f('air_p1', 0);
+  var q1 = f('air_q1', 0);
+  var press = f('air_press', 0);
+  var load = f('air_load', 0);
+  var unload = f('air_unload', 0);
+  var heatR = f('air_heat', 0);
+  var heatPrice = f('air_heatPrice', 0);
+  var hours = f('air_hours', 0);
+  var price = f('air_price', 0);
+  var method = g('air_method').value;
+  var dp = Math.max(f('air_dp', 0), 0);
 
   if (!p1 || !q1 || !hours) { showToast('请填写必填参数'); return; }
 
-  // 现状：按加载率做时间加权 → 单台平均输入功率
-  const lr = Math.min(Math.max(load, 0), 100) / 100;
-  const avgP1 = p1 * (lr + (1 - lr) * (unload / 100));
-  const sysPower1 = n * avgP1;
-  const sysEnergy1 = sysPower1 * hours;
+  var lr = clamp(load, 0, 100) / 100;
+  var u = clamp(unload, 0, 100) / 100;
+  var avgP1 = p1 * (lr + (1 - lr) * u);
+  if (avgP1 <= 0) { showToast('加载率与卸载占比不能同时为 0'); return; }
 
-  // 改造后
-  const avgP2 = avgP1 * (1 - save / 100);
-  const sysPower2 = n * avgP2;
-  const annualSaveKwh = (sysPower1 - sysPower2) * hours;
-  const annualMoney = annualSaveKwh * price / 10000;
-  const co2 = annualSaveKwh * 0.4 / 1000;
-  const savingRate = sysPower1 > 0 ? (sysPower1 - sysPower2) / sysPower1 * 100 : 0;
+  var pFactor = Math.max(1 - AIR_KP * dp, 0.5);   // 压降修正系数
+  var avgP2 = avgP1, steps = [], calcNote = '', methodText = '', lrOut = lr, extra = [];
+
+  if (method === 'vfd') {
+    var eta = clamp(f('air_eta', 97), 80, 100) / 100;
+    var pa = p1 * lr;
+    var pb = pa * pFactor;
+    avgP2 = pb / eta;
+    steps = [['消除卸载空载损耗', avgP1, pa],
+             ['排气压力降低 Δp=' + dp.toFixed(2) + ' MPa', pa, pb],
+             ['变频器+电机损耗 η=' + (eta * 100).toFixed(1) + '%', pb, avgP2]];
+    methodText = '变频改造';
+    calcNote = 'P₂ = P₁ × 加载率 ÷ η × (1 − 0.7Δp)';
+  } else if (method === 'ctrl') {
+    var u2 = clamp(f('air_u2', 5), 0, 100) / 100;
+    var pa2 = p1 * (lr + (1 - lr) * u2);
+    var pb2 = pa2 * 1.03;
+    avgP2 = pb2 * pFactor;
+    steps = [['卸载功率占比 ' + (u * 100).toFixed(0) + '% → ' + (u2 * 100).toFixed(0) + '%', avgP1, pa2],
+             ['分级加载匹配损失 +3%', pa2, pb2],
+             ['排气压力降低 Δp=' + dp.toFixed(2) + ' MPa', pb2, avgP2]];
+    methodText = '集中联控';
+    calcNote = 'P₂ = P₁ × [加载率 + (1−加载率)×u₂] × 1.03 × (1 − 0.7Δp)';
+  } else if (method === 'replace') {
+    var sp1r = p1 / q1;
+    var sp2In = parseFloat(g('air_sp2').value);
+    // 自动取值：现机比功率改善 15%，但不得低于该压力档最先进机型的物理底线
+    var spFloor = 5.2 + (press - 0.8) * 4;      // 0.8 MPa 约 5.2；压力每升 0.1 MPa 约 +0.4
+    var spAuto = Math.max(sp1r * 0.85, spFloor);
+    var sp2 = (isNaN(sp2In) || sp2In <= 0) ? spAuto : sp2In;
+    var p2r = sp2 * q1;
+    var isPM = g('air_newtype').value === 'pm';
+    var u2b = Math.min(0.30, u);
+    var pa3 = p2r * (lr + (1 - lr) * u2b);
+    var pb3 = pa3 * pFactor;
+    if (isPM) {
+      var eta3 = 0.97;
+      avgP2 = pb3 * (lr / (lr + (1 - lr) * u2b)) / eta3;
+      steps = [['比功率 ' + sp1r.toFixed(2) + ' → ' + sp2.toFixed(2) + ' kW/(m³/min)', avgP1, pa3],
+               ['排气压力降低 Δp=' + dp.toFixed(2) + ' MPa', pa3, pb3],
+               ['永磁变频消除空载 + η=97%', pb3, avgP2]];
+      calcNote = '比功率对标 + 永磁变频连续调节';
+    } else {
+      avgP2 = pb3;
+      steps = [['比功率 ' + sp1r.toFixed(2) + ' → ' + sp2.toFixed(2) + '，卸载占比→' + (u2b * 100).toFixed(0) + '%', avgP1, pa3],
+               ['排气压力降低 Δp=' + dp.toFixed(2) + ' MPa', pa3, pb3]];
+      calcNote = '比功率对标（定频，保留加卸载）';
+    }
+    if (sp2 >= sp1r) extra.push('新机比功率 SP₂ ≥ 现机 ' + sp1r.toFixed(2) + '，整机替换无节电空间，负值属正常');
+    methodText = '整机高效替换';
+  } else {
+    var leak = clamp(f('air_leak', 20), 0, 100) / 100;
+    var fixR = clamp(f('air_fix', 50), 0, 100) / 100;
+    var lrNew = lr * (1 - leak * fixR);
+    lrOut = lrNew;
+    var pa4 = p1 * (lrNew + (1 - lrNew) * u);
+    avgP2 = pa4 * pFactor;
+    steps = [['泄漏治理：加载率 ' + (lr * 100).toFixed(0) + '% → ' + (lrNew * 100).toFixed(1) + '%', avgP1, pa4],
+             ['排气压力降低 Δp=' + dp.toFixed(2) + ' MPa', pa4, avgP2]];
+    methodText = '管路与泄漏治理';
+    calcNote = '需求下降 → 加载率下降 → 卸载损耗随之减少';
+  }
+
+  if (avgP2 < 0) avgP2 = 0;
+
+  var sysPower1 = n * avgP1;
+  var sysPower2 = n * avgP2;
+  var savingRate = (sysPower1 - sysPower2) / sysPower1 * 100;
+  var annualSaveKwh = (sysPower1 - sysPower2) * hours;
+  var annualMoney = annualSaveKwh * price / 10000;
+  var co2 = annualSaveKwh * 0.4 / 1000;
 
   // 比功率 kW/(m³/min)
-  const sp1 = p1 / q1;
-  const sp2 = avgP2 / q1;
+  var sp1 = p1 / q1;                              // 现机额定点
+  var spAvg1 = lr > 0 ? avgP1 / (q1 * lr) : 0;    // 现状实际平均（含卸载损耗）
+  var spAvg2 = lrOut > 0 ? avgP2 / (q1 * lrOut) : 0;
 
-  document.getElementById('air-savingRate').textContent = savingRate.toFixed(1);
-  document.getElementById('air-annualSave').textContent = (annualSaveKwh / 10000).toFixed(2);
-  document.getElementById('air-annualMoney').textContent = annualMoney.toFixed(2);
-  document.getElementById('air-CO2').textContent = co2.toFixed(1);
+  g('air-savingRate').textContent = savingRate.toFixed(1);
+  g('air-annualSave').textContent = (annualSaveKwh / 10000).toFixed(2);
+  g('air-annualMoney').textContent = annualMoney.toFixed(2);
+  g('air-CO2').textContent = co2.toFixed(1);
 
-  const methodText = { vfd: '变频改造', ctrl: '集中联控', replace: '整机高效替换', pipe: '管路与泄漏治理' }[document.getElementById('air_method').value] || '改造';
-
-  document.getElementById('air-detailTable').innerHTML =
+  g('air-detailTable').innerHTML =
     tr('运行台数', n.toFixed(0) + ' 台') +
     tr('单台输入功率 P₁', p1.toFixed(1) + ' kW') +
     tr('单台排气量 Q₁', q1.toFixed(1) + ' m³/min') +
@@ -1223,23 +1345,37 @@ function calcAir() {
     tr('卸载功率占比', unload.toFixed(0) + ' %（占额定）') +
     tr('现状单台平均功率', avgP1.toFixed(2) + ' kW') +
     tr('现状系统平均功率', sysPower1.toFixed(2) + ' kW') +
-    tr('现状年耗电', (sysEnergy1 / 10000).toFixed(2) + ' 万kWh') +
-    tr('现状比功率', sp1.toFixed(2) + ' kW/(m³/min)') +
+    tr('现状年耗电', (sysPower1 * hours / 10000).toFixed(2) + ' 万kWh') +
+    tr('现机额定比功率', sp1.toFixed(2) + ' kW/(m³/min)') +
+    tr('现状平均比功率（含卸载损耗）', spAvg1.toFixed(2) + ' kW/(m³/min)') +
     tr('改造方式', methodText) +
-    tr('改造后节电率', save.toFixed(1) + ' %') +
+    tr('节电率计算口径', calcNote) +
+    tr('改造后单台平均功率', avgP2.toFixed(2) + ' kW') +
     tr('改造后系统平均功率', sysPower2.toFixed(2) + ' kW') +
-    tr('改造后比功率', sp2.toFixed(2) + ' kW/(m³/min)') +
+    tr('改造后平均比功率', spAvg2.toFixed(2) + ' kW/(m³/min)') +
+    tr('综合节电率（自动计算）', savingRate.toFixed(1) + ' %') +
     tr('年节电量', (annualSaveKwh / 10000).toFixed(2) + ' 万kWh') +
     tr('年节电费', annualMoney.toFixed(2) + ' 万元') +
     tr('CO₂减排', co2.toFixed(1) + ' 吨');
 
+  // 节电率构成（逐项可核）
+  var stepHTML = '';
+  for (var i = 0; i < steps.length; i++) {
+    var from = steps[i][1], to = steps[i][2];
+    var contrib = from > 0 ? (from - to) / from * 100 : 0;
+    var txt = (contrib >= 0 ? '省 ' : '耗 ') + Math.abs(contrib).toFixed(1) + '%';
+    stepHTML += '<tr><td>' + steps[i][0] + '</td><td>' + from.toFixed(2) + ' → ' + to.toFixed(2) + '</td><td>' + txt + '</td></tr>';
+  }
+  stepHTML += '<tr><td><b>合计（对现状平均功率）</b></td><td><b>' + avgP1.toFixed(2) + ' → ' + avgP2.toFixed(2) + '</b></td><td><b>' + (savingRate >= 0 ? '省 ' : '耗 ') + Math.abs(savingRate).toFixed(1) + '%</b></td></tr>';
+  g('air-stepTable').innerHTML = stepHTML;
+
   // 余热回收
-  const heatKW = sysPower2 * (heatR / 100);
-  const heatKwh = heatKW * hours;
-  const heatGJ = heatKwh * 0.0036;
-  const heatTce = heatGJ / 29.307;
-  const heatMoney = heatKwh * heatPrice / 10000;
-  document.getElementById('air-heatTable').innerHTML =
+  var heatKW = sysPower2 * (heatR / 100);
+  var heatKwh = heatKW * hours;
+  var heatGJ = heatKwh * 0.0036;
+  var heatTce = heatGJ / 29.307;
+  var heatMoney = heatKwh * heatPrice / 10000;
+  g('air-heatTable').innerHTML =
     tr('改造后系统平均功率', sysPower2.toFixed(2) + ' kW') +
     tr('余热回收率', heatR.toFixed(0) + ' %') +
     tr('可回收热功率', heatKW.toFixed(1) + ' kW') +
@@ -1248,9 +1384,17 @@ function calcAir() {
     tr('年热收益', heatMoney.toFixed(2) + ' 万元（按 ' + heatPrice.toFixed(2) + ' 元/kWh热）') +
     tr('综合年效益', (annualMoney + heatMoney).toFixed(2) + ' 万元（节电+余热）');
 
-  document.getElementById('air-results').classList.add('show');
-  showToast('✅ 空压机节能测算完成');
+  g('air-results').classList.add('show');
+  if (savingRate < 0) {
+    showToast('⚠️ 该方案按当前参数为负节电，请核对参数' + (extra.length ? '（' + extra[0] + '）' : ''));
+  } else {
+    showToast('✅ 空压机节能测算完成（节电率 ' + savingRate.toFixed(1) + '%，自动计算）');
+  }
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+  if (document.getElementById('air_method')) airMethodChange();
+});
 
 // ==================== 余热回收模块（新增，2026-10-12） ====================
 function heatMediaChange() {
@@ -1574,7 +1718,7 @@ window.addEventListener('DOMContentLoaded', function() {
       <li>水泵轴功率：(Q × H × 1000 × 9.81) ÷ (3600 × 1000 × η<sub>泵</sub> × η<sub>传</sub>)</li>
       <li>风机轴功率：(Q × P) ÷ (3600 × 1000 × η<sub>风</sub> × η<sub>传</sub>)</li>
       <li>磨机：按原/新电机效率与原/新负载率对比测算</li>
-      <li>空压机：按加载率做时间加权求平均功率，对比改造后节电率；并估算可回收余热</li>
+      <li>空压机：现状按加载率对功率做时间加权（加载段满功率 + 卸载段按卸载功率占比），改造后按改造方式用物理关系推算——变频按功率∝排气量并计入变频损耗，联控按卸载占比下降并计入分级匹配损失，整机替换按比功率对标，泄漏治理按需求下降折算；<b>综合节电率 = 1 − 改造后平均功率 ÷ 现状平均功率，由参数自动计算</b>；排气压力每降 0.1 MPa 轴功率约降 7%。余热按输入功率 × 回收率估算</li>
       <li>余热回收：热功率 Q = 流量 × 比热 × 温差 ÷ 3600，按利用方式折算年热收益</li>
       <li>设备运行健康评测：振动烈度（ISO 10816）、绝缘温度限值、三相不平衡、负载率、功率因数、机组效率 ρgQH/P</li>
       <li>电机选型安全系数：&lt;5 kW 取 1.1；&lt;10 kW 取 1.15；&gt;100 kW 取 1.25；默认 1.2；风机或水泵 &gt;50 kW 另加 0.05（整体落在 1.1–1.25）</li>
