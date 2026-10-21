@@ -305,6 +305,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         <div class="form-group"><label>平均加载率 <span class="unit">%</span></label><input type="number" id="air_load" value="60" step="1"></div>
         <div class="form-group"><label>卸载功率占比 <span class="unit">%（占额定）</span></label><input type="number" id="air_unload" value="35" step="1"></div>
         <div class="form-group"><label>工作压力时电机功率 P₀ <span class="unit">kW（留空=用 P₁）</span></label><input type="number" id="air_p0" step="1" placeholder="留空则取 P₁"></div>
+        <div class="form-group"><label>电机+传动效率 η₀ <span class="unit">%</span></label><input type="number" id="air_eta0" value="98.3" step="0.1" min="80" max="100"></div>
       </div>
       <div class="note">加卸载控制的螺杆机，卸载时段仍消耗额定功率的 25%~40%（默认 35%）。这部分空载损耗，是变频改造与集中联控的主要节电空间。</div>
     </div>
@@ -1220,6 +1221,14 @@ function airDpHint() {
   el.textContent = '参考：恒压控制一般可降 ' + lo.toFixed(2) + '~' + hi.toFixed(2) + ' MPa（工作压力的 10%~20%，需按管网实测校核）';
 }
 
+// 螺杆机变频部分负荷功率曲线：功率比 f(流量比) = 0.2 + 0.8x
+// 含义：变频机有约 20% 的固定损耗（油泵/风扇/变频器），其余 80% 随流量近似线性
+// 例：50% 流量 → 60% 额定功率（比功率劣化约 20%）；低于 30% 时按最小转速下限 0.35 截断
+function airPartLoad(x) {
+  if (x <= 0) return 0;
+  return Math.min(1, Math.max(0.35, 0.2 + 0.8 * x));
+}
+
 function airMethodChange() {
   var m = document.getElementById('air_method').value;
   var groups = document.querySelectorAll('.air-param');
@@ -1261,14 +1270,17 @@ function calcAir() {
   var dp = Math.max(f('air_dp', 0), 0);
   var p0 = f('air_p0', 0);
   var invest = f('air_invest', 0);
+  var eta0 = clamp(f('air_eta0', 98.3), 80, 100) / 100;
   // 工作压力下的实际电机功率：填了 P₀ 就用 P₀，否则按铭牌额定 P₁
   var pBase = (p0 > 0) ? p0 : p1;
+  // 电机+传动效率折算为电网输入功率（ABB EnergySave 同口径）
+  var pElec = pBase / eta0;
 
   if (!p1 || !q1 || !hours) { showToast('请填写必填参数'); return; }
 
   var lr = clamp(load, 0, 100) / 100;
   var u = clamp(unload, 0, 100) / 100;
-  var avgP1 = pBase * (lr + (1 - lr) * u);
+  var avgP1 = pElec * (lr + (1 - lr) * u);
   if (avgP1 <= 0) { showToast('加载率与卸载占比不能同时为 0'); return; }
 
   var pFactor = Math.max(1 - AIR_KP * dp, 0.5);   // 压降修正系数
@@ -1276,17 +1288,18 @@ function calcAir() {
 
   if (method === 'vfd') {
     var eta = clamp(f('air_eta', 97), 80, 100) / 100;
-    var pa = pBase * lr;
+    var fLR = airPartLoad(lr);
+    var pa = pElec * fLR;
     var pb = pa * pFactor;
     avgP2 = pb / eta;
-    steps = [['消除卸载空载损耗', avgP1, pa],
+    steps = [['变频调速：消除卸载损耗 + 部分负荷功率比 f(' + (lr * 100).toFixed(0) + '%)=' + fLR.toFixed(3), avgP1, pa],
              ['排气压力降低 Δp=' + dp.toFixed(2) + ' MPa', pa, pb],
              ['变频器+电机损耗 η=' + (eta * 100).toFixed(1) + '%', pb, avgP2]];
     methodText = '变频改造';
     calcNote = 'P₂ = P₁ × 加载率 ÷ η × (1 − 0.7Δp)';
   } else if (method === 'ctrl') {
     var u2 = clamp(f('air_u2', 5), 0, 100) / 100;
-    var pa2 = pBase * (lr + (1 - lr) * u2);
+    var pa2 = pElec * (lr + (1 - lr) * u2);
     var pb2 = pa2 * 1.03;
     avgP2 = pb2 * pFactor;
     steps = [['卸载功率占比 ' + (u * 100).toFixed(0) + '% → ' + (u2 * 100).toFixed(0) + '%', avgP1, pa2],
@@ -1295,7 +1308,7 @@ function calcAir() {
     methodText = '集中联控';
     calcNote = 'P₂ = P₁ × [加载率 + (1−加载率)×u₂] × 1.03 × (1 − 0.7Δp)';
   } else if (method === 'replace') {
-    var sp1r = pBase / q1;
+    var sp1r = pElec / q1;
     var sp2In = parseFloat(g('air_sp2').value);
     // 自动取值：现机比功率改善 15%，但不得低于该压力档最先进机型的物理底线
     var spFloor = 5.2 + (press - 0.8) * 4;      // 0.8 MPa 约 5.2；压力每升 0.1 MPa 约 +0.4
@@ -1308,10 +1321,11 @@ function calcAir() {
     var pb3 = pa3 * pFactor;
     if (isPM) {
       var eta3 = 0.97;
-      avgP2 = pb3 * (lr / (lr + (1 - lr) * u2b)) / eta3;
+      var fLR2 = airPartLoad(lr);
+      avgP2 = pb3 * (fLR2 / (lr + (1 - lr) * u2b)) / eta3;
       steps = [['比功率 ' + sp1r.toFixed(2) + ' → ' + sp2.toFixed(2) + ' kW/(m³/min)', avgP1, pa3],
                ['排气压力降低 Δp=' + dp.toFixed(2) + ' MPa', pa3, pb3],
-               ['永磁变频消除空载 + η=97%', pb3, avgP2]];
+               ['永磁变频：部分负荷功率比 ' + fLR2.toFixed(3) + ' + η=97%', pb3, avgP2]];
       calcNote = '比功率对标 + 永磁变频连续调节';
     } else {
       avgP2 = pb3;
@@ -1326,7 +1340,7 @@ function calcAir() {
     var fixR = clamp(f('air_fix', 50), 0, 100) / 100;
     var lrNew = lr * (1 - leak * fixR);
     lrOut = lrNew;
-    var pa4 = pBase * (lrNew + (1 - lrNew) * u);
+    var pa4 = pElec * (lrNew + (1 - lrNew) * u);
     avgP2 = pa4 * pFactor;
     steps = [['泄漏治理：加载率 ' + (lr * 100).toFixed(0) + '% → ' + (lrNew * 100).toFixed(1) + '%', avgP1, pa4],
              ['排气压力降低 Δp=' + dp.toFixed(2) + ' MPa', pa4, avgP2]];
@@ -1344,7 +1358,7 @@ function calcAir() {
   var co2 = annualSaveKwh * 0.4 / 1000;
 
   // 比功率 kW/(m³/min)
-  var sp1 = pBase / q1;                           // 现机额定点（按工作压力下功率）
+  var sp1 = pElec / q1;                           // 现机额定点（电输入功率）
   var spAvg1 = lr > 0 ? avgP1 / (q1 * lr) : 0;    // 现状实际平均（含卸载损耗）
   var spAvg2 = lrOut > 0 ? avgP2 / (q1 * lrOut) : 0;
 
@@ -1360,6 +1374,8 @@ function calcAir() {
     tr('运行台数', n.toFixed(0) + ' 台') +
     tr('单台额定输入功率 P₁', p1.toFixed(1) + ' kW') +
     tr('工作压力时电机功率 P₀', (p0 > 0 ? p0.toFixed(1) + ' kW（本次按此计算）' : p1.toFixed(1) + ' kW（未单独填写，按额定）')) +
+    tr('电机+传动效率 η₀', (eta0 * 100).toFixed(1) + ' %') +
+    tr('折算电输入功率', pElec.toFixed(2) + ' kW') +
     tr('单台排气量 Q₁', q1.toFixed(1) + ' m³/min') +
     tr('排气压力', press.toFixed(2) + ' MPa') +
     tr('平均加载率', load.toFixed(0) + ' %') +
@@ -1741,7 +1757,7 @@ window.addEventListener('DOMContentLoaded', function() {
       <li>水泵轴功率：(Q × H × 1000 × 9.81) ÷ (3600 × 1000 × η<sub>泵</sub> × η<sub>传</sub>)</li>
       <li>风机轴功率：(Q × P) ÷ (3600 × 1000 × η<sub>风</sub> × η<sub>传</sub>)</li>
       <li>磨机：按原/新电机效率与原/新负载率对比测算</li>
-      <li>空压机：现状按加载率对功率做时间加权（加载段满功率 + 卸载段按卸载功率占比），改造后按改造方式用物理关系推算——变频按功率∝排气量并计入变频损耗，联控按卸载占比下降并计入分级匹配损失，整机替换按比功率对标，泄漏治理按需求下降折算；<b>综合节电率 = 1 − 改造后平均功率 ÷ 现状平均功率，由参数自动计算</b>；排气压力每降 0.1 MPa 轴功率约降 7%。余热按输入功率 × 回收率估算</li>
+      <li>空压机：现状按加载率对功率做时间加权（加载段满功率 + 卸载段按卸载功率占比），改造后按改造方式用物理关系推算——变频按功率∝排气量并计入变频损耗，联控按卸载占比下降并计入分级匹配损失，整机替换按比功率对标，泄漏治理按需求下降折算；<b>综合节电率 = 1 − 改造后平均功率 ÷ 现状平均功率，由参数自动计算</b>；排气压力每降 0.1 MPa 轴功率约降 7%；变频按螺杆机部分负荷功率曲线 f=0.2+0.8×流量比折算（50% 流量约 60% 功率），并把电机+传动效率（默认 98.3%）计入电输入功率。余热按输入功率 × 回收率估算</li>
       <li>余热回收：热功率 Q = 流量 × 比热 × 温差 ÷ 3600，按利用方式折算年热收益</li>
       <li>设备运行健康评测：振动烈度（ISO 10816）、绝缘温度限值、三相不平衡、负载率、功率因数、机组效率 ρgQH/P</li>
       <li>电机选型安全系数：&lt;5 kW 取 1.1；&lt;10 kW 取 1.15；&gt;100 kW 取 1.25；默认 1.2；风机或水泵 &gt;50 kW 另加 0.05（整体落在 1.1–1.25）</li>
