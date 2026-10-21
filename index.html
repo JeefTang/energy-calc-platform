@@ -1635,5 +1635,138 @@ window.addEventListener('DOMContentLoaded', function() {
     </p>
   </div>
 
+  <!-- ==================== 完整测算报告（报告带二维码，无留资门槛 · 2026-10-21） ==================== -->
+  <style>
+    .lead-cta{display:flex;justify-content:center;margin:22px 0 6px}
+    .btn-report{background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;border:0;border-radius:10px;padding:14px 28px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(13,148,136,.28)}
+    .btn-report:hover{filter:brightness(1.06)}
+    .lead-hint{font-size:13px;color:var(--text2);text-align:center;margin:0 0 4px}
+  </style>
+
+  <script>
+  (function () {
+    var EVENT_ENDPOINT = window.EVENT_ENDPOINT || '/api/event';
+    var NAMES = { plunger: '柱塞泵', mill: '磨机', fan: '风机', pump: '水泵', air: '空压机', heat: '余热回收', health: '设备运行健康评测' };
+
+    function moduleKey(tab) { return (tab.id || '').replace(/-tab$/, ''); }
+
+    function injectButtons() {
+      var tabs = document.querySelectorAll('.tab-content');
+      for (var i = 0; i < tabs.length; i++) {
+        var tab = tabs[i];
+        var res = tab.querySelector('.results');
+        if (!res || res.querySelector('.btn-report')) continue;
+        var cta = document.createElement('div');
+        cta.className = 'lead-cta';
+        cta.innerHTML = '<button class="btn-report" type="button">📄 生成完整测算报告（PDF）</button>';
+        cta.querySelector('button').addEventListener('click', function (t) { return function () { buildReport(t, {}); }; }(tab));
+        res.appendChild(cta);
+        var hint = document.createElement('div');
+        hint.className = 'lead-hint';
+        hint.textContent = '一键生成，免填写；报告含参数明细与联系方式，可直接打印或存为 PDF';
+        res.appendChild(hint);
+      }
+    }
+
+    // 匿名使用埋点：只记模块与来源，不收任何个人信息
+    function beacon(key) {
+      if (!EVENT_ENDPOINT) return;
+      var payload = {
+        event: 'report_generated',
+        module: NAMES[key] || key,
+        page: location.pathname + location.search,
+        ref: new URLSearchParams(location.search).get('ref') || '',
+        ts: new Date().toISOString()
+      };
+      try {
+        fetch(EVENT_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), keepalive: true }).catch(function () {});
+      } catch (e) {}
+    }
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    window.buildReport = function (tab, who) {
+      if (!tab) return;
+      var key = moduleKey(tab);
+      var title = (NAMES[key] || '设备') + '节能测算报告';
+      var d = new Date();
+      var pad = function (n) { return ('0' + n).slice(-2); };
+      var dateStr = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+      var reportNo = 'ECP' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '-' + String(Math.floor(Math.random() * 9000) + 1000);
+
+      var rows = '';
+      var groups = tab.querySelectorAll('.form-group');
+      for (var i = 0; i < groups.length; i++) {
+        var lab = groups[i].querySelector('label');
+        var inp = groups[i].querySelector('input,select');
+        if (!lab || !inp) continue;
+        var v = (inp.type === 'checkbox') ? (inp.checked ? '是' : '否') : inp.value;
+        if (v === '' || v == null) continue;
+        rows += '<tr><td>' + esc(lab.textContent.replace(/\s+/g, ' ').trim()) + '</td><td>' + esc(v) + '</td></tr>';
+      }
+
+      var resNode = tab.querySelector('.results');
+      var resHTML = '';
+      if (resNode) {
+        var clone = resNode.cloneNode(true);
+        clone.querySelectorAll('.lead-cta,.lead-hint').forEach(function (n) { n.remove(); });
+        resHTML = clone.innerHTML;
+      }
+
+      var styles = '';
+      document.querySelectorAll('style').forEach(function (s) { styles += s.textContent; });
+
+      var who2 = who || {};
+      var infoRows = '';
+      if (who2.name) infoRows += '<tr><th>联系人</th><td>' + esc(who2.name) + '</td></tr>';
+      if (who2.company) infoRows += '<tr><th>单位 / 项目</th><td>' + esc(who2.company) + '</td></tr>';
+      if (who2.phone) infoRows += '<tr><th>联系电话</th><td>' + esc(who2.phone) + '</td></tr>';
+
+      var html = '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><base href="' + location.href + '">' +
+        '<title>' + esc(title) + '</title><style>' + styles +
+        '@media print{@page{margin:14mm}body{background:#fff!important}}' +
+        '#rpt{max-width:820px;margin:0 auto;padding:24px 18px;font-family:inherit;color:#0f172a}' +
+        '#rpt h1{font-size:22px;margin:0 0 4px}#rpt .meta{font-size:12px;color:#64748b;margin-bottom:18px}' +
+        '#rpt h2{font-size:15px;margin:22px 0 8px;padding-left:8px;border-left:4px solid #0d9488}' +
+        '#rpt table{width:100%;border-collapse:collapse;font-size:13px}' +
+        '#rpt th,#rpt td{border:1px solid #e2e8f0;padding:7px 9px;text-align:left}' +
+        '#rpt th{background:#f1f5f9;width:58%}' +
+        '#rpt .foot{margin-top:18px;font-size:12px;color:#64748b;line-height:1.8;border-top:1px dashed #cbd5e1;padding-top:10px}' +
+        '#rpt .contact{margin-top:16px;padding:14px 16px;border-radius:10px;background:#f0fdfa;border:1px solid #99f6e4;display:flex;gap:16px;align-items:center}' +
+        '#rpt .contact .txt{font-size:13px;line-height:1.9}' +
+        '#rpt .contact .txt b{font-size:15px;color:#0f766e}' +
+        '</style></head><body><div id="rpt">' +
+        '<h1>' + esc(title) + '</h1>' +
+        '<div class="meta">报告编号 ' + reportNo + ' ｜ 生成时间 ' + dateStr + ' ｜ 工具：流体机械节能测算工具</div>' +
+        (infoRows ? '<h2>一、基础信息</h2><table>' + infoRows + '</table><h2>二、输入参数</h2><table>' + rows + '</table><h2>三、测算结果</h2>' : '<h2>一、输入参数</h2><table>' + rows + '</table><h2>二、测算结果</h2>') + resHTML +
+        '<div class="foot"><b>边界声明：</b>本报告由网页版「流体机械节能测算工具」依据输入参数自动生成，属工程辅助测算资料，结果仅供参考；实际改造工程须以现场勘察、实测与复核数据为准，不构成任何承诺或交易要约。</div>' +
+        '<div class="contact"><img src="qr-kefu.png" alt="微信二维码" style="width:132px;height:132px;background:#fff;border-radius:8px;padding:4px">' +
+        '<div class="txt"><b>零碳小助手 · 唐先生</b><br>电话 / 微信：18041136555<br>扫码加微信，可免费做<b>现场复核</b>并提供改造方案<br><span style="color:#64748b;font-size:12px">（把这张报告拍照发我，我按现场实际参数重算）</span></div></div>' +
+        '</div></body></html>';
+
+      var w = window.open('', '_blank');
+      if (!w) { alert('浏览器拦截了新窗口，请允许弹窗后重试'); return; }
+      var printed = false;
+      var doPrint = function () {
+        if (printed) return;
+        printed = true;
+        try { w.focus(); w.print(); } catch (e) {}
+      };
+      w.document.open(); w.document.write(html); w.document.close();
+      w.onload = function () { setTimeout(doPrint, 500); };
+      setTimeout(doPrint, 1200);
+      beacon(key);
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', injectButtons);
+    } else {
+      injectButtons();
+    }
+  })();
+  </script>
+
 </body>
 </html>
