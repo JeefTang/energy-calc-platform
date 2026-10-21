@@ -304,6 +304,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         <div class="form-group"><label>排气压力 <span class="unit">MPa</span></label><input type="number" id="air_press" value="0.8" step="0.05"></div>
         <div class="form-group"><label>平均加载率 <span class="unit">%</span></label><input type="number" id="air_load" value="60" step="1"></div>
         <div class="form-group"><label>卸载功率占比 <span class="unit">%（占额定）</span></label><input type="number" id="air_unload" value="35" step="1"></div>
+        <div class="form-group"><label>工作压力时电机功率 P₀ <span class="unit">kW（留空=用 P₁）</span></label><input type="number" id="air_p0" step="1" placeholder="留空则取 P₁"></div>
       </div>
       <div class="note">加卸载控制的螺杆机，卸载时段仍消耗额定功率的 25%~40%（默认 35%）。这部分空载损耗，是变频改造与集中联控的主要节电空间。</div>
     </div>
@@ -347,6 +348,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       <div class="form-grid">
         <div class="form-group"><label>年运行小时 <span class="unit">h</span></label><input type="number" id="air_hours" value="6000"></div>
         <div class="form-group"><label>电价 <span class="unit">元/kWh</span></label><input type="number" id="air_price" value="0.65" step="0.01"></div>
+        <div class="form-group"><label>改造投资额 <span class="unit">万元（可选）</span></label><input type="number" id="air_invest" step="1" placeholder="填了才出回收期"></div>
       </div>
       <button class="btn-calc" onclick="calcAir()">开始空压机节能测算</button>
     </div>
@@ -361,6 +363,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           <div class="metric-card"><div class="value" id="air-annualSave">0</div><div class="desc">年节电量 万kWh</div></div>
           <div class="metric-card"><div class="value" id="air-annualMoney">0</div><div class="desc">年节电费 万元</div></div>
           <div class="metric-card"><div class="value" id="air-CO2">0</div><div class="desc">CO₂减排 吨</div></div>
+          <div class="metric-card"><div class="value" id="air-payback">—</div><div class="desc">静态回收期 年</div></div>
         </div>
       </div>
 
@@ -1246,12 +1249,16 @@ function calcAir() {
   var price = f('air_price', 0);
   var method = g('air_method').value;
   var dp = Math.max(f('air_dp', 0), 0);
+  var p0 = f('air_p0', 0);
+  var invest = f('air_invest', 0);
+  // 工作压力下的实际电机功率：填了 P₀ 就用 P₀，否则按铭牌额定 P₁
+  var pBase = (p0 > 0) ? p0 : p1;
 
   if (!p1 || !q1 || !hours) { showToast('请填写必填参数'); return; }
 
   var lr = clamp(load, 0, 100) / 100;
   var u = clamp(unload, 0, 100) / 100;
-  var avgP1 = p1 * (lr + (1 - lr) * u);
+  var avgP1 = pBase * (lr + (1 - lr) * u);
   if (avgP1 <= 0) { showToast('加载率与卸载占比不能同时为 0'); return; }
 
   var pFactor = Math.max(1 - AIR_KP * dp, 0.5);   // 压降修正系数
@@ -1259,7 +1266,7 @@ function calcAir() {
 
   if (method === 'vfd') {
     var eta = clamp(f('air_eta', 97), 80, 100) / 100;
-    var pa = p1 * lr;
+    var pa = pBase * lr;
     var pb = pa * pFactor;
     avgP2 = pb / eta;
     steps = [['消除卸载空载损耗', avgP1, pa],
@@ -1269,7 +1276,7 @@ function calcAir() {
     calcNote = 'P₂ = P₁ × 加载率 ÷ η × (1 − 0.7Δp)';
   } else if (method === 'ctrl') {
     var u2 = clamp(f('air_u2', 5), 0, 100) / 100;
-    var pa2 = p1 * (lr + (1 - lr) * u2);
+    var pa2 = pBase * (lr + (1 - lr) * u2);
     var pb2 = pa2 * 1.03;
     avgP2 = pb2 * pFactor;
     steps = [['卸载功率占比 ' + (u * 100).toFixed(0) + '% → ' + (u2 * 100).toFixed(0) + '%', avgP1, pa2],
@@ -1278,7 +1285,7 @@ function calcAir() {
     methodText = '集中联控';
     calcNote = 'P₂ = P₁ × [加载率 + (1−加载率)×u₂] × 1.03 × (1 − 0.7Δp)';
   } else if (method === 'replace') {
-    var sp1r = p1 / q1;
+    var sp1r = pBase / q1;
     var sp2In = parseFloat(g('air_sp2').value);
     // 自动取值：现机比功率改善 15%，但不得低于该压力档最先进机型的物理底线
     var spFloor = 5.2 + (press - 0.8) * 4;      // 0.8 MPa 约 5.2；压力每升 0.1 MPa 约 +0.4
@@ -1309,7 +1316,7 @@ function calcAir() {
     var fixR = clamp(f('air_fix', 50), 0, 100) / 100;
     var lrNew = lr * (1 - leak * fixR);
     lrOut = lrNew;
-    var pa4 = p1 * (lrNew + (1 - lrNew) * u);
+    var pa4 = pBase * (lrNew + (1 - lrNew) * u);
     avgP2 = pa4 * pFactor;
     steps = [['泄漏治理：加载率 ' + (lr * 100).toFixed(0) + '% → ' + (lrNew * 100).toFixed(1) + '%', avgP1, pa4],
              ['排气压力降低 Δp=' + dp.toFixed(2) + ' MPa', pa4, avgP2]];
@@ -1327,18 +1334,22 @@ function calcAir() {
   var co2 = annualSaveKwh * 0.4 / 1000;
 
   // 比功率 kW/(m³/min)
-  var sp1 = p1 / q1;                              // 现机额定点
+  var sp1 = pBase / q1;                           // 现机额定点（按工作压力下功率）
   var spAvg1 = lr > 0 ? avgP1 / (q1 * lr) : 0;    // 现状实际平均（含卸载损耗）
   var spAvg2 = lrOut > 0 ? avgP2 / (q1 * lrOut) : 0;
+
+  var payback = (invest > 0 && annualMoney > 0) ? (invest / annualMoney) : 0;
 
   g('air-savingRate').textContent = savingRate.toFixed(1);
   g('air-annualSave').textContent = (annualSaveKwh / 10000).toFixed(2);
   g('air-annualMoney').textContent = annualMoney.toFixed(2);
   g('air-CO2').textContent = co2.toFixed(1);
+  g('air-payback').textContent = payback > 0 ? payback.toFixed(2) : '—';
 
   g('air-detailTable').innerHTML =
     tr('运行台数', n.toFixed(0) + ' 台') +
-    tr('单台输入功率 P₁', p1.toFixed(1) + ' kW') +
+    tr('单台额定输入功率 P₁', p1.toFixed(1) + ' kW') +
+    tr('工作压力时电机功率 P₀', (p0 > 0 ? p0.toFixed(1) + ' kW（本次按此计算）' : p1.toFixed(1) + ' kW（未单独填写，按额定）')) +
     tr('单台排气量 Q₁', q1.toFixed(1) + ' m³/min') +
     tr('排气压力', press.toFixed(2) + ' MPa') +
     tr('平均加载率', load.toFixed(0) + ' %') +
@@ -1356,7 +1367,9 @@ function calcAir() {
     tr('综合节电率（自动计算）', savingRate.toFixed(1) + ' %') +
     tr('年节电量', (annualSaveKwh / 10000).toFixed(2) + ' 万kWh') +
     tr('年节电费', annualMoney.toFixed(2) + ' 万元') +
-    tr('CO₂减排', co2.toFixed(1) + ' 吨');
+    tr('CO₂减排', co2.toFixed(1) + ' 吨') +
+    tr('改造投资额', invest > 0 ? invest.toFixed(1) + ' 万元' : '未填') +
+    tr('静态回收期', payback > 0 ? payback.toFixed(2) + ' 年（按年节电费计）' : '—');
 
   // 节电率构成（逐项可核）
   var stepHTML = '';
