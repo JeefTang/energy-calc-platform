@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>流体机械节能测算工具｜柱塞泵·水泵·风机·磨机·空压机节电测算与设备健康评测（免安装）</title>
-<meta name="description" content="流体机械节能测算工具：网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、风机、磨机、空压机、余热回收的节能测算，以及设备运行健康评测（机械/电气/能效），输出节电率、年节电量、电费与碳减排，并给出电机选型建议。结果仅供参考，工程需现场复核。">
+<title>流体机械节能测算工具｜柱塞泵·水泵·渣浆泵·风机·磨机·空压机节电测算与设备健康评测（免安装）</title>
+<meta name="description" content="流体机械节能测算工具：网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、渣浆泵、风机、磨机、空压机、余热回收的节能测算，以及设备运行健康评测（机械/电气/能效），输出节电率、年节电量、电费与碳减排，并给出电机选型建议。结果仅供参考，工程需现场复核。">
 <link rel="canonical" href="https://jeeftang.github.io/energy-calc-platform/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="流体机械节能测算工具｜柱塞泵·水泵·风机·磨机·空压机节电测算与设备健康评测（免安装）">
-<meta property="og:description" content="柱塞泵/水泵/风机/磨机/空压机/余热回收 节能测算 + 设备运行健康评测，网页免安装。结果仅供参考，工程需现场复核。">
+<meta property="og:title" content="流体机械节能测算工具｜柱塞泵·水泵·渣浆泵·风机·磨机·空压机节电测算与设备健康评测（免安装）">
+<meta property="og:description" content="柱塞泵/水泵/渣浆泵/风机/磨机/空压机/余热回收 节能测算 + 设备运行健康评测，网页免安装。结果仅供参考，工程需现场复核。">
 <meta property="og:url" content="https://jeeftang.github.io/energy-calc-platform/">
 <meta name="twitter:card" content="summary">
 <style>
@@ -71,10 +71,11 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       "operatingSystem": "Web（浏览器，网页免安装）",
       "inLanguage": "zh-CN",
       "isAccessibleForFree": true,
-      "description": "网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、风机、磨机四类设备的轴功率节能测算，输出节电率、年节电量、电费与碳减排，并给出电机选型建议（安全系数 1.1–1.25）。属工程辅助测算工具，结果仅供参考，实际工程需现场复核。",
+      "description": "网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、渣浆泵、风机、磨机、空压机的轴功率节能测算，输出节电率、年节电量、电费与碳减排，并给出电机选型建议（安全系数 1.1–1.25）。属工程辅助测算工具，结果仅供参考，实际工程需现场复核。",
       "featureList": [
         "柱塞泵节能测算（按流量、进出口压力、效率计算轴功率与节电量）",
         "水泵节能测算（按流量、扬程、效率计算轴功率与节电量）",
+        "渣浆泵节能测算（按浆体密度、流量、扬程、浆体工况效率计算轴功率、吨干矿电耗与节电量）",
         "风机节能测算（按改造前后风量、风压、效率对比计算节电量）",
         "磨机节能测算（按原/新电机效率、负载率对比计算节电量与碳减排）",
         "电机选型建议：计算轴功率 × 安全系数（1.1–1.25）→ 取标准功率档",
@@ -179,6 +180,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     <button class="tab-btn" onclick="showTab('heat')">♨️ 余热回收</button>
     <button class="tab-btn" onclick="showTab('fan')">🌬 风机</button>
     <button class="tab-btn" onclick="showTab('pump')">💧 水泵</button>
+    <button class="tab-btn" onclick="showTab('slurry')">🪨 渣浆泵</button>
     <button class="tab-btn" onclick="showTab('health')">🩺 设备运行健康评测</button>
   </div>
   
@@ -625,6 +627,115 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       </div>
     </div>
   </div>
+  <!-- ==================== 渣浆泵模块（新增，2026-10-22） ==================== -->
+  <div id="slurry-tab" class="tab-content" style="display:none">
+    <div class="card">
+      <div class="section-title">🪨 一、改造前渣浆泵参数</div>
+      <div class="form-grid">
+        <div class="form-group"><label>流量 Q₁ <span class="unit">m³/h</span></label><input type="number" id="slurry_Q1" value="400"></div>
+        <div class="form-group"><label>扬程 H₁ <span class="unit">m</span></label><input type="number" id="slurry_H1" value="60"></div>
+        <div class="form-group"><label>浆体密度 ρ₁ <span class="unit">kg/m³</span></label><input type="number" id="slurry_rho1" value="1300" step="10" oninput="slurryDensityHint()"></div>
+        <div class="form-group"><label>泵效率 η<sub>泵1</sub> <span class="unit">%（浆体工况）</span></label><input type="number" id="slurry_pumpEff1" value="62" step="0.5"></div>
+        <div class="form-group"><label>传动效率 η<sub>传1</sub> <span class="unit">%</span></label><input type="number" id="slurry_transEff1" value="98" step="0.1"></div>
+        <div class="form-group"><label>电机效率 η<sub>电1</sub> <span class="unit">%</span></label><input type="number" id="slurry_motorEff1" value="94.5" step="0.1"></div>
+        <div class="form-group"><label>原电机功率 <span class="unit">kW</span></label><input type="number" id="slurry_motorPower1" value="250"></div>
+        <div class="form-group"><label>固含量 Cw <span class="unit">%（质量，可空）</span></label><input type="number" id="slurry_Cw1" value="25" step="1" min="0" max="80" oninput="slurryDensityHint()"></div>
+        <div class="form-group"><label>固体真密度 ρs <span class="unit">kg/m³</span></label><input type="number" id="slurry_rhoS" value="2700" step="10" oninput="slurryDensityHint()"></div>
+      </div>
+      <div class="note">
+        <span id="slurry-rhoHint"></span>
+        <button type="button" onclick="slurryUseDensity()" style="margin-left:8px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font-size:13px">按固含量换算密度</button><br>
+        泵效率请填<b>浆体工况</b>效率：厂家样本多为清水试验值，输浆时实际效率通常比清水低 5~15 个百分点，建议用现场实测电功率反算（η = ρgQH ÷ 电机输入功率）。
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">⚡ 二、改造后渣浆泵参数</div>
+      <div class="form-grid">
+        <div class="form-group"><label>流量 Q₂ <span class="unit">m³/h</span></label><input type="number" id="slurry_Q2" value="400"></div>
+        <div class="form-group"><label>扬程 H₂ <span class="unit">m</span></label><input type="number" id="slurry_H2" value="60"></div>
+        <div class="form-group"><label>浆体密度 ρ₂ <span class="unit">kg/m³</span></label><input type="number" id="slurry_rho2" value="1300" step="10"></div>
+        <div class="form-group"><label>泵效率 η<sub>泵2</sub> <span class="unit">%（浆体工况）</span></label><input type="number" id="slurry_pumpEff2" value="75" step="0.5"></div>
+        <div class="form-group"><label>传动效率 η<sub>传2</sub> <span class="unit">%</span></label><input type="number" id="slurry_transEff2" value="98" step="0.1"></div>
+        <div class="form-group"><label>电机效率 η<sub>电2</sub> <span class="unit">%</span></label><input type="number" id="slurry_motorEff2" value="97.2" step="0.1"></div>
+      </div>
+      <div class="note">
+        <strong>渣浆泵三条常见改造路径：</strong><br>
+        ① <b>高效水力模型 / 整泵替换</b>——效率由 60%~65% 提升到 72%~78%（同时改善过流件材质与磨损寿命）；<br>
+        ② <b>变频调速</b>——工况流量长期低于额定（或需按矿量调节）时，按相似定律 Q∝n、H∝n²、P∝n³ 降速运行；<br>
+        ③ <b>叶轮切削 / 降速</b>——扬程长期过剩时切小叶轮外径，避免靠阀门或回流憋压。<br>
+        ⚠️ 降流量须校核<b>临界沉降流速</b>（一般 1.5~2.5 m/s，粗颗粒取高值），不得低于沉积流速，否则堵管。
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">⏱️ 三、运行与价格</div>
+      <div class="form-grid">
+        <div class="form-group"><label>年运行小时 <span class="unit">h</span></label><input type="number" id="slurry_hours" value="6000"></div>
+        <div class="form-group"><label>电价 <span class="unit">元/kWh</span></label><input type="number" id="slurry_price" value="0.6" step="0.01"></div>
+        <div class="form-group"><label>改造投资额 <span class="unit">万元（可选）</span></label><input type="number" id="slurry_invest" step="1" placeholder="填了才出回收期"></div>
+      </div>
+      <button class="btn-calc" onclick="calcSlurry()">开始渣浆泵节能测算</button>
+    </div>
+
+    <div class="results" id="slurry-results">
+      <div class="card">
+        <div class="result-highlight">
+          <div class="big-num" id="slurry-savingRate">0<span class="pct">%</span></div>
+          <div class="label">综合节电率（按电机输入功率）</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-card"><div class="value" id="slurry-annualSave">0</div><div class="desc">年节电量 万kWh</div></div>
+          <div class="metric-card"><div class="value" id="slurry-annualMoney">0</div><div class="desc">年节电费 万元</div></div>
+          <div class="metric-card"><div class="value" id="slurry-CO2">0</div><div class="desc">CO₂减排 吨</div></div>
+        </div>
+        <div class="metric-row" id="slurry-paybackRow" style="display:none">
+          <div class="metric-card"><div class="value" id="slurry-payback">—</div><div class="desc">静态回收期 年</div></div>
+          <div class="metric-card"><div class="value" id="slurry-investShow">—</div><div class="desc">改造投资 万元</div></div>
+          <div class="metric-card"><div class="value" id="slurry-tonKwh">—</div><div class="desc">吨干矿电耗 kWh/t</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">📊 详细计算结果</div>
+        <table class="detail-table">
+          <thead><tr><th>项目</th><th>改造前</th><th>改造后</th><th>节约</th></tr></thead>
+          <tbody id="slurry-detailTable"></tbody>
+        </table>
+        <div class="note">
+          轴功率 P = ρ × g × Q × H ÷ (3.6×10⁶ × η<sub>泵</sub> × η<sub>传</sub>)（ρ：kg/m³；Q：m³/h；H：m）；电机输入功率 = 轴功率 ÷ η<sub>电</sub>。<br>
+          浆体密度按固含量换算：ρ = 1 ÷ (Cw/ρs + (1−Cw)/1000)，Cw 为质量分数。
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">⚙️ 电机选型指导</div>
+        <table class="detail-table">
+          <thead><tr><th>项目</th><th>数值</th><th>说明</th></tr></thead>
+          <tbody id="slurry-motorTable"></tbody>
+        </table>
+        <div class="note">
+          <strong>选型原则（渣浆泵）</strong><br>
+          1. 计算轴功率按<b>最大浆体密度</b>与<b>最大流量</b>工况取值，不得按平均工况；<br>
+          2. 推荐额定功率 = 计算轴功率 × 安全系数（1.15~1.30，渣浆泵取大值，留磨损与浓度波动裕量）；<br>
+          3. 扬程需计入 10% 左右的磨损/结垢余量；<br>
+          4. 电机防护等级不低于 IP55，潮湿多尘工况建议 IP65，并校核最大颗粒通过能力与过流件材质。
+        </div>
+        <div style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #0d9488, #0f766e); color: white; border-radius: 8px; text-align: center;">
+          <strong style="font-size: 16px;">免费获取节能改造技术方案</strong><br>
+          <span style="font-size: 14px;">请联系 零碳小助手 18041136555（加好友二维码见页尾）</span>
+        </div>
+      </div>
+
+      <div class="card" style="background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;text-align:center">
+        <div style="font-size:18px;font-weight:700;margin-bottom:6px">免费获取节能改造技术方案</div>
+        <div style="font-size:14px;opacity:.95;margin-bottom:8px">请联系 零碳小助手 <b>18041136555</b></div>
+        <img src="qr-kefu.png" alt="零碳小助手 · 微信加好友二维码" style="width:150px;height:150px;border-radius:10px;background:#fff;padding:6px;margin:4px 0" onerror="this.style.display='none'">
+        <div style="font-size:12px;opacity:.85">扫码加微信 · 免费出方案</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== 设备运行健康评测模块（新增，2026-10-12） ==================== -->
   <div id="health-tab" class="tab-content" style="display:none">
     <div class="card">
@@ -1740,6 +1851,154 @@ function renderEff() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderEff);
 else renderEff();
 
+// ==================== 渣浆泵模块（2026-10-22 建） ====================
+// 计算口径：轴功率 P = ρ·g·Q·H ÷ (3.6×10⁶ × η泵 × η传)
+//   ρ 浆体密度 kg/m³（按固含量换算：ρ = 1 ÷ (Cw/ρs + (1−Cw)/1000)）
+//   Q m³/h；H m；综合节电率 = 1 − 改造后电机输入功率 ÷ 改造前电机输入功率
+// 与水泵模块的差别：多了浆体密度、固含量与吨干矿电耗；效率按浆体工况取值（非清水试验值）
+
+function slurryDensityHint() {
+  var hint = document.getElementById('slurry-rhoHint');
+  if (!hint) return;
+  var cw = parseFloat(document.getElementById('slurry_Cw1').value);
+  var rs = parseFloat(document.getElementById('slurry_rhoS').value);
+  if (isNaN(cw) || isNaN(rs) || cw <= 0 || cw >= 100 || rs <= 1000) {
+    hint.textContent = '固含量/固体真密度可留空，直接用实测浆体密度计算。';
+    return;
+  }
+  var w = cw / 100;
+  var rho = 1 / (w / rs + (1 - w) / 1000);
+  var rho1 = parseFloat(document.getElementById('slurry_rho1').value);
+  var diff = (!isNaN(rho1) && rho1 > 0) ? (rho1 - rho) / rho * 100 : null;
+  hint.textContent = '按固含量 ' + cw + '%（质量）＋固体真密度 ' + rs + ' kg/m³ 换算：浆体密度 ≈ ' + rho.toFixed(0) + ' kg/m³'
+    + (diff === null ? '' : '（当前填写值偏差 ' + (diff >= 0 ? '+' : '') + diff.toFixed(1) + '%）');
+}
+
+function slurryUseDensity() {
+  var cw = parseFloat(document.getElementById('slurry_Cw1').value);
+  var rs = parseFloat(document.getElementById('slurry_rhoS').value);
+  if (isNaN(cw) || isNaN(rs) || cw <= 0 || cw >= 100 || rs <= 1000) {
+    showToast('请先填写有效的固含量与固体真密度');
+    return;
+  }
+  var w = cw / 100;
+  var rho = Math.round(1 / (w / rs + (1 - w) / 1000));
+  document.getElementById('slurry_rho1').value = rho;
+  document.getElementById('slurry_rho2').value = rho;
+  slurryDensityHint();
+  showToast('已按固含量换算：ρ = ' + rho + ' kg/m³');
+}
+
+function calcSlurry() {
+  var f = function (id, d) {
+    var el = document.getElementById(id);
+    if (!el) return d;
+    var v = parseFloat(el.value);
+    return isNaN(v) ? d : v;
+  };
+
+  var Q1 = f('slurry_Q1', 0), H1 = f('slurry_H1', 0), rho1 = f('slurry_rho1', 0);
+  var pumpEff1 = f('slurry_pumpEff1', 0) / 100, transEff1 = f('slurry_transEff1', 0) / 100, motorEff1 = f('slurry_motorEff1', 0) / 100;
+  var Q2 = f('slurry_Q2', 0), H2 = f('slurry_H2', 0), rho2 = f('slurry_rho2', 0);
+  var pumpEff2 = f('slurry_pumpEff2', 0) / 100, transEff2 = f('slurry_transEff2', 0) / 100, motorEff2 = f('slurry_motorEff2', 0) / 100;
+
+  var hours = f('slurry_hours', 0), price = f('slurry_price', 0);
+  var motorPower1 = f('slurry_motorPower1', 0);
+  var invest = f('slurry_invest', 0);
+  var cw = f('slurry_Cw1', 0) / 100;
+
+  if (!Q1 || !H1 || !rho1 || !pumpEff1 || !transEff1 || !motorEff1 || !Q2 || !H2 || !rho2 || !pumpEff2 || !transEff2 || !motorEff2 || !hours) {
+    showToast('请填写所有必填参数');
+    return;
+  }
+  if (pumpEff1 >= 1 || pumpEff2 >= 1) {
+    showToast('泵效率请填百分数（如 62 表示 62%）');
+    return;
+  }
+
+  var G = 9.81;
+  var K = 3.6e6;
+
+  var shaft1 = (rho1 * G * Q1 * H1) / (K * pumpEff1 * transEff1);
+  var shaft2 = (rho2 * G * Q2 * H2) / (K * pumpEff2 * transEff2);
+  var in1 = shaft1 / motorEff1;
+  var in2 = shaft2 / motorEff2;
+
+  var savingRate = (in1 - in2) / in1;
+  var annualSaveKwh = (in1 - in2) * hours;
+  var annualMoneyYuan = annualSaveKwh * price;
+  var co2 = annualSaveKwh * 0.4 / 1000;
+
+  document.getElementById('slurry-savingRate').innerHTML = (savingRate * 100).toFixed(2) + '<span class="pct">%</span>';
+  document.getElementById('slurry-annualSave').textContent = (annualSaveKwh / 10000).toFixed(2);
+  document.getElementById('slurry-annualMoney').textContent = (annualMoneyYuan / 10000).toFixed(2);
+  document.getElementById('slurry-CO2').textContent = co2.toFixed(1);
+
+  // 回收期 + 吨干矿电耗
+  var row = document.getElementById('slurry-paybackRow');
+  if (row) row.style.display = '';
+  var payEl = document.getElementById('slurry-payback');
+  var invEl = document.getElementById('slurry-investShow');
+  if (invest > 0 && annualMoneyYuan > 0) {
+    payEl.textContent = (invest * 10000 / annualMoneyYuan).toFixed(2);
+    invEl.textContent = invest.toFixed(0);
+  } else {
+    payEl.textContent = '—';
+    invEl.textContent = invest > 0 ? invest.toFixed(0) : '—';
+  }
+  var dryTh = (cw > 0 && cw < 1) ? (Q2 * rho2 * cw / 1000) : 0; // t/h 干矿
+  document.getElementById('slurry-tonKwh').textContent = dryTh > 0 ? (in2 / dryTh).toFixed(2) : '—';
+
+  var pct = function (a, b) { return ((b - a) / a * 100); };
+  var sign = function (v) { return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; };
+
+  document.getElementById('slurry-detailTable').innerHTML =
+    tr3('流量 (m³/h)', Q1.toLocaleString(), Q2.toLocaleString(), (Q2 - Q1 === 0 ? '持平' : ((Q2 - Q1).toLocaleString() + ' (' + sign(pct(Q1, Q2)) + ')'))) +
+    tr3('扬程 (m)', H1.toLocaleString(), H2.toLocaleString(), (H2 - H1 === 0 ? '持平' : ((H2 - H1).toLocaleString() + ' (' + sign(pct(H1, H2)) + ')'))) +
+    tr3('浆体密度 (kg/m³)', rho1.toFixed(0), rho2.toFixed(0), (rho2 - rho1 === 0 ? '持平' : ((rho2 - rho1).toFixed(0) + ' (' + sign(pct(rho1, rho2)) + ')'))) +
+    tr3('泵效率（浆体工况）', (pumpEff1 * 100).toFixed(1) + '%', (pumpEff2 * 100).toFixed(1) + '%', ((pumpEff2 - pumpEff1) * 100).toFixed(1) + ' 个百分点') +
+    tr3('传动效率', (transEff1 * 100).toFixed(1) + '%', (transEff2 * 100).toFixed(1) + '%', ((transEff2 - transEff1) * 100).toFixed(1) + ' 个百分点') +
+    tr3('电机效率', (motorEff1 * 100).toFixed(1) + '%', (motorEff2 * 100).toFixed(1) + '%', ((motorEff2 - motorEff1) * 100).toFixed(1) + ' 个百分点') +
+    tr3('计算轴功率 (kW)', shaft1.toFixed(2), shaft2.toFixed(2), (shaft1 - shaft2).toFixed(2) + ' kW') +
+    tr3('电机输入功率 (kW)', in1.toFixed(2), in2.toFixed(2), (in1 - in2).toFixed(2) + ' kW') +
+    tr3('原电机功率 (kW)', motorPower1 ? motorPower1.toFixed(0) : '—', '—', '—') +
+    tr3('年耗电量 (万kWh)', (in1 * hours / 10000).toFixed(2), (in2 * hours / 10000).toFixed(2), (annualSaveKwh / 10000).toFixed(2)) +
+    tr3('单位电耗 (kWh/m³浆)', (in1 / Q1).toFixed(2), (in2 / Q2).toFixed(2), ((in1 / Q1) - (in2 / Q2)).toFixed(2)) +
+    (dryTh > 0 ? tr3('干矿输送量 (t/h)', (Q1 * rho1 * cw / 1000).toFixed(1), dryTh.toFixed(1), '—') +
+      tr3('吨干矿电耗 (kWh/t)', (in1 / (Q1 * rho1 * cw / 1000)).toFixed(2), (in2 / dryTh).toFixed(2),
+        ((in1 / (Q1 * rho1 * cw / 1000)) - (in2 / dryTh)).toFixed(2)) : '');
+
+  // 电机选型（渣浆泵安全系数取大值，留磨损与浓度波动裕量）
+  function selectMotor(shaftPower) {
+    var sf = 1.2;
+    if (shaftPower < 5) sf = 1.15;
+    else if (shaftPower < 10) sf = 1.2;
+    else if (shaftPower > 100) sf = 1.3;
+    else if (shaftPower > 50) sf = 1.25;
+    var need = shaftPower * sf;
+    var std = [0.75, 1.1, 1.5, 2.2, 3, 4, 5.5, 7.5, 11, 15, 18.5, 22, 30, 37, 45, 55, 75, 90, 110, 132, 160, 200, 250, 315, 355, 400, 450, 500, 560, 630, 710, 800, 900, 1000];
+    var pick = null;
+    for (var i = 0; i < std.length; i++) { if (std[i] >= need) { pick = std[i]; break; } }
+    if (!pick) pick = Math.ceil(need / 50) * 50;
+    return { sf: sf, need: need, pick: pick };
+  }
+  var sel = selectMotor(shaft2);
+  var match = motorPower1 > 0 ? (in1 / motorPower1 * 100).toFixed(1) + '%' : '—';
+
+  document.getElementById('slurry-motorTable').innerHTML =
+    tr2('改造前电机功率', (motorPower1 ? motorPower1.toFixed(0) : '—') + ' kW', '用户输入的现有电机功率') +
+    tr2('改造前电机输入功率', in1.toFixed(2) + ' kW', '用于判断现有电机匹配度') +
+    tr2('改造后计算轴功率', shaft2.toFixed(2) + ' kW', '按改造后流量/扬程/密度/效率计算') +
+    tr2('安全系数', sel.sf.toFixed(2), '渣浆泵取大值：留磨损、浓度波动与扬程余量') +
+    tr2('计算额定功率', sel.need.toFixed(2) + ' kW', '轴功率 × 安全系数') +
+    tr2('推荐电机功率', sel.pick + ' kW', '就近的标准功率等级') +
+    tr2('推荐电机类型', '高效异步 / 永磁同步', '连续重载建议高效异步；调速工况可用永磁变频') +
+    tr2('现有电机匹配度', match, '改造前电机输入功率 ÷ 额定功率；>95% 说明长期满载，<60% 说明选型偏大');
+
+  document.getElementById('slurry-results').classList.add('show');
+  showToast('✅ 渣浆泵节能测算完成');
+}
+
 // 页面加载时初始化
 window.addEventListener('DOMContentLoaded', function() {
   // 默认显示柱塞泵标签
@@ -1751,12 +2010,13 @@ window.addEventListener('DOMContentLoaded', function() {
   <!-- ==================== GEO 可见内容区（新增，纯展示，不含脚本） ==================== -->
   <div class="card" id="about">
     <div class="section-title">📘 平台算法说明</div>
-    <p>本平台采用轴功率法进行节能测算，覆盖柱塞泵、水泵、风机、磨机、空压机五类设备，并支持余热回收测算与设备运行健康评测。</p>
+    <p>本平台采用轴功率法进行节能测算，覆盖柱塞泵、水泵、渣浆泵、风机、磨机、空压机六类设备，并支持余热回收测算与设备运行健康评测。</p>
     <ul style="margin:10px 0 0 20px;line-height:1.9;font-size:14px;">
       <li>柱塞泵轴功率：P = Q × ΔP ÷ (3.6 × η<sub>泵</sub>)（Q：m³/h；ΔP：MPa）</li>
       <li>水泵轴功率：(Q × H × 1000 × 9.81) ÷ (3600 × 1000 × η<sub>泵</sub> × η<sub>传</sub>)</li>
       <li>风机轴功率：(Q × P) ÷ (3600 × 1000 × η<sub>风</sub> × η<sub>传</sub>)</li>
       <li>磨机：按原/新电机效率与原/新负载率对比测算</li>
+      <li>渣浆泵：按浆体密度、流量、扬程与浆体工况效率算轴功率（P = ρgQH ÷ (3.6×10⁶ × η<sub>泵</sub> × η<sub>传</sub>)），浆体密度可由固含量换算（ρ = 1 ÷ (Cw/ρs + (1−Cw)/1000)）；另输出单位电耗（kWh/m³浆）与吨干矿电耗（kWh/t），供矿山按处理量对标</li>
       <li>空压机：现状按加载率对功率做时间加权（加载段满功率 + 卸载段按卸载功率占比），改造后按改造方式用物理关系推算——变频按功率∝排气量并计入变频损耗，联控按卸载占比下降并计入分级匹配损失，整机替换按比功率对标，泄漏治理按需求下降折算；<b>综合节电率 = 1 − 改造后平均功率 ÷ 现状平均功率，由参数自动计算</b>；排气压力每降 0.1 MPa 轴功率约降 7%；变频按螺杆机部分负荷功率曲线 f=0.2+0.8×流量比折算（50% 流量约 60% 功率），并把电机+传动效率（默认 98.3%）计入电输入功率。余热按输入功率 × 回收率估算</li>
       <li>余热回收：热功率 Q = 流量 × 比热 × 温差 ÷ 3600，按利用方式折算年热收益</li>
       <li>设备运行健康评测：振动烈度（ISO 10816）、绝缘温度限值、三相不平衡、负载率、功率因数、机组效率 ρgQH/P</li>
@@ -1769,9 +2029,9 @@ window.addEventListener('DOMContentLoaded', function() {
   <div class="card" id="faq">
     <div class="section-title">❓ 常见问题</div>
     <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q1 平台是什么？</h3>
-    <p style="font-size:14px;color:var(--text2)">流体机械节能测算工具是一个网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、风机、磨机、空压机五类设备的节能测算，并支持余热回收测算与设备运行健康评测，按轴功率法测算节电率、年节电量、电费与碳减排，并给出电机选型建议。</p>
+    <p style="font-size:14px;color:var(--text2)">流体机械节能测算工具是一个网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、渣浆泵、风机、磨机、空压机六类设备的节能测算，并支持余热回收测算与设备运行健康评测，按轴功率法测算节电率、年节电量、电费与碳减排，并给出电机选型建议。</p>
     <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q2 支持哪些设备、输出哪些指标？</h3>
-    <p style="font-size:14px;color:var(--text2)">支持柱塞泵、水泵、风机、磨机、空压机、余热回收六类测算，以及设备运行健康评测。输出综合节电率、年节电量（万kWh）、年节电费（万元）、CO₂减排量（吨），并给出推荐电机功率与类型。</p>
+    <p style="font-size:14px;color:var(--text2)">支持柱塞泵、水泵、渣浆泵、风机、磨机、空压机、余热回收七类测算，以及设备运行健康评测。输出综合节电率、年节电量（万kWh）、年节电费（万元）、CO₂减排量（吨），并给出推荐电机功率与类型；渣浆泵额外输出单位电耗与吨干矿电耗。</p>
     <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q3 轴功率怎么计算？</h3>
     <p style="font-size:14px;color:var(--text2)">柱塞泵：P = Q × ΔP ÷ (3.6 × η<sub>泵</sub>)；水泵：(Q × H × 1000 × 9.81) ÷ (3600 × 1000 × η<sub>泵</sub> × η<sub>传</sub>)；风机：(Q × P) ÷ (3600 × 1000 × η<sub>风</sub> × η<sub>传</sub>)。</p>
     <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q4 电机选型的安全系数怎么取？</h3>
@@ -1829,7 +2089,7 @@ window.addEventListener('DOMContentLoaded', function() {
   <script>
   (function () {
     var EVENT_ENDPOINT = window.EVENT_ENDPOINT || '/api/event';
-    var NAMES = { plunger: '柱塞泵', mill: '磨机', fan: '风机', pump: '水泵', air: '空压机', heat: '余热回收', health: '设备运行健康评测' };
+    var NAMES = { plunger: '柱塞泵', mill: '磨机', fan: '风机', pump: '水泵', slurry: '渣浆泵', air: '空压机', heat: '余热回收', health: '设备运行健康评测' };
 
     function moduleKey(tab) { return (tab.id || '').replace(/-tab$/, ''); }
 
