@@ -635,18 +635,32 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         <div class="form-group"><label>流量 Q₁ <span class="unit">m³/h</span></label><input type="number" id="slurry_Q1" value="86.4" step="0.1"></div>
         <div class="form-group"><label>扬程 H₁ <span class="unit">m</span></label><input type="number" id="slurry_H1" value="40"></div>
         <div class="form-group"><label>浆体密度 ρ₁ <span class="unit">kg/m³</span></label><input type="number" id="slurry_rho1" value="1300" step="10" oninput="slurryDensityHint()"></div>
-        <div class="form-group"><label>泵效率 η<sub>泵1</sub> <span class="unit">%（浆体工况）</span></label><input type="number" id="slurry_pumpEff1" value="48" step="0.5"></div>
+        <div class="form-group"><label>效率怎么来</label>
+          <select id="slurry_effMode" onchange="slurryEffModeChange()">
+            <option value="直接填写">直接填写（知道铭牌/厂家数据）</option>
+            <option value="按实测反算">按实测反算（测电流或功率）</option>
+            <option value="用经验值">用经验值（现场没测）</option>
+          </select>
+        </div>
+        <div class="form-group"><label>原泵实际平均效率 η<sub>泵1</sub> <span class="unit">%（浆体工况）</span></label><input type="number" id="slurry_pumpEff1" value="48" step="0.5"></div>
         <div class="form-group"><label>传动效率 η<sub>传1</sub> <span class="unit">%</span></label><input type="number" id="slurry_transEff1" value="98" step="0.1"></div>
         <div class="form-group"><label>电机效率 η<sub>电1</sub> <span class="unit">%</span></label><input type="number" id="slurry_motorEff1" value="94" step="0.1"></div>
         <div class="form-group"><label>原电机功率 <span class="unit">kW</span></label><input type="number" id="slurry_motorPower1" value="30"></div>
         <div class="form-group"><label>固含量 Cw <span class="unit">%（质量，可空）</span></label><input type="number" id="slurry_Cw1" value="37" step="1" min="0" max="80" oninput="slurryDensityHint()"></div>
         <div class="form-group"><label>固体真密度 ρs <span class="unit">kg/m³</span></label><input type="number" id="slurry_rhoS" value="2700" step="10" oninput="slurryDensityHint()"></div>
       </div>
+      <div class="form-grid" id="slurry-measureBox" style="display:none;margin-top:6px;padding-top:10px;border-top:1px dashed var(--border)">
+        <div class="form-group"><label>实测电机输入功率 <span class="unit">kW（有表就直接填）</span></label><input type="number" id="slurry_pMeas" step="0.1" placeholder="留空则按电流算" oninput="slurryRecalcEff()"></div>
+        <div class="form-group"><label>线电压 U <span class="unit">V</span></label><input type="number" id="slurry_uMeas" value="380" step="1" oninput="slurryRecalcEff()"></div>
+        <div class="form-group"><label>线电流 I <span class="unit">A</span></label><input type="number" id="slurry_iMeas" step="0.1" placeholder="钳形表实测" oninput="slurryRecalcEff()"></div>
+        <div class="form-group"><label>功率因数 cosφ</label><input type="number" id="slurry_cosMeas" value="0.85" step="0.01" min="0.3" max="1" oninput="slurryRecalcEff()"></div>
+      </div>
       <div class="note">
         <b>示例机型：4/3C-AH 离心式渣浆泵</b>（进×出 4×3 in，机架 C / 最大配用 30 kW，市场标称「90 方泵」）——铭牌额定流量 <b>86.4 m³/h</b>、扬程 <b>9~52 m</b>（示例取 40 m）、配用电机 <b>30 kW</b>；泵效率 48% 为选厂现场实测反算的浆体工况值（铭牌清水效率 71%）。请按客户实际铭牌与实测数据修改。<br>
         <span id="slurry-rhoHint"></span>
         <button type="button" onclick="slurryUseDensity()" style="margin-left:8px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font-size:13px">按固含量换算密度</button><br>
-        泵效率请填<b>浆体工况</b>效率：厂家样本多为清水试验值，输浆时实际效率通常比清水低 5~15 个百分点，建议用现场实测电功率反算（η = ρgQH ÷ 电机输入功率）。
+        <b>原泵效率不用猜：</b>选「按实测反算」，填钳形表测的电流（或功率表读数），系统按 η<sub>泵</sub> = ρgQH ÷ (3.6×10⁶ × P<sub>实测</sub> × η<sub>电</sub> × η<sub>传</sub>) 反算出<b>原泵实际平均效率</b>并回填；没测过就选「用经验值」，按流量档给默认值，再按现场情况修正。<br>
+        <span id="slurry-effHint" style="color:var(--primary-dark)"></span>
       </div>
     </div>
 
@@ -1891,6 +1905,76 @@ function slurryUseDensity() {
   showToast('已按固含量换算：ρ = ' + rho + ' kg/m³');
 }
 
+// 水力功率 kW = ρ·g·Q·H ÷ 3.6×10⁶（与效率无关，只由流量/扬程/密度决定）
+function slurryHydroPower() {
+  var f = function (id) { var v = parseFloat(document.getElementById(id).value); return isNaN(v) ? 0 : v; };
+  var Q = f('slurry_Q1'), H = f('slurry_H1'), rho = f('slurry_rho1');
+  if (!Q || !H || !rho) return 0;
+  return rho * 9.81 * Q * H / 3.6e6;
+}
+
+// 实测电机输入功率：优先用功率表读数，否则按 √3·U·I·cosφ 反算
+function slurryMeasuredPower() {
+  var f = function (id) { var v = parseFloat(document.getElementById(id).value); return isNaN(v) ? 0 : v; };
+  var p = f('slurry_pMeas');
+  if (p > 0) return { p: p, src: '功率表实测' };
+  var u = f('slurry_uMeas'), i = f('slurry_iMeas'), cos = f('slurry_cosMeas');
+  if (u > 0 && i > 0 && cos > 0) return { p: Math.sqrt(3) * u * i * cos / 1000, src: '电流反算（√3·U·I·cosφ）' };
+  return null;
+}
+
+// 渣浆泵经验效率：清水档按流量分档，浆体修正 −15 个点（现场磨损/偏离工况再下调）
+function slurryExpEff() {
+  var Q = parseFloat(document.getElementById('slurry_Q1').value) || 0;
+  var etaW = 65;
+  if (Q >= 900) etaW = 75;
+  else if (Q >= 400) etaW = 73;
+  else if (Q >= 150) etaW = 70;
+  var eta = Math.max(30, Math.min(65, etaW - 15));
+  return { etaW: etaW, eta: eta };
+}
+
+function slurryEffModeChange() {
+  var mode = document.getElementById('slurry_effMode').value;
+  var box = document.getElementById('slurry-measureBox');
+  var eff = document.getElementById('slurry_pumpEff1');
+  if (box) box.style.display = (mode === '按实测反算') ? '' : 'none';
+  if (eff) eff.readOnly = (mode !== '直接填写');
+  if (mode === '用经验值') {
+    var e = slurryExpEff();
+    if (eff) eff.value = e.eta.toFixed(0);
+    document.getElementById('slurry-effHint').textContent =
+      '经验取值：清水档 ' + e.etaW + '% − 浆体修正 15 点 = ' + e.eta + '%；磨损严重或长期偏离工况时应再下调 5~10 个点，建议后续补测电流校准。';
+  } else if (mode === '按实测反算') {
+    slurryRecalcEff();
+  } else {
+    document.getElementById('slurry-effHint').textContent =
+      '直接填写时请用浆体工况效率：厂家样本多为清水试验值，输浆实际效率通常低 5~15 个百分点。';
+  }
+}
+
+function slurryRecalcEff() {
+  var hint = document.getElementById('slurry-effHint');
+  if (!hint) return;
+  if (document.getElementById('slurry_effMode').value !== '按实测反算') return;
+  var f = function (id) { var v = parseFloat(document.getElementById(id).value); return isNaN(v) ? 0 : v; };
+  var etaM = f('slurry_motorEff1') / 100 || 0.94;
+  var etaT = f('slurry_transEff1') / 100 || 0.98;
+  var hydro = slurryHydroPower();
+  var m = slurryMeasuredPower();
+  if (!hydro) { hint.textContent = '请先填流量、扬程、浆体密度。'; return; }
+  if (!m) { hint.textContent = '请填实测功率，或填线电压+线电流+功率因数（钳形表读数即可）。'; return; }
+  var eta = hydro / (m.p * etaM * etaT);
+  var effEl = document.getElementById('slurry_pumpEff1');
+  if (!isFinite(eta) || eta <= 0) { hint.textContent = '实测数据不足或异常，无法反算。'; return; }
+  if (eta > 1) {
+    hint.textContent = '反算效率 ' + (eta * 100).toFixed(1) + '% > 100%：实测功率偏小或流量/扬程/密度输入偏大，请核对量程与单位（U 用 V、I 用 A）。';
+    return;
+  }
+  effEl.value = (eta * 100).toFixed(1);
+  hint.textContent = m.src + ' ' + m.p.toFixed(1) + ' kW ÷ 水力功率 ' + hydro.toFixed(2) + ' kW（含电机 ' + (etaM * 100).toFixed(1) + '%、传动 ' + (etaT * 100).toFixed(0) + '% 损耗）→ 反算原泵实际平均效率 ' + (eta * 100).toFixed(1) + '%';
+}
+
 function calcSlurry() {
   var f = function (id, d) {
     var el = document.getElementById(id);
@@ -1898,6 +1982,9 @@ function calcSlurry() {
     var v = parseFloat(el.value);
     return isNaN(v) ? d : v;
   };
+
+  // 若选了「按实测反算」，先刷新效率（避免用户改完参数未触发 input 事件）
+  try { slurryRecalcEff(); } catch (e) {}
 
   var Q1 = f('slurry_Q1', 0), H1 = f('slurry_H1', 0), rho1 = f('slurry_rho1', 0);
   var pumpEff1 = f('slurry_pumpEff1', 0) / 100, transEff1 = f('slurry_transEff1', 0) / 100, motorEff1 = f('slurry_motorEff1', 0) / 100;
@@ -1954,11 +2041,24 @@ function calcSlurry() {
   var pct = function (a, b) { return ((b - a) / a * 100); };
   var sign = function (v) { return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; };
 
+  // 原泵效率：实测反算核对（仅当有实测数据时出这一行）
+  var effMode = (document.getElementById('slurry_effMode') || {}).value || '直接填写';
+  var meas = (effMode === '按实测反算') ? slurryMeasuredPower() : null;
+  var hydro1 = rho1 * 9.81 * Q1 * H1 / 3.6e6;
+  var effRow = '';
+  if (meas && meas.p > 0) {
+    var etaCalc = hydro1 / (meas.p * motorEff1 * transEff1);
+    var devPt = (pumpEff1 - etaCalc) * 100;
+    var devTxt = Math.abs(devPt) < 0.05 ? '一致' : ('偏差 ' + (devPt > 0 ? '+' : '') + devPt.toFixed(1) + ' 个百分点');
+    effRow = tr3('原泵效率（实测反算核对）', (etaCalc * 100).toFixed(1) + '%', (pumpEff1 * 100).toFixed(1) + '%', devTxt);
+  }
+
   document.getElementById('slurry-detailTable').innerHTML =
     tr3('流量 (m³/h)', Q1.toLocaleString(), Q2.toLocaleString(), (Q2 - Q1 === 0 ? '持平' : ((Q2 - Q1).toLocaleString() + ' (' + sign(pct(Q1, Q2)) + ')'))) +
     tr3('扬程 (m)', H1.toLocaleString(), H2.toLocaleString(), (H2 - H1 === 0 ? '持平' : ((H2 - H1).toLocaleString() + ' (' + sign(pct(H1, H2)) + ')'))) +
     tr3('浆体密度 (kg/m³)', rho1.toFixed(0), rho2.toFixed(0), (rho2 - rho1 === 0 ? '持平' : ((rho2 - rho1).toFixed(0) + ' (' + sign(pct(rho1, rho2)) + ')'))) +
     tr3('泵效率（浆体工况）', (pumpEff1 * 100).toFixed(1) + '%', (pumpEff2 * 100).toFixed(1) + '%', ((pumpEff2 - pumpEff1) * 100).toFixed(1) + ' 个百分点') +
+    effRow +
     tr3('传动效率', (transEff1 * 100).toFixed(1) + '%', (transEff2 * 100).toFixed(1) + '%', ((transEff2 - transEff1) * 100).toFixed(1) + ' 个百分点') +
     tr3('电机效率', (motorEff1 * 100).toFixed(1) + '%', (motorEff2 * 100).toFixed(1) + '%', ((motorEff2 - motorEff1) * 100).toFixed(1) + ' 个百分点') +
     tr3('计算轴功率 (kW)', shaft1.toFixed(2), shaft2.toFixed(2), (shaft1 - shaft2).toFixed(2) + ' kW') +
