@@ -632,17 +632,18 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     <div class="card">
       <div class="section-title">🪨 一、改造前渣浆泵参数</div>
       <div class="form-grid">
-        <div class="form-group"><label>流量 Q₁ <span class="unit">m³/h</span></label><input type="number" id="slurry_Q1" value="400"></div>
-        <div class="form-group"><label>扬程 H₁ <span class="unit">m</span></label><input type="number" id="slurry_H1" value="60"></div>
+        <div class="form-group"><label>流量 Q₁ <span class="unit">m³/h</span></label><input type="number" id="slurry_Q1" value="86.4" step="0.1"></div>
+        <div class="form-group"><label>扬程 H₁ <span class="unit">m</span></label><input type="number" id="slurry_H1" value="40"></div>
         <div class="form-group"><label>浆体密度 ρ₁ <span class="unit">kg/m³</span></label><input type="number" id="slurry_rho1" value="1300" step="10" oninput="slurryDensityHint()"></div>
-        <div class="form-group"><label>泵效率 η<sub>泵1</sub> <span class="unit">%（浆体工况）</span></label><input type="number" id="slurry_pumpEff1" value="62" step="0.5"></div>
+        <div class="form-group"><label>泵效率 η<sub>泵1</sub> <span class="unit">%（浆体工况）</span></label><input type="number" id="slurry_pumpEff1" value="48" step="0.5"></div>
         <div class="form-group"><label>传动效率 η<sub>传1</sub> <span class="unit">%</span></label><input type="number" id="slurry_transEff1" value="98" step="0.1"></div>
-        <div class="form-group"><label>电机效率 η<sub>电1</sub> <span class="unit">%</span></label><input type="number" id="slurry_motorEff1" value="94.5" step="0.1"></div>
-        <div class="form-group"><label>原电机功率 <span class="unit">kW</span></label><input type="number" id="slurry_motorPower1" value="250"></div>
-        <div class="form-group"><label>固含量 Cw <span class="unit">%（质量，可空）</span></label><input type="number" id="slurry_Cw1" value="25" step="1" min="0" max="80" oninput="slurryDensityHint()"></div>
+        <div class="form-group"><label>电机效率 η<sub>电1</sub> <span class="unit">%</span></label><input type="number" id="slurry_motorEff1" value="94" step="0.1"></div>
+        <div class="form-group"><label>原电机功率 <span class="unit">kW</span></label><input type="number" id="slurry_motorPower1" value="30"></div>
+        <div class="form-group"><label>固含量 Cw <span class="unit">%（质量，可空）</span></label><input type="number" id="slurry_Cw1" value="37" step="1" min="0" max="80" oninput="slurryDensityHint()"></div>
         <div class="form-group"><label>固体真密度 ρs <span class="unit">kg/m³</span></label><input type="number" id="slurry_rhoS" value="2700" step="10" oninput="slurryDensityHint()"></div>
       </div>
       <div class="note">
+        <b>示例机型：4/3C-AH 离心式渣浆泵</b>（进×出 4×3 in，机架 C / 最大配用 30 kW，市场标称「90 方泵」）——铭牌额定流量 <b>86.4 m³/h</b>、扬程 <b>9~52 m</b>（示例取 40 m）、配用电机 <b>30 kW</b>；泵效率 48% 为选厂现场实测反算的浆体工况值（铭牌清水效率 71%）。请按客户实际铭牌与实测数据修改。<br>
         <span id="slurry-rhoHint"></span>
         <button type="button" onclick="slurryUseDensity()" style="margin-left:8px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font-size:13px">按固含量换算密度</button><br>
         泵效率请填<b>浆体工况</b>效率：厂家样本多为清水试验值，输浆时实际效率通常比清水低 5~15 个百分点，建议用现场实测电功率反算（η = ρgQH ÷ 电机输入功率）。
@@ -652,10 +653,10 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     <div class="card">
       <div class="section-title">⚡ 二、改造后渣浆泵参数</div>
       <div class="form-grid">
-        <div class="form-group"><label>流量 Q₂ <span class="unit">m³/h</span></label><input type="number" id="slurry_Q2" value="400"></div>
-        <div class="form-group"><label>扬程 H₂ <span class="unit">m</span></label><input type="number" id="slurry_H2" value="60"></div>
+        <div class="form-group"><label>流量 Q₂ <span class="unit">m³/h</span></label><input type="number" id="slurry_Q2" value="86.4" step="0.1"></div>
+        <div class="form-group"><label>扬程 H₂ <span class="unit">m</span></label><input type="number" id="slurry_H2" value="40"></div>
         <div class="form-group"><label>浆体密度 ρ₂ <span class="unit">kg/m³</span></label><input type="number" id="slurry_rho2" value="1300" step="10"></div>
-        <div class="form-group"><label>泵效率 η<sub>泵2</sub> <span class="unit">%（浆体工况）</span></label><input type="number" id="slurry_pumpEff2" value="75" step="0.5"></div>
+        <div class="form-group"><label>泵效率 η<sub>泵2</sub> <span class="unit">%（浆体工况）</span></label><input type="number" id="slurry_pumpEff2" value="66" step="0.5"></div>
         <div class="form-group"><label>传动效率 η<sub>传2</sub> <span class="unit">%</span></label><input type="number" id="slurry_transEff2" value="98" step="0.1"></div>
         <div class="form-group"><label>电机效率 η<sub>电2</sub> <span class="unit">%</span></label><input type="number" id="slurry_motorEff2" value="97.2" step="0.1"></div>
       </div>
@@ -664,7 +665,8 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         ① <b>高效水力模型 / 整泵替换</b>——效率由 60%~65% 提升到 72%~78%（同时改善过流件材质与磨损寿命）；<br>
         ② <b>变频调速</b>——工况流量长期低于额定（或需按矿量调节）时，按相似定律 Q∝n、H∝n²、P∝n³ 降速运行；<br>
         ③ <b>叶轮切削 / 降速</b>——扬程长期过剩时切小叶轮外径，避免靠阀门或回流憋压。<br>
-        ⚠️ 降流量须校核<b>临界沉降流速</b>（一般 1.5~2.5 m/s，粗颗粒取高值），不得低于沉积流速，否则堵管。
+        ⚠️ 降流量须校核<b>临界沉降流速</b>（一般 1.5~2.5 m/s，粗颗粒取高值），不得低于沉积流速，否则堵管。<br>
+        ⚠️ <b>口径提示</b>：本页按离心式渣浆泵口径计算。若改造为<b>柱塞（容积式）浆料泵</b>，轴功率应按 P = Q × ΔP ÷ (3.6 × η<sub>泵</sub>) 计算（压力已含密度影响），与密度无关，不能套用本页公式。
       </div>
     </div>
 
