@@ -181,8 +181,8 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     <button class="tab-btn" onclick="showTab('fan')">🌬 风机</button>
     <button class="tab-btn" onclick="showTab('pump')">💧 水泵</button>
     <button class="tab-btn" onclick="showTab('slurry')">🪨 渣浆泵</button>
-    <button class="tab-btn" onclick="showTab('health')">🩺 设备运行健康评测</button>
     <button class="tab-btn" onclick="showTab('motor')">⚡ 永磁电机替换</button>
+    <button class="tab-btn" onclick="showTab('health')">🩺 设备运行健康评测</button>
   </div>
   
   <!-- ==================== 柱塞泵模块 ==================== -->
@@ -753,6 +753,72 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     </div>
   </div>
 
+  <!-- ==================== 永磁电机替换测算模块（新增，2026-10-28） ==================== -->
+  <div id="motor-tab" class="tab-content" style="display:none">
+    <div class="card">
+      <div class="section-title">⚡ 一、电机与运行参数（搅拌机类机械传动负载）</div>
+      <div class="form-grid">
+        <div class="form-group"><label>电机额定功率 P<sub>n</sub> <span class="unit">kW</span></label><input type="number" id="motor_Pn" value="500" step="1" min="1"></div>
+        <div class="form-group"><label>实际负载率 <span class="unit">%（实际轴功率 ÷ 额定功率）</span></label><input type="number" id="motor_load" value="35" step="1" min="5" max="110"></div>
+        <div class="form-group"><label>年运行时间 <span class="unit">h</span></label><input type="number" id="motor_hours" value="3000" step="100" min="100"></div>
+        <div class="form-group"><label>电价 <span class="unit">元/kWh</span></label><input type="number" id="motor_price" value="0.65" step="0.01" min="0.1"></div>
+        <div class="form-group"><label>原电机类型</label>
+          <select id="motor_type" onchange="motorTypeChange()">
+            <option value="wound">绕线转子（YRKK / JR 等滑环式）</option>
+            <option value="cage2">鼠笼式（普通 / IE2）</option>
+            <option value="cage3">鼠笼式（高效 / IE3 及以上）</option>
+            <option value="unknown">不确定</option>
+          </select>
+        </div>
+        <div class="form-group"><label>原电机铭牌效率 <span class="unit">%（没有就留空，按类型取默认）</span></label><input type="number" id="motor_etaN" step="0.1" min="80" max="99" placeholder="留空自动取默认值"></div>
+        <div class="form-group"><label>拟用永磁电机额定效率 <span class="unit">%（默认 97.5）</span></label><input type="number" id="motor_eta2" value="97.5" step="0.1" min="94" max="99"></div>
+        <div class="form-group"><label>永磁电机设备单价参考 <span class="unit">元/kW（含税）</span></label><input type="number" id="motor_unitprice" value="430" step="10" min="200"></div>
+      </div>
+      <div class="note">
+        <b>为什么单独开一个「机械传动负载」模块：</b>搅拌机、密炼机、螺旋输送机这类负载属于<b>恒转矩负载</b>——所需转矩基本恒定，功率随转速线性变化。它和风机水泵（平方转矩，功率随转速三次方变化）的节能机理完全不同：<b>恒转矩负载靠变频调速省不了多少电</b>，真正的节能点在于电机本体在轻载工况下的效率与功率因数。
+        <br><br>
+        <b>负载率怎么估：</b>有功率表就直接读（实际功率 ÷ 额定功率）；只有钳形表就按 P ≈ √3 × U × I × cosφ 估算；两样都没有，搅拌机类可先按 30%~50% 填，属于常见区间。<b>这一项对结果影响最大，建议实测后复核。</b>
+        <br><br>
+        <b>本测算的范围边界：</b>只计入<b>电机本体替换</b>带来的效率提升，不含变频器更换、不含减速机与搅拌器本体改造、不含工艺优化。<b>永磁同步电机必须由支持永磁矢量控制的变频器驱动</b>，若现有变频器不支持，需另计高压变频器投资（本项目量级约 30~50 万元），届时经济性需重新评估。
+      </div>
+      <button class="btn-calc" onclick="motorCalc()">开始测算</button>
+    </div>
+
+    <div class="results" id="motor-results">
+      <div class="card">
+        <div class="result-highlight">
+          <div class="big-num" id="motor-rate">--<span class="pct">%</span></div>
+          <div class="label">预计节电率（基准情形）</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-card"><div class="value" id="motor-kwh">--</div><div class="desc">年节电量（万 kWh）</div></div>
+          <div class="metric-card"><div class="value" id="motor-money">--</div><div class="desc">年节电费（万元）</div></div>
+          <div class="metric-card"><div class="value" id="motor-payback">--</div><div class="desc">静态回收期（年）</div></div>
+        </div>
+
+        <div id="motor-verdict" style="padding:14px 16px;border-radius:10px;margin-bottom:16px;font-size:14px;line-height:1.75"></div>
+
+        <table class="detail-table" id="motor-detail"></table>
+
+        <div class="note" style="margin-top:14px">
+          <b>节电率的物理上限说明：</b>电机效率提升受热力学与电磁设计约束，<b>同功率替换的节电率上限约 2%~9%</b>，取决于原电机的能效等级、老化程度与滑环状态。任何宣称单体替换可达 15%~30% 的说法，通常是把「电机替换 + 变频调速 + 系统改造」的收益合并计算，或对比的是一个早已失效的老旧电机。本工具不做此类口径合并。
+          <br><br>
+          <b>投资口径：</b>设备价按「元/kW」估算，含税；安装调试费按设备价 15% 计（含旧机拆除、吊装、找正、电气接线、变频器整定）。实际价格随功率等级、电压等级、防护等级、是否带编码器浮动，以厂家正式报价为准。
+          <br><br>
+          <b>维护收益口径：</b>绕线转子电机的碳刷与滑环维护（含粉尘环境下的打火停机损失）按 1.0~2.0 万元/年估算，已计入回收期。鼠笼式电机无此项，仅计电费收益。
+        </div>
+      </div>
+
+      <div class="card" style="background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;text-align:center">
+        <div style="font-size:18px;font-weight:700;margin-bottom:6px">需要针对你的设备出技术方案？</div>
+        <div style="font-size:14px;opacity:.95;margin-bottom:10px;line-height:1.8">本页测算即为完整结果，可直接截图或打印保存。<br>如需结合现场工况出具改造技术方案、设备选型与报价，请联系零碳小助手。</div>
+        <div style="font-size:15px;margin-bottom:8px">请联系 零碳小助手 <b>18041136555</b></div>
+        <img src="qr-kefu.png" alt="零碳小助手 · 微信加好友二维码" style="width:150px;height:150px;border-radius:10px;background:#fff;padding:6px;margin:4px 0" onerror="this.style.display='none'">
+        <div style="font-size:12px;opacity:.85">扫码加微信 · 获取技术方案</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== 设备运行健康评测模块（新增，2026-10-12） ==================== -->
   <div id="health-tab" class="tab-content" style="display:none">
     <div class="card">
@@ -846,72 +912,6 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         <div style="font-size:14px;opacity:.95;margin-bottom:8px">请联系 零碳小助手 <b>18041136555</b></div>
         <img src="qr-kefu.png" alt="零碳小助手 · 微信加好友二维码" style="width:150px;height:150px;border-radius:10px;background:#fff;padding:6px;margin:4px 0" onerror="this.style.display='none'">
         <div style="font-size:12px;opacity:.85">扫码加微信 · 免费出方案</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== 永磁电机替换测算模块（新增，2026-10-28） ==================== -->
-  <div id="motor-tab" class="tab-content" style="display:none">
-    <div class="card">
-      <div class="section-title">⚡ 一、电机与运行参数（搅拌机类机械传动负载）</div>
-      <div class="form-grid">
-        <div class="form-group"><label>电机额定功率 P<sub>n</sub> <span class="unit">kW</span></label><input type="number" id="motor_Pn" value="500" step="1" min="1"></div>
-        <div class="form-group"><label>实际负载率 <span class="unit">%（实际轴功率 ÷ 额定功率）</span></label><input type="number" id="motor_load" value="35" step="1" min="5" max="110"></div>
-        <div class="form-group"><label>年运行时间 <span class="unit">h</span></label><input type="number" id="motor_hours" value="3000" step="100" min="100"></div>
-        <div class="form-group"><label>电价 <span class="unit">元/kWh</span></label><input type="number" id="motor_price" value="0.65" step="0.01" min="0.1"></div>
-        <div class="form-group"><label>原电机类型</label>
-          <select id="motor_type" onchange="motorTypeChange()">
-            <option value="wound">绕线转子（YRKK / JR 等滑环式）</option>
-            <option value="cage2">鼠笼式（普通 / IE2）</option>
-            <option value="cage3">鼠笼式（高效 / IE3 及以上）</option>
-            <option value="unknown">不确定</option>
-          </select>
-        </div>
-        <div class="form-group"><label>原电机铭牌效率 <span class="unit">%（没有就留空，按类型取默认）</span></label><input type="number" id="motor_etaN" step="0.1" min="80" max="99" placeholder="留空自动取默认值"></div>
-        <div class="form-group"><label>拟用永磁电机额定效率 <span class="unit">%（默认 97.5）</span></label><input type="number" id="motor_eta2" value="97.5" step="0.1" min="94" max="99"></div>
-        <div class="form-group"><label>永磁电机设备单价参考 <span class="unit">元/kW（含税）</span></label><input type="number" id="motor_unitprice" value="430" step="10" min="200"></div>
-      </div>
-      <div class="note">
-        <b>为什么单独开一个「机械传动负载」模块：</b>搅拌机、密炼机、螺旋输送机这类负载属于<b>恒转矩负载</b>——所需转矩基本恒定，功率随转速线性变化。它和风机水泵（平方转矩，功率随转速三次方变化）的节能机理完全不同：<b>恒转矩负载靠变频调速省不了多少电</b>，真正的节能点在于电机本体在轻载工况下的效率与功率因数。
-        <br><br>
-        <b>负载率怎么估：</b>有功率表就直接读（实际功率 ÷ 额定功率）；只有钳形表就按 P ≈ √3 × U × I × cosφ 估算；两样都没有，搅拌机类可先按 30%~50% 填，属于常见区间。<b>这一项对结果影响最大，建议实测后复核。</b>
-        <br><br>
-        <b>本测算的范围边界：</b>只计入<b>电机本体替换</b>带来的效率提升，不含变频器更换、不含减速机与搅拌器本体改造、不含工艺优化。<b>永磁同步电机必须由支持永磁矢量控制的变频器驱动</b>，若现有变频器不支持，需另计高压变频器投资（本项目量级约 30~50 万元），届时经济性需重新评估。
-      </div>
-      <button class="btn-calc" onclick="motorCalc()">开始测算</button>
-    </div>
-
-    <div class="results" id="motor-results">
-      <div class="card">
-        <div class="result-highlight">
-          <div class="big-num" id="motor-rate">--<span class="pct">%</span></div>
-          <div class="label">预计节电率（基准情形）</div>
-        </div>
-        <div class="metric-row">
-          <div class="metric-card"><div class="value" id="motor-kwh">--</div><div class="desc">年节电量（万 kWh）</div></div>
-          <div class="metric-card"><div class="value" id="motor-money">--</div><div class="desc">年节电费（万元）</div></div>
-          <div class="metric-card"><div class="value" id="motor-payback">--</div><div class="desc">静态回收期（年）</div></div>
-        </div>
-
-        <div id="motor-verdict" style="padding:14px 16px;border-radius:10px;margin-bottom:16px;font-size:14px;line-height:1.75"></div>
-
-        <table class="detail-table" id="motor-detail"></table>
-
-        <div class="note" style="margin-top:14px">
-          <b>节电率的物理上限说明：</b>电机效率提升受热力学与电磁设计约束，<b>同功率替换的节电率上限约 2%~9%</b>，取决于原电机的能效等级、老化程度与滑环状态。任何宣称单体替换可达 15%~30% 的说法，通常是把「电机替换 + 变频调速 + 系统改造」的收益合并计算，或对比的是一个早已失效的老旧电机。本工具不做此类口径合并。
-          <br><br>
-          <b>投资口径：</b>设备价按「元/kW」估算，含税；安装调试费按设备价 15% 计（含旧机拆除、吊装、找正、电气接线、变频器整定）。实际价格随功率等级、电压等级、防护等级、是否带编码器浮动，以厂家正式报价为准。
-          <br><br>
-          <b>维护收益口径：</b>绕线转子电机的碳刷与滑环维护（含粉尘环境下的打火停机损失）按 1.0~2.0 万元/年估算，已计入回收期。鼠笼式电机无此项，仅计电费收益。
-        </div>
-      </div>
-
-      <div class="card" style="background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;text-align:center">
-        <div style="font-size:18px;font-weight:700;margin-bottom:6px">想要精确到你这台设备的测算？</div>
-        <div style="font-size:14px;opacity:.95;margin-bottom:10px;line-height:1.8">网页只能给出区间估算。完整测算需要核对铭牌、实测运行电流、核算变频器兼容性，<br>并出具含设备选型与回收期分析的技术方案。</div>
-        <div style="font-size:15px;margin-bottom:8px">请联系 零碳小助手 <b>18041136555</b></div>
-        <img src="qr-kefu.png" alt="零碳小助手 · 微信加好友二维码" style="width:150px;height:150px;border-radius:10px;background:#fff;padding:6px;margin:4px 0" onerror="this.style.display='none'">
-        <div style="font-size:12px;opacity:.85">扫码加微信 · 免费出一份完整测算</div>
       </div>
     </div>
   </div>
@@ -2272,8 +2272,8 @@ function motorCalc() {
   v.style.background = bg;
   v.style.borderLeft = '4px solid ' + bd;
   v.innerHTML = '<b style="color:' + bd + '">' + title + '</b><br>' + body
-    + '<br><br><span style="color:#64748b">下一步：扫码加零碳小助手，把这台设备的铭牌照片发过去，'
-    + '我们免费帮你核一遍参数。</span>';
+    + '<br><br><span style="color:#64748b">需要改造技术方案，可加零碳小助手微信，'
+    + '把铭牌照片发过去即可。</span>';
 
   // ---- 明细表 ----
   let html = '<tr><th>项目</th><th>保守</th><th>基准</th><th>乐观</th></tr>';
