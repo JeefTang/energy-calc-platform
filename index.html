@@ -482,8 +482,15 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     <div class="card">
       <div class="section-title">🌬 一、改造前风机参数</div>
       <div class="form-grid">
+        <div class="form-group"><label>设备类型</label><select id="fan_kind" onchange="fanKindChange()">
+          <option value="离心风机">离心风机（送/引/一次/除尘/冷却）</option>
+          <option value="轴流风机">轴流风机（含动叶可调）</option>
+          <option value="罗茨鼓风机">罗茨鼓风机（容积式）</option>
+          <option value="真空泵">真空泵（罗茨/液环/干式）</option>
+        </select><small id="fan_kind_tip" style="display:block;font-size:12px;color:#888;margin-top:4px">送/引/一次/除尘/冷却风机主力机型</small></div>
+        <div class="form-group"><label>吸气绝对压力 <span class="unit">kPa</span></label><input type="number" id="fan_pin" value="101.325" step="0.1"><small>通风机保持 101.3；真空泵填实际吸气绝压（如 40）</small></div>
         <div class="form-group"><label>风量 Q₁ <span class="unit">m³/h</span></label><input type="number" id="fan_Q1" value="120000"></div>
-        <div class="form-group"><label>风压 P₁ <span class="unit">Pa</span></label><input type="number" id="fan_P1" value="2500"></div>
+        <div class="form-group"><label>全压/压差 P₁ <span class="unit">Pa</span></label><input type="number" id="fan_P1" value="2500"><small>真空泵填正压差（排气−吸气）</small></div>
         <div class="form-group"><label>电机功率 <span class="unit">kW</span></label><input type="number" id="fan_motorPower1" value="710"></div>
         <div class="form-group"><label>风机效率 η<sub>风1</sub> <span class="unit">%</span></label><input type="number" id="fan_fanEff1" value="0.75" step="0.01"></div>
         <div class="form-group"><label>传动效率 η<sub>传1</sub> <span class="unit">%</span></label><input type="number" id="fan_transEff1" value="0.98" step="0.01"></div>
@@ -1180,110 +1187,159 @@ function calcMill() {
   showToast('✅ 磨机节能测算完成');
 }
 
-// ==================== 风机计算 ====================
-function calcFan() {
-  // 获取输入值
-  const Q1 = parseFloat(document.getElementById('fan_Q1').value);
-  const P1 = parseFloat(document.getElementById('fan_P1').value);
-  const fanEff1 = parseFloat(document.getElementById('fan_fanEff1').value);
-  const transEff1 = parseFloat(document.getElementById('fan_transEff1').value);
-  const motorEff1 = parseFloat(document.getElementById('fan_motorEff1').value);
-  
-  const Q2 = parseFloat(document.getElementById('fan_Q2').value);
-  const P2 = parseFloat(document.getElementById('fan_P2').value);
-  const fanEff2 = parseFloat(document.getElementById('fan_fanEff2').value);
-  const transEff2 = parseFloat(document.getElementById('fan_transEff2').value);
-  const motorEff2 = parseFloat(document.getElementById('fan_motorEff2').value);
-  
-  const hours = parseFloat(document.getElementById('fan_hours').value);
-  const price = parseFloat(document.getElementById('fan_price').value);
-  
-  // 验证输入
-  if (!Q1 || !P1 || !fanEff1 || !motorEff1 || !Q2 || !P2 || !fanEff2 || !motorEff2) {
-    showToast('请填写所有必填参数');
-    return;
+// ==================== 风机计算（v1.1 · 2026-11-13：类型 / 压缩性 / 禁区） ====================
+// 设备类型 → 改造后效率基准 + 可用改造路线（罗茨/真空泵为容积式，不做叶轮改型）
+const FAN_KIND_CFG = {
+  '离心风机':   { eff: 0.82, allow: ['叶轮改造', '整机替换', '变频改造'], tip: '送/引/一次/除尘/冷却风机主力机型，最成熟' },
+  '轴流风机':   { eff: 0.86, allow: ['叶轮改造', '整机替换', '变频改造'], tip: '叶片改型，效率基准 86%，节电空间通常小于离心' },
+  '罗茨鼓风机': { eff: 0.80, allow: ['整机替换', '变频改造'], tip: '容积式：风量不随压力变，只能整机替换（磁悬浮/高速离心）或变频' },
+  '真空泵':     { eff: 0.78, allow: ['整机替换', '变频改造'], tip: '按吸气绝压 + 压差算，压比高，必须用等熵式' }
+};
+const FAN_PATM = 101.325;      // 标准大气压 kPa
+const FAN_BAN_PT = 300;        // 压差禁区 Pa
+const FAN_BAN_Q = 1500000;     // 风量禁区 m³/h
+const FAN_COMPRESS_R = 1.2;    // 压比 > 1.2 切等熵
+
+// 气体功率 kW：不可压缩 Q·Δp 与 等熵 3.5·p1·Q·(r^0.2857−1)
+function fanAirPower(Q, dp, p1Pa) {
+  const inc = Q * dp / 3.6e6;
+  const r = p1Pa > 0 ? (p1Pa + dp) / p1Pa : 1;
+  const isen = p1Pa > 0 ? 3.5 * p1Pa * Q * (Math.pow(r, 0.2857) - 1) / 3.6e6 : inc;
+  const useIsen = r > FAN_COMPRESS_R;
+  return { inc: inc, isen: isen, r: r, useIsen: useIsen, p: useIsen ? isen : inc };
+}
+
+// 纯计算核心（无 DOM，便于自测）
+function fanCalcCore(o) {
+  const warns = [];
+  const kind = o.kind || '离心风机';
+  const cfg = FAN_KIND_CFG[kind] || FAN_KIND_CFG['离心风机'];
+  const dp1 = Math.abs(o.dp1 || 0);
+  if (!o.Q1 || !dp1) return { ok: false, msg: '请填写风量与全压/压差' };
+  if (dp1 < FAN_BAN_PT) return { ok: false, msg: '压差 ' + dp1.toFixed(0) + ' Pa < ' + FAN_BAN_PT + ' Pa：低压风机，改造无账算（不适用）' };
+  if (o.Q1 > FAN_BAN_Q) return { ok: false, msg: '风量 > 150 万 m³/h，超出业绩范围（不适用）' };
+
+  const p1kpa = (o.pin && o.pin > 0) ? o.pin : FAN_PATM;
+  const p1Pa = p1kpa * 1000;
+  const a1 = fanAirPower(o.Q1, dp1, p1Pa);
+  const a2 = fanAirPower(o.Q2 || o.Q1, Math.abs(o.dp2 || dp1), p1Pa);
+  if (a1.r > 10) return { ok: false, msg: '压比 ' + a1.r.toFixed(2) + ' 过大，疑单位填错（不适用）' };
+
+  if (kind === '罗茨鼓风机') warns.push('容积式风机：相似定律与叶轮改型均不适用，节电只能靠整机替换（磁悬浮/高速离心）或变频');
+  if (kind === '真空泵') {
+    if (!(o.pin && o.pin > 0)) warns.push('真空泵未填吸气绝对压力 → 暂按大气压计，压比偏小，建议补填');
+    if (p1kpa >= FAN_PATM) warns.push('吸气绝压 ' + p1kpa.toFixed(1) + ' kPa ≥ 大气压 → 不是真空工况，请核对');
   }
-  
-  // 1. 计算轴功率（单位：kW）
-  const shaftPower1 = (Q1 * P1) / (3600 * 1000 * fanEff1 * transEff1);
-  const shaftPower2 = (Q2 * P2) / (3600 * 1000 * fanEff2 * transEff2);
-  
-  // 2. 计算电机输入功率
-  const motorInputPower1 = shaftPower1 / motorEff1;
-  const motorInputPower2 = shaftPower2 / motorEff2;
-  
-  // 3. 计算节能率（基于轴功率）
-  const savingRate = (shaftPower1 - shaftPower2) / shaftPower1;
-  
-  // 4. 计算年节能量和节电费
-  const annualSave = (motorInputPower1 - motorInputPower2) * hours;
-  const annualMoney = annualSave * price;
-  
-  // 5. 计算CO₂减排量
-  const co2Reduction = annualSave * 0.4 / 1000;
-  
-  // 6. 获取推荐电机功率
-  const motorPower1 = parseFloat(document.getElementById('fan_motorPower1').value);
-  
-  // 更新结果显示
-  document.getElementById('fan-savingRate').innerHTML = (savingRate * 100).toFixed(2) + '<span class="pct">%</span>';
-  document.getElementById('fan-annualSave').textContent = (annualSave / 10000).toFixed(2);
-  document.getElementById('fan-annualMoney').textContent = (annualMoney / 10000).toFixed(2);
-  document.getElementById('fan-CO2').textContent = co2Reduction.toFixed(1);
-  
-  // 详细结果表格
-  document.getElementById('fan-detailTable').innerHTML = 
-    tr3('风量 (m³/h)', Q1.toLocaleString(), Q2.toLocaleString(), ((Q1 - Q2).toLocaleString() + ' (' + ((Q1 - Q2)/Q1*100).toFixed(1) + '%)')) +
-    tr3('风压 (Pa)', P1.toLocaleString(), P2.toLocaleString(), ((P1 - P2).toLocaleString() + ' (' + ((P1 - P2)/P1*100).toFixed(1) + '%)')) +
-    tr3('风机效率', (fanEff1*100).toFixed(1) + '%', (fanEff2*100).toFixed(1) + '%', ((fanEff2 - fanEff1)*100).toFixed(1) + '个百分点') +
-    tr3('电机效率', (motorEff1*100).toFixed(1) + '%', (motorEff2*100).toFixed(1) + '%', ((motorEff2 - motorEff1)*100).toFixed(1) + '个百分点') +
+  if (kind === '轴流风机') warns.push('轴流风机效率基准 86%，改造增益主要在变频/工况，慎报高节电率');
+  if (kind === '真空泵' && o.eta1 > 0 && o.eta1 > cfg.eff) warns.push('原效率填写值高于改造后基准，请核对');
+
+  const tr1 = o.tr1 || 0.98, tr2 = o.tr2 || 0.98;
+  const m1 = o.m1 || 0.953, m2 = o.m2 || 0.976;
+  const e1 = o.e1 || 0.75, e2 = o.e2 || cfg.eff;
+
+  const shaft1 = a1.p / (e1 * tr1);
+  const shaft2 = a2.p / (e2 * tr2);
+  const in1 = shaft1 / m1;
+  const in2 = shaft2 / m2;
+  const rate = shaft1 > 0 ? (shaft1 - shaft2) / shaft1 : 0;
+  const annualSave = (in1 - in2) * o.hours;          // kWh
+  const annualMoney = annualSave * o.price;          // 元
+
+  if (a1.useIsen) warns.push('压比 ' + a1.r.toFixed(2) + ' > 1.2 → 已切等熵压缩式（不可压缩式会高估风功率 '
+    + ((a1.inc / a1.isen - 1) * 100).toFixed(1) + '%）');
+  if (rate > 0.6) warns.push('节电率 ' + (rate * 100).toFixed(1) + '% 偏高，请核对前后是否为同一工况点');
+
+  return {
+    ok: true, kind: kind, cfg: cfg, mode: a1.useIsen ? '等熵压缩' : '不可压缩',
+    ratio: a1.r, p1kpa: p1kpa, inc1: a1.inc, isen1: a1.isen, air1: a1.p, air2: a2.p,
+    shaft1: shaft1, shaft2: shaft2, in1: in1, in2: in2, rate: rate,
+    annualSave: annualSave, annualMoney: annualMoney,
+    co2: annualSave * 0.4 / 1000, warns: warns
+  };
+}
+
+function fanKindChange() {
+  const k = document.getElementById('fan_kind').value;
+  const cfg = FAN_KIND_CFG[k] || FAN_KIND_CFG['离心风机'];
+  const tip = document.getElementById('fan_kind_tip');
+  if (tip) tip.textContent = cfg.tip;
+  const e2 = document.getElementById('fan_fanEff2');
+  if (e2) e2.value = cfg.eff;
+  const pinBox = document.getElementById('fan_pin');
+  if (pinBox) { pinBox.value = (k === '真空泵') ? 40 : 101.325; }
+}
+
+function calcFan() {
+  const g = id => parseFloat(document.getElementById(id).value);
+  const v = id => document.getElementById(id).value;
+  const kind = document.getElementById('fan_kind').value;
+  const motorPower1 = parseFloat(document.getElementById('fan_motorPower1').value) || 0;
+
+  const r = fanCalcCore({
+    kind: kind, Q1: g('fan_Q1'), dp1: g('fan_P1'), pin: g('fan_pin'),
+    Q2: g('fan_Q2'), dp2: g('fan_P2'),
+    e1: g('fan_fanEff1'), tr1: g('fan_transEff1'), m1: g('fan_motorEff1'),
+    e2: g('fan_fanEff2'), tr2: g('fan_transEff2'), m2: g('fan_motorEff2'),
+    hours: g('fan_hours'), price: g('fan_price'), eta1: 0
+  });
+
+  if (!r.ok) { showToast('⚠️ ' + r.msg); return; }
+
+  // 显示结果
+  document.getElementById('fan-savingRate').innerHTML = (r.rate * 100).toFixed(2) + '<span class="pct">%</span>';
+  document.getElementById('fan-annualSave').textContent = (r.annualSave / 10000).toFixed(2);
+  document.getElementById('fan-annualMoney').textContent = (r.annualMoney / 10000).toFixed(2);
+  document.getElementById('fan-CO2').textContent = r.co2.toFixed(1);
+
+  const Q1 = g('fan_Q1'), P1 = g('fan_P1'), Q2 = g('fan_Q2'), P2 = g('fan_P2');
+  const e1 = g('fan_fanEff1'), e2 = g('fan_fanEff2');
+  const tr1 = g('fan_transEff1'), tr2 = g('fan_transEff2');
+  const m1 = g('fan_motorEff1'), m2 = g('fan_motorEff2');
+
+  const warnRow = r.warns.length ? '<div style="margin:8px 0;padding:10px 12px;background:#fff8e6;border:1px solid #ffe0a3;border-radius:8px;font-size:13px;color:#7a5a00;line-height:1.7">'
+    + r.warns.map(w => '⚠️ ' + w).join('<br>') + '</div>' : '';
+
+  document.getElementById('fan-detailTable').innerHTML = warnRow +
+    tr3('设备类型 / 用途', r.kind, '—', '—') +
+    tr3('压缩性口径', r.mode + '（压比 ' + r.ratio.toFixed(2) + '，吸气 ' + r.p1kpa.toFixed(1) + ' kPa）', '—',
+        r.mode === '等熵压缩' ? '不可压缩式会高估至 ' + r.inc1.toFixed(1) + ' kW，已纠正' : '压比 ≤1.2，简化式误差 <7%') +
+    tr3('风量 (m³/h)', Q1.toLocaleString(), Q2.toLocaleString(), ((Q1 - Q2).toLocaleString() + ' (' + ((Q1 - Q2) / Q1 * 100).toFixed(1) + '%)')) +
+    tr3('全压/压差 (Pa)', P1.toLocaleString(), P2.toLocaleString(), ((P1 - P2).toLocaleString() + ' (' + ((P1 - P2) / P1 * 100).toFixed(1) + '%)')) +
+    tr3('风机效率', (e1 * 100).toFixed(1) + '%', (e2 * 100).toFixed(1) + '%', ((e2 - e1) * 100).toFixed(1) + ' 个百分点') +
+    tr3('电机效率', (m1 * 100).toFixed(1) + '%', (m2 * 100).toFixed(1) + '%', ((m2 - m1) * 100).toFixed(1) + ' 个百分点') +
     tr3('原始电机功率 (kW)', motorPower1.toFixed(0) + ' kW', '—', '—') +
-    tr3('计算轴功率 (kW)', shaftPower1.toFixed(2), shaftPower2.toFixed(2), (shaftPower1 - shaftPower2).toFixed(2) + ' kW') +
-    tr3('计算电机输入功率 (kW)', motorInputPower1.toFixed(2), motorInputPower2.toFixed(2), (motorInputPower1 - motorInputPower2).toFixed(2) + ' kW') +
-    tr3('年耗电量 (万kWh)', (motorInputPower1 * hours / 10000).toFixed(2), (motorInputPower2 * hours / 10000).toFixed(2), (annualSave / 10000).toFixed(2));
-  
-  // 获取推荐电机功率
+    tr3('计算轴功率 (kW)', r.shaft1.toFixed(2), r.shaft2.toFixed(2), (r.shaft1 - r.shaft2).toFixed(2) + ' kW') +
+    tr3('计算电机输入功率 (kW)', r.in1.toFixed(2), r.in2.toFixed(2), (r.in1 - r.in2).toFixed(2) + ' kW') +
+    tr3('年耗电量 (万kWh)', (r.in1 * g('fan_hours') / 10000).toFixed(2), (r.in2 * g('fan_hours') / 10000).toFixed(2), (r.annualSave / 10000).toFixed(2));
+
+  // 电机选型
   function getRecommendedMotorPower(calculatedShaftPower, equipmentType) {
     let safetyFactor = 1.2;
     if (calculatedShaftPower < 5) safetyFactor = 1.1;
     if (calculatedShaftPower < 10) safetyFactor = 1.15;
     if (calculatedShaftPower > 100) safetyFactor = 1.25;
     if (equipmentType === 'fan' && calculatedShaftPower > 50) safetyFactor += 0.05;
-    
     const recommendedPower = calculatedShaftPower * safetyFactor;
     const standardPowers = [0.75, 1.1, 1.5, 2.2, 3, 4, 5.5, 7.5, 11, 15, 18.5, 22, 30, 37, 45, 55, 75, 90, 110, 132, 160, 200, 250, 315, 355, 400, 450, 500, 560, 630, 710, 800, 900, 1000];
-    
     let selectedPower = null;
-    for (const power of standardPowers) {
-      if (power >= recommendedPower) {
-        selectedPower = power;
-        break;
-      }
-    }
-    
-    if (!selectedPower) {
-      selectedPower = Math.ceil(recommendedPower / 50) * 50;
-    }
-    
-    return { calculatedShaftPower, safetyFactor, recommendedPower, selectedPower };
+    for (const power of standardPowers) { if (power >= recommendedPower) { selectedPower = power; break; } }
+    if (!selectedPower) selectedPower = Math.ceil(recommendedPower / 50) * 50;
+    return { calculatedShaftPower: calculatedShaftPower, safetyFactor: safetyFactor, recommendedPower: recommendedPower, selectedPower: selectedPower };
   }
-  
-  const motorSelection = getRecommendedMotorPower(shaftPower2, 'fan');
-  const originalMatch = ((shaftPower1 / motorEff1) / motorPower1 * 100).toFixed(1);
-  
-  // 电机选型表格
-  document.getElementById('fan-motorTable').innerHTML = 
+  const motorSelection = getRecommendedMotorPower(r.shaft2, 'fan');
+  const originalMatch = motorPower1 > 0 ? (r.in1 / motorPower1 * 100).toFixed(1) : '—';
+
+  document.getElementById('fan-motorTable').innerHTML =
     tr2('原始电机功率', motorPower1 + ' kW', '用户输入的原始设备电机功率') +
-    tr2('计算轴功率', motorSelection.calculatedShaftPower.toFixed(2) + ' kW', '改造后风机所需轴功率') +
+    tr2('计算轴功率', motorSelection.calculatedShaftPower.toFixed(2) + ' kW', '改造后风机所需轴功率（' + r.mode + '）') +
     tr2('安全系数', motorSelection.safetyFactor.toFixed(2), '根据功率大小自动选择') +
     tr2('计算额定功率', motorSelection.recommendedPower.toFixed(2) + ' kW', '计算轴功率 × 安全系数') +
     tr2('推荐电机功率', motorSelection.selectedPower + ' kW', '就近的标准功率等级') +
     tr2('推荐电机类型', '永磁同步电机', '效率高、功率因数高') +
     tr2('原始设备匹配度', originalMatch + '%', '计算功率/原始功率 × 100%');
-  
-  // 显示结果
+
   document.getElementById('fan-results').classList.add('show');
-  showToast('✅ 风机节能测算完成');
+  showToast('✅ 风机节能测算完成（' + r.kind + ' · ' + r.mode + '）');
 }
 
 // ==================== 水泵计算 ====================
