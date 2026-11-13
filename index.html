@@ -1270,6 +1270,11 @@ function fanKindChange() {
 }
 
 function calcFan() {
+  try { return calcFanInner(); }
+  catch (e) { console.error(e); showToast('⚠️ 测算出错：' + e.message + '（请把这段提示发给我们）'); }
+}
+
+function calcFanInner() {
   const g = id => parseFloat(document.getElementById(id).value);
   const v = id => document.getElementById(id).value;
   const kind = document.getElementById('fan_kind').value;
@@ -1293,8 +1298,7 @@ function calcFan() {
 
   const Q1 = g('fan_Q1'), P1 = g('fan_P1'), Q2 = g('fan_Q2'), P2 = g('fan_P2');
   const e1 = g('fan_fanEff1'), e2 = g('fan_fanEff2');
-  const tr1 = g('fan_transEff1'), tr2 = g('fan_transEff2');
-  const m1 = g('fan_motorEff1'), m2 = g('fan_motorEff2');
+  const m1 = g('fan_motorEff1'), m2 = g('fan_motorEff2');   // 注意：不要用 tr1/tr2 命名，会覆盖表格助手函数 tr2()
 
   const warnRow = r.warns.length ? '<div style="margin:8px 0;padding:10px 12px;background:#fff8e6;border:1px solid #ffe0a3;border-radius:8px;font-size:13px;color:#7a5a00;line-height:1.7">'
     + r.warns.map(w => '⚠️ ' + w).join('<br>') + '</div>' : '';
