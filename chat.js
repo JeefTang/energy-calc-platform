@@ -51,7 +51,19 @@
     aiPaused: "The engineer has your message and will reply here shortly."
   };
 
-  var QR_SRC = "qr-kefu.png";          /* 零碳小助手微信二维码（站点根目录） */
+  /* 零碳小助手微信二维码：按 chat.js 自身路径解析，兼容 /m/ 手机页与 Pages 子路径 */
+  var QR_SRC = (function () {
+    try {
+      var s = document.currentScript, list = document.getElementsByTagName("script");
+      if (!s || !/chat\.js(\?|$)/.test(s.src || "")) {
+        for (var i = list.length - 1; i >= 0; i--) {
+          if (/chat\.js(\?|$)/.test(list[i].src || "")) { s = list[i]; break; }
+        }
+      }
+      if (s && s.src) return s.src.replace(/chat\.js(\?.*)?$/, "qr-kefu.png");
+    } catch (e) {}
+    return "qr-kefu.png";
+  })();
   var EMAIL = "18041136555@189.cn";
 
   /* ---------- 本地知识库：全部为本站已公开口径，勿加未验证数字 ---------- */
