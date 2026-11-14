@@ -80,9 +80,38 @@ body{
 .metric-card{padding:12px 8px !important}
 .metric-card .value{font-size:19px !important}
 .metric-card .desc{font-size:11px !important}
-.detail-table{font-size:13px !important}
-.detail-table th,.detail-table td{padding:9px 8px !important;white-space:normal}
-.detail-table td:last-child{white-space:nowrap}
+/* ---------- 详细计算结果：手机端卡片式重排（v2，2026-11-14）---------- */
+.detail-table{font-size:13px !important;margin-top:10px !important}
+
+/* 两列 / 四列 → 卡片（三列表：项目/数值/说明 保持表格可横滑） */
+.detail-table[data-dt="2"],
+.detail-table[data-dt="4"]{display:block !important;width:100% !important}
+.detail-table[data-dt="2"] thead,
+.detail-table[data-dt="4"] thead{display:none !important}
+.detail-table[data-dt="2"] tbody,
+.detail-table[data-dt="4"] tbody{display:block !important;width:100% !important}
+.detail-table[data-dt="2"] tr,
+.detail-table[data-dt="4"] tr{
+  display:block !important;background:#fff !important;border:1px solid #e2eeeb !important;
+  border-radius:10px !important;padding:9px 12px !important;margin:0 0 8px !important;
+}
+.detail-table tr.dt-key{background:linear-gradient(135deg,#f0fdfa,#ecfdf5) !important;border-color:#99f6e4 !important}
+.detail-table[data-dt="2"] td,
+.detail-table[data-dt="4"] td{display:block !important;border:0 !important;padding:0 !important;text-align:left !important;white-space:normal !important}
+/* 两列：项目 + 数值 */
+.detail-table[data-dt="2"] tr>td:nth-child(1){font-size:12px !important;color:#64748b !important;font-weight:600 !important;margin-bottom:2px}
+.detail-table[data-dt="2"] tr>td:nth-child(2){font-size:15px !important;font-weight:700 !important;color:#1e293b !important}
+.detail-table tr.dt-key>td:nth-child(2){color:#0f766e !important}
+/* 四列（改造前 / 改造后 / 节约）：三宫格 */
+.detail-table[data-dt="4"] tr{display:grid !important;grid-template-columns:1fr 1fr 1fr;gap:4px 8px}
+.detail-table[data-dt="4"] tr>td:nth-child(1){grid-column:1/-1;font-size:12px !important;color:#64748b !important;font-weight:600 !important;margin-bottom:4px}
+.detail-table[data-dt="4"] tr>td:nth-child(n+2){font-size:14px !important;font-weight:700 !important;color:#1e293b !important}
+.detail-table[data-dt="4"] tr>td:nth-child(n+2)::before{
+  display:block;font-size:10px;font-weight:500;color:#94a3b8;margin-bottom:1px;letter-spacing:.02em
+}
+.detail-table[data-dt="4"] tr>td:nth-child(2)::before{content:"改造前"}
+.detail-table[data-dt="4"] tr>td:nth-child(3)::before{content:"改造后"}
+.detail-table[data-dt="4"] tr>td:nth-child(4)::before{content:"节约"}
 
 /* ---------- 弹层 ---------- */
 .toast{width:88%;text-align:center;font-size:13px}
