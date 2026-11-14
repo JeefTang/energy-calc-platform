@@ -192,8 +192,8 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       <div class="form-grid">
         <div class="form-group"><label>设备名称（旧设备）</label><input type="text" id="plunger_oldName" value="旧注水泵"></div>
         <div class="form-group"><label>匹配设备名称（新设备）</label><input type="text" id="plunger_newName" value="永磁变频注水泵"></div>
-        <div class="form-group"><label>平均日注水量 <span class="unit">m³</span></label><input type="number" id="plunger_dailyWater" value="500"></div>
-        <div class="form-group"><label>平均日耗电量 <span class="unit">kWh</span></label><input type="number" id="plunger_dailyPower" value="1200"></div>
+        <div class="form-group"><label>平均日注水量 <span class="unit">m³</span></label><input type="number" id="plunger_dailyWater" value="500" oninput="updatePlungerFromDaily()"><small>按台账填，自动折算平均流量与输入功率</small></div>
+        <div class="form-group"><label>平均日耗电量 <span class="unit">kWh</span></label><input type="number" id="plunger_dailyPower" value="1200" oninput="updatePlungerFromDaily()"><small>电表/台账读数，自动折算平均输入功率</small></div>
         <div class="form-group"><label>平均流量 <span class="unit">m³/h</span></label><input type="number" id="plunger_avgFlow" value="25" oninput="updatePlungerMotorPower()"></div>
         <div class="form-group"><label>平均输入功率 <span class="unit">kW</span></label><input type="number" id="plunger_avgInputPower" value="50"></div>
         <div class="form-group"><label>进口压力 <span class="unit">MPa</span></label><input type="number" id="plunger_inPressure" value="0.1" step="0.01" oninput="updatePlungerMotorPower()"></div>
@@ -206,12 +206,18 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     <div class="card">
       <div class="section-title">⚡ 二、效率参数</div>
       <div class="form-grid">
-        <div class="form-group"><label>泵效率 <span class="unit">%</span></label><input type="number" id="plunger_pumpEff" value="0.85" step="0.01" min="0.1" max="1" oninput="updatePlungerMotorPower()"></div>
+        <div class="form-group"><label>改造机型（新设备）</label><select id="plunger_newType" onchange="plungerNewTypeChange()">
+          <option value="柱塞泵标准">柱塞泵（标准型）· 参考 90%</option>
+          <option value="柱塞泵高效">柱塞泵（高效/优质样本）· 参考 92%</option>
+          <option value="柱塞泵含固">柱塞泵（含固/浆体工况）· 参考 85%</option>
+          <option value="custom">自定义（手动填）</option>
+        </select><small id="plunger_newType_tip">柱塞泵整机效率参考 90%（老唐口径 ≥90%；可按厂家样本改）</small></div>
+        <div class="form-group"><label>新泵效率 <span class="unit">%（自动填写，可手改）</span></label><input type="number" id="plunger_pumpEff" value="0.90" step="0.01" min="0.1" max="1" oninput="updatePlungerMotorPower()"></div>
         <div class="form-group"><label>电机效率 <span class="unit">%</span></label><input type="number" id="plunger_motorEff" value="0.92" step="0.01" min="0.1" max="1" oninput="updatePlungerMotorPower()"></div>
         <div class="form-group"><label>变频器效率 <span class="unit">%</span></label><input type="number" id="plunger_vfdEff" value="0.97" step="0.01" min="0.1" max="1" oninput="updatePlungerMotorPower()"></div>
         <div class="form-group"><label>配套电机功率 <span class="unit">kW</span></label><input type="number" id="plunger_motorPower" value="55" readonly></div>
       </div>
-      <div class="note">注：配套电机功率根据流量和压力自动计算</div>
+      <div class="note">注：配套电机功率根据流量和压力自动计算。<b>原泵效率不用你填</b>——系统按「原工况有效功率 ÷ 实测平均输入功率」自动反算，结果直接列在下面明细里。</div>
     </div>
     
     <button class="btn-calc" onclick="calcPlunger()">🔍 开始测算柱塞泵节能</button>
@@ -489,12 +495,13 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           <option value="真空泵">真空泵（罗茨/液环/干式）</option>
         </select><small id="fan_kind_tip" style="display:block;font-size:12px;color:#888;margin-top:4px">送/引/一次/除尘/冷却风机主力机型</small></div>
         <div class="form-group"><label>吸气绝对压力 <span class="unit">kPa</span></label><input type="number" id="fan_pin" value="101.325" step="0.1"><small>通风机保持 101.3；真空泵填实际吸气绝压（如 40）</small></div>
-        <div class="form-group"><label>风量 Q₁ <span class="unit">m³/h</span></label><input type="number" id="fan_Q1" value="120000"></div>
-        <div class="form-group"><label>全压/压差 P₁ <span class="unit">Pa</span></label><input type="number" id="fan_P1" value="2500"><small>真空泵填正压差（排气−吸气）</small></div>
-        <div class="form-group"><label>电机功率 <span class="unit">kW</span></label><input type="number" id="fan_motorPower1" value="710"></div>
-        <div class="form-group"><label>风机效率 η<sub>风1</sub> <span class="unit">%</span></label><input type="number" id="fan_fanEff1" value="0.75" step="0.01"></div>
-        <div class="form-group"><label>传动效率 η<sub>传1</sub> <span class="unit">%</span></label><input type="number" id="fan_transEff1" value="0.98" step="0.01"></div>
-        <div class="form-group"><label>电机效率 η<sub>电1</sub> <span class="unit">%</span></label><input type="number" id="fan_motorEff1" value="0.953" step="0.001"></div>
+        <div class="form-group"><label>风量 Q₁ <span class="unit">m³/h</span></label><input type="number" id="fan_Q1" value="120000" oninput="fanEta1Auto()"></div>
+        <div class="form-group"><label>全压/压差 P₁ <span class="unit">Pa</span></label><input type="number" id="fan_P1" value="2500" oninput="fanEta1Auto()"><small>真空泵填正压差（排气−吸气）</small></div>
+        <div class="form-group"><label>电机功率 <span class="unit">kW</span></label><input type="number" id="fan_motorPower1" value="710"><small>铭牌功率，仅作选型参照</small></div>
+        <div class="form-group"><label>实测电机输入功率 <span class="unit">kW</span></label><input type="number" id="fan_inputPower1" step="0.1" placeholder="有电表/功率表读数就填" oninput="fanEta1Auto()"><small>★ 填这一项，原风机效率自动算出来，不用懂效率</small></div>
+        <div class="form-group"><label>风机效率 η<sub>风1</sub> <span class="unit">%</span></label><input type="number" id="fan_fanEff1" value="0.75" step="0.01"><small id="fan_eta1_tip">有实测输入功率 → 自动反算；没有 → 按原风机类型给经验值（可手改）</small></div>
+        <div class="form-group"><label>传动效率 η<sub>传1</sub> <span class="unit">%（默认 98%）</span></label><input type="number" id="fan_transEff1" value="0.98" step="0.01" oninput="fanEta1Auto()"></div>
+        <div class="form-group"><label>电机效率 η<sub>电1</sub> <span class="unit">%（默认 95.3%）</span></label><input type="number" id="fan_motorEff1" value="0.953" step="0.001" oninput="fanEta1Auto()"></div>
       </div>
     </div>
     
@@ -503,9 +510,18 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       <div class="form-grid">
         <div class="form-group"><label>风量 Q₂ <span class="unit">m³/h</span></label><input type="number" id="fan_Q2" value="100000"></div>
         <div class="form-group"><label>风压 P₂ <span class="unit">Pa</span></label><input type="number" id="fan_P2" value="1800"></div>
-        <div class="form-group"><label>风机效率 η<sub>风2</sub> <span class="unit">%</span></label><input type="number" id="fan_fanEff2" value="0.82" step="0.01"></div>
-        <div class="form-group"><label>传动效率 η<sub>传2</sub> <span class="unit">%</span></label><input type="number" id="fan_transEff2" value="0.98" step="0.01"></div>
-        <div class="form-group"><label>电机效率 η<sub>电2</sub> <span class="unit">%</span></label><input type="number" id="fan_motorEff2" value="0.976" step="0.001"></div>
+        <div class="form-group"><label>改造机型（新设备）</label><select id="fan_newType" onchange="fanNewTypeChange()">
+          <option value="永磁一体化风机">通用低压风机改永磁一体化风机 · 参考 82%（≥80%）</option>
+          <option value="磁悬浮风机">罗茨风机改磁悬浮风机 · 参考 86%（≥85%）</option>
+          <option value="磁悬浮真空泵">真空泵改磁悬浮真空泵 · 参考 80%</option>
+          <option value="高效离心风机">高效离心风机（叶轮改型）· 参考 82%</option>
+          <option value="高效轴流风机">高效轴流风机（动叶改型）· 参考 86%</option>
+          <option value="高速离心鼓风机">高速离心鼓风机（替代罗茨）· 参考 82%</option>
+          <option value="custom">自定义（手动填效率）</option>
+        </select><small id="fan_newType_tip">通用低压风机改永磁一体化：整机效率 ≥80%（参考取 82%）（已自动填入 82% / 电机 97.6%）</small></div>
+        <div class="form-group"><label>风机效率 η<sub>风2</sub> <span class="unit">%（自动填写，可手改）</span></label><input type="number" id="fan_fanEff2" value="0.82" step="0.01"></div>
+        <div class="form-group"><label>传动效率 η<sub>传2</sub> <span class="unit">%（默认 98%）</span></label><input type="number" id="fan_transEff2" value="0.98" step="0.01"></div>
+        <div class="form-group"><label>电机效率 η<sub>电2</sub> <span class="unit">%（默认 97.6%）</span></label><input type="number" id="fan_motorEff2" value="0.976" step="0.001"></div>
       </div>
     </div>
     
@@ -565,13 +581,22 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     <div class="card">
       <div class="section-title">💧 一、改造前水泵参数</div>
       <div class="form-grid">
-        <div class="form-group"><label>流量 Q₁ <span class="unit">m³/h</span></label><input type="number" id="pump_Q1" value="800"></div>
-        <div class="form-group"><label>扬程 H₁ <span class="unit">m</span></label><input type="number" id="pump_H1" value="50"></div>
-        <div class="form-group"><label>电机功率 <span class="unit">kW</span></label><input type="number" id="pump_motorPower1" value="500"></div>
-        <div class="form-group"><label>水泵效率 η<sub>泵1</sub> <span class="unit">%</span></label><input type="number" id="pump_pumpEff1" value="0.78" step="0.01"></div>
-        <div class="form-group"><label>传动效率 η<sub>传1</sub> <span class="unit">%</span></label><input type="number" id="pump_transEff1" value="0.98" step="0.01"></div>
-        <div class="form-group"><label>电机效率 η<sub>电1</sub> <span class="unit">%</span></label><input type="number" id="pump_motorEff1" value="0.945" step="0.001"></div>
+        <div class="form-group"><label>流量 Q₁ <span class="unit">m³/h</span></label><input type="number" id="pump_Q1" value="800" oninput="pumpEta1Auto()"></div>
+        <div class="form-group"><label>扬程 H₁ <span class="unit">m</span></label><input type="number" id="pump_H1" value="50" oninput="pumpEta1Auto()"></div>
+        <div class="form-group"><label>原泵类型</label><select id="pump_oldType" onchange="pumpEta1Auto()">
+          <option value="多级离心泵">多级离心泵（DG / D / ZD 系列）</option>
+          <option value="单级双吸离心泵">单级双吸离心泵（S / SH 系列）</option>
+          <option value="单级单吸离心泵">单级单吸离心泵（IS / IH 系列）</option>
+          <option value="潜水排污泵">潜水排污泵（WQ / QW 系列）</option>
+          <option value="柱塞泵">柱塞泵（往复式）</option>
+        </select><small>不确定就选默认，系统按类型给经验效率</small></div>
+        <div class="form-group"><label>电机功率 <span class="unit">kW</span></label><input type="number" id="pump_motorPower1" value="500"><small>铭牌功率，仅作选型参照</small></div>
+        <div class="form-group"><label>实测电机输入功率 <span class="unit">kW</span></label><input type="number" id="pump_inputPower1" step="0.1" placeholder="有电表/功率表读数就填" oninput="pumpEta1Auto()"><small>★ 填这一项，原泵效率自动算出来，不用懂效率</small></div>
+        <div class="form-group"><label>原泵效率 η<sub>泵1</sub> <span class="unit">%</span></label><input type="number" id="pump_pumpEff1" value="0.72" step="0.01" min="0.2" max="0.95" oninput="pumpEta1SourceManual()"><small id="pump_eta1_tip">有实测输入功率 → 自动反算；没有 → 按原泵类型给经验值（可手改）</small></div>
+        <div class="form-group"><label>传动效率 η<sub>传1</sub> <span class="unit">%（默认 98%）</span></label><input type="number" id="pump_transEff1" value="0.98" step="0.01" oninput="pumpEta1Auto()"></div>
+        <div class="form-group"><label>电机效率 η<sub>电1</sub> <span class="unit">%（默认 94.5%）</span></label><input type="number" id="pump_motorEff1" value="0.945" step="0.001" oninput="pumpEta1Auto()"></div>
       </div>
+      <div class="note">效率怎么来：<b>原设备</b>填实测电机输入功率，系统按 η = 有效功率 ÷ 实测输入功率 反算（有效功率 = 9.81 × 流量 × 扬程 ÷ 3600）；没有实测就按原泵类型给经验值。<b>新设备</b>在下面直接选改造机型，效率自动带出参考值。</div>
     </div>
     
     <div class="card">
@@ -579,9 +604,17 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       <div class="form-grid">
         <div class="form-group"><label>流量 Q₂ <span class="unit">m³/h</span></label><input type="number" id="pump_Q2" value="650"></div>
         <div class="form-group"><label>扬程 H₂ <span class="unit">m</span></label><input type="number" id="pump_H2" value="45"></div>
-        <div class="form-group"><label>水泵效率 η<sub>泵2</sub> <span class="unit">%</span></label><input type="number" id="pump_pumpEff2" value="0.85" step="0.01"></div>
-        <div class="form-group"><label>传动效率 η<sub>传2</sub> <span class="unit">%</span></label><input type="number" id="pump_transEff2" value="0.98" step="0.01"></div>
-        <div class="form-group"><label>电机效率 η<sub>电2</sub> <span class="unit">%</span></label><input type="number" id="pump_motorEff2" value="0.972" step="0.001"></div>
+        <div class="form-group"><label>改造机型（新设备）</label><select id="pump_newType" onchange="pumpNewTypeChange()">
+          <option value="柱塞泵">柱塞泵（替代多级离心泵）· 参考 90%</option>
+          <option value="永磁直驱泵组">永磁同步直驱泵组 · 参考 85%</option>
+          <option value="高效多级离心泵">高效多级离心泵（自平衡型）· 参考 80%</option>
+          <option value="高效单级双吸泵">高效单级双吸离心泵 · 参考 86%</option>
+          <option value="高效潜水排污泵">高效潜水排污泵 · 参考 72%</option>
+          <option value="custom">自定义（手动填效率）</option>
+        </select><small id="pump_newType_tip">柱塞泵整机效率 ≥90%（行业样本 90~93%），替代多级离心泵主力路线（已自动填入 90% / 电机 95.5%）</small></div>
+        <div class="form-group"><label>新泵效率 η<sub>泵2</sub> <span class="unit">%（自动填写，可手改）</span></label><input type="number" id="pump_pumpEff2" value="0.90" step="0.01"></div>
+        <div class="form-group"><label>传动效率 η<sub>传2</sub> <span class="unit">%（默认 98%）</span></label><input type="number" id="pump_transEff2" value="0.98" step="0.01"></div>
+        <div class="form-group"><label>电机效率 η<sub>电2</sub> <span class="unit">%（默认 97.2%）</span></label><input type="number" id="pump_motorEff2" value="0.972" step="0.001"></div>
       </div>
     </div>
     
@@ -958,6 +991,178 @@ function tr2(label, val, desc) {
   return `<tr><td>${label}</td><td>${val}</td><td>${desc}</td></tr>`;
 }
 
+// ==================== 效率自动取值 v1.2（2026-11-14）====================
+// 目的：销售现场不懂效率也能把账算出来
+//   ① 原设备效率：填了「实测电机输入功率」→ 有效功率 ÷ 实测输入功率（再折算到设备本体）
+//   ② 新设备效率：下拉选「改造机型」→ 自动带出行业参考效率（可手改覆盖）
+const PUMP_OLD_ETA = {              // 原泵类型 → 清水工况经验效率
+  '多级离心泵': 0.72, '单级双吸离心泵': 0.80, '单级单吸离心泵': 0.72,
+  '潜水排污泵': 0.65, '柱塞泵': 0.88
+};
+const FAN_OLD_ETA = {               // 原风机类型 → 全压工况经验效率
+  '离心风机': 0.75, '轴流风机': 0.78, '罗茨鼓风机': 0.65, '真空泵': 0.60
+};
+const PUMP_NEW_TYPES = {            // 改造机型 → 效率参考（老唐口径 2026-11-14）
+  '柱塞泵':         { eta: 0.90, motor: 0.955, note: '柱塞泵（三柱塞/五柱塞往复式）：整机效率 ≥90%（行业样本 90~93%），替代多级离心泵主力路线' },
+  '永磁直驱泵组':   { eta: 0.85, motor: 0.972, note: '高效水力模型 + 永磁同步直驱：整机效率参考 85%' },
+  '高效多级离心泵': { eta: 0.80, motor: 0.955, note: '自平衡多级离心泵：清水工况 78~82%' },
+  '高效单级双吸泵': { eta: 0.86, motor: 0.960, note: '单级双吸离心泵（S/SH 型）：大流量低扬程高效区 84~88%' },
+  '高效潜水排污泵': { eta: 0.72, motor: 0.945, note: '潜水排污泵受内置电机散热限制：70~75%' }
+};
+const FAN_NEW_TYPES = {             // 改造机型 → 效率参考（老唐口径 2026-11-14）
+  '永磁一体化风机': { eta: 0.82, motor: 0.976, note: '通用低压风机改永磁一体化（高效叶轮 + 永磁直驱）：整机效率 ≥80%（参考取 82%）' },
+  '磁悬浮风机':     { eta: 0.86, motor: 0.976, note: '罗茨/离心风机改磁悬浮（高速直驱离心）：整机效率 ≥85%（参考取 86%）' },
+  '磁悬浮真空泵':   { eta: 0.80, motor: 0.976, note: '罗茨/液环真空泵改磁悬浮真空泵：真空工况整机效率参考 80%' },
+  '高效离心风机':   { eta: 0.82, motor: 0.953, note: '三元流叶轮改型、保留原电机：效率提升 5~10 个百分点' },
+  '高效轴流风机':   { eta: 0.86, motor: 0.953, note: '动叶可调改型：轴流高效区 85~88%' },
+  '高速离心鼓风机': { eta: 0.82, motor: 0.976, note: '替代罗茨鼓风机：整机效率 80~84%' }
+};
+
+function effNum(id, def) {
+  const e = document.getElementById(id);
+  if (!e) return def;
+  const v = parseFloat(e.value);
+  return isNaN(v) ? def : v;
+}
+
+// ---------- 水泵：原泵效率自动取值 ----------
+function pumpEta1Auto() {
+  const Q = effNum('pump_Q1', 0), H = effNum('pump_H1', 0);
+  const Pin = effNum('pump_inputPower1', 0);
+  const tr = effNum('pump_transEff1', 0.98), mt = effNum('pump_motorEff1', 0.945);
+  const typeEl = document.getElementById('pump_oldType');
+  const type = typeEl ? typeEl.value : '多级离心泵';
+  const box = document.getElementById('pump_pumpEff1');
+  const tip = document.getElementById('pump_eta1_tip');
+  if (!box) return;
+
+  const Pu = 9.81 * Q * H / 3600;      // 有效功率 kW
+  let eta, src, extra = '';
+  if (Q > 0 && H > 0 && Pin > 0) {
+    const etaUnit = Pu / Pin;          // 机组综合效率（含电机 + 传动）
+    eta = etaUnit / ((tr || 0.98) * (mt || 0.945));
+    src = '按实测反算';
+    extra = '实测 ' + Pin.toFixed(1) + ' kW，有效功率 ' + Pu.toFixed(2) + ' kW，机组效率 ' + (etaUnit * 100).toFixed(1) + '%';
+    if (eta <= 0.2 || eta > 0.95) {
+      eta = PUMP_OLD_ETA[type] || 0.72;
+      src = '实测数据异常→按原泵类型经验值';
+      extra = '反算值 ' + (etaUnit * 100).toFixed(1) + '% 不合理，已退回经验值，请核对流量/扬程/功率单位';
+    }
+  } else {
+    eta = PUMP_OLD_ETA[type] || 0.72;
+    src = '按原泵类型经验值（' + type + '）';
+    extra = '想要更准：填一下实测电机输入功率';
+  }
+  box.value = eta.toFixed(3);
+  if (tip) tip.textContent = '当前 ' + (eta * 100).toFixed(1) + '%｜' + src + '｜' + extra + '（可手改覆盖）';
+}
+
+// 手动改效率后只更新提示，不覆盖用户输入
+function pumpEta1SourceManual() {
+  const box = document.getElementById('pump_pumpEff1');
+  const tip = document.getElementById('pump_eta1_tip');
+  if (box && tip) tip.textContent = '当前 ' + (effNum('pump_pumpEff1', 0) * 100).toFixed(1) + '%｜手动填写（改流量/扬程/实测功率会重新自动取值）';
+  
+}
+
+// ---------- 水泵：新泵机型切换 ----------
+function pumpNewTypeChange() {
+  const sel = document.getElementById('pump_newType');
+  if (!sel) return;
+  const cfg = PUMP_NEW_TYPES[sel.value];
+  const tip = document.getElementById('pump_newType_tip');
+  const e2 = document.getElementById('pump_pumpEff2');
+  const m2 = document.getElementById('pump_motorEff2');
+  if (!cfg) {                       // 自定义
+    if (tip) tip.textContent = '自定义：请按厂家样本/承诺值手填效率';
+    return;
+  }
+  if (e2) e2.value = cfg.eta;
+  if (m2) m2.value = cfg.motor;
+  if (tip) tip.textContent = cfg.note + '（已自动填入 ' + (cfg.eta * 100).toFixed(0) + '% / 电机 ' + (cfg.motor * 100).toFixed(1) + '%，可按样本改）';
+}
+
+// ---------- 风机：原风机效率自动取值 ----------
+function fanEta1Auto() {
+  const Q = effNum('fan_Q1', 0);
+  const dp = Math.abs(effNum('fan_P1', 0));
+  const pin = effNum('fan_pin', 101.325);
+  const Pin = effNum('fan_inputPower1', 0);
+  const tr = effNum('fan_transEff1', 0.98), mt = effNum('fan_motorEff1', 0.953);
+  const kEl = document.getElementById('fan_kind');
+  const kind = kEl ? kEl.value : '离心风机';
+  const box = document.getElementById('fan_fanEff1');
+  const tip = document.getElementById('fan_eta1_tip');
+  if (!box) return;
+
+  let eta, src, extra = '';
+  if (Q > 0 && dp > 0 && Pin > 0) {
+    const air = fanAirPower(Q, dp, pin * 1000);   // 与正式测算同口径（压比 >1.2 自动等熵）
+    const etaUnit = air.p / Pin;
+    eta = etaUnit / ((tr || 0.98) * (mt || 0.953));
+    src = '按实测反算';
+    extra = '实测 ' + Pin.toFixed(1) + ' kW，气体功率 ' + air.p.toFixed(2) + ' kW（' + (air.useIsen ? '等熵' : '不可压缩') + '），机组效率 ' + (etaUnit * 100).toFixed(1) + '%';
+    if (eta <= 0.2 || eta > 0.95) {
+      eta = FAN_OLD_ETA[kind] || 0.75;
+      src = '实测数据异常→按原风机类型经验值';
+      extra = '反算值 ' + (etaUnit * 100).toFixed(1) + '% 不合理，已退回经验值，请核对风量/全压/功率单位';
+    }
+  } else {
+    eta = FAN_OLD_ETA[kind] || 0.75;
+    src = '按原风机类型经验值（' + kind + '）';
+    extra = '想要更准：填一下实测电机输入功率';
+  }
+  box.value = eta.toFixed(3);
+  if (tip) tip.textContent = '当前 ' + (eta * 100).toFixed(1) + '%｜' + src + '｜' + extra + '（可手改覆盖）';
+}
+
+// ---------- 风机：新机型切换 ----------
+function fanNewTypeChange() {
+  const sel = document.getElementById('fan_newType');
+  if (!sel) return;
+  const cfg = FAN_NEW_TYPES[sel.value];
+  const tip = document.getElementById('fan_newType_tip');
+  const e2 = document.getElementById('fan_fanEff2');
+  const m2 = document.getElementById('fan_motorEff2');
+  if (!cfg) {
+    if (tip) tip.textContent = '自定义：请按厂家样本/承诺值手填效率';
+    return;
+  }
+  if (e2) e2.value = cfg.eta;
+  if (m2) m2.value = cfg.motor;
+  if (tip) tip.textContent = cfg.note + '（已自动填入 ' + (cfg.eta * 100).toFixed(0) + '% / 电机 ' + (cfg.motor * 100).toFixed(1) + '%，可按样本改）';
+}
+
+// ---------- 柱塞泵：日常台账数据自动折算 ----------
+function updatePlungerFromDaily() {
+  const w = effNum('plunger_dailyWater', 0), p = effNum('plunger_dailyPower', 0);
+  const days = effNum('plunger_runDays', 300);
+  if (w > 0) {
+    const f = document.getElementById('plunger_avgFlow');
+    if (f) f.value = (w / 24).toFixed(2);
+  }
+  if (p > 0) {
+    const ip = document.getElementById('plunger_avgInputPower');
+    if (ip) ip.value = (p / 24).toFixed(2);
+  }
+  updatePlungerMotorPower();
+}
+
+// ---------- 柱塞泵：新泵机型切换 ----------
+function plungerNewTypeChange() {
+  const sel = document.getElementById('plunger_newType');
+  if (!sel) return;
+  const map = { '柱塞泵标准': 0.90, '柱塞泵高效': 0.92, '柱塞泵含固': 0.85 };
+  const v = map[sel.value];
+  const tip = document.getElementById('plunger_newType_tip');
+  const box = document.getElementById('plunger_pumpEff');
+  if (v && box) box.value = v;
+  if (tip) tip.textContent = v
+    ? '柱塞泵整机效率参考 ' + (v * 100).toFixed(0) + '%（老唐口径 ≥90%；可按厂家样本改）'
+    : '自定义：请按厂家样本/承诺值手填（柱塞泵通常 88~93%）';
+  updatePlungerMotorPower();
+}
+
 // ==================== 柱塞泵模块 ====================
 // 根据流量和压力自动计算电机功率
 function updatePlungerMotorPower() {
@@ -1074,6 +1279,7 @@ function calcPlunger() {
     tr('变频器输入功率', vfdPower.toFixed(2) + ' kW') +
     tr('推荐电机功率', Math.ceil(recommendedPower) + ' kW (变频器输入功率×1.1)') +
     tr('用户输入原输入功率', avgInputPower > 0 ? avgInputPower.toFixed(0) + ' kW' : '未输入') +
+    tr('原泵组综合效率', avgInputPower > 0 ? ((shaftPower * pumpEff) / avgInputPower * 100).toFixed(1) + '%（有效功率 ' + (shaftPower * pumpEff).toFixed(2) + ' kW ÷ 实测输入 ' + avgInputPower.toFixed(1) + ' kW，自动反算）' : '填平均输入功率后自动反算') +
     tr('原设备输入功率', oldInputPower.toFixed(2) + ' kW') +
     tr('新设备输入功率', newInputPower.toFixed(2) + ' kW') +
     tr('功率降低', (oldInputPower - newInputPower).toFixed(2) + ' kW') +
@@ -1263,8 +1469,13 @@ function fanKindChange() {
   const cfg = FAN_KIND_CFG[k] || FAN_KIND_CFG['离心风机'];
   const tip = document.getElementById('fan_kind_tip');
   if (tip) tip.textContent = cfg.tip;
-  const e2 = document.getElementById('fan_fanEff2');
-  if (e2) e2.value = cfg.eff;
+  // 原风机类型 → 推荐改造机型（2026-11-14：效率由机型下拉自动带出）
+  const map = { '离心风机': '永磁一体化风机', '轴流风机': '高效轴流风机',
+                '罗茨鼓风机': '磁悬浮风机', '真空泵': '磁悬浮真空泵' };
+  const sel = document.getElementById('fan_newType');
+  if (sel && map[k]) { sel.value = map[k]; }
+  fanNewTypeChange();
+  fanEta1Auto();
   const pinBox = document.getElementById('fan_pin');
   if (pinBox) { pinBox.value = (k === '真空泵') ? 40 : 101.325; }
 }
@@ -1279,6 +1490,7 @@ function calcFanInner() {
   const v = id => document.getElementById(id).value;
   const kind = document.getElementById('fan_kind').value;
   const motorPower1 = parseFloat(document.getElementById('fan_motorPower1').value) || 0;
+  const inputPower1M = parseFloat((document.getElementById('fan_inputPower1') || {}).value) || 0;
 
   const r = fanCalcCore({
     kind: kind, Q1: g('fan_Q1'), dp1: g('fan_P1'), pin: g('fan_pin'),
@@ -1289,6 +1501,15 @@ function calcFanInner() {
   });
 
   if (!r.ok) { showToast('⚠️ ' + r.msg); return; }
+
+  // 实测输入功率优先（2026-11-14）：有实测就用实测，节电率与年节电都按实测口径
+  const in1Used = inputPower1M > 0 ? inputPower1M : r.in1;
+  if (inputPower1M > 0) {
+    r.rate = in1Used > 0 ? (in1Used - r.in2) / in1Used : 0;
+    r.annualSave = (in1Used - r.in2) * (parseFloat(document.getElementById('fan_hours').value) || 0);
+    r.annualMoney = r.annualSave * (parseFloat(document.getElementById('fan_price').value) || 0);
+    r.co2 = r.annualSave * 0.4 / 1000;
+  }
 
   // 显示结果
   document.getElementById('fan-savingRate').innerHTML = (r.rate * 100).toFixed(2) + '<span class="pct">%</span>';
@@ -1310,10 +1531,11 @@ function calcFanInner() {
     tr3('风量 (m³/h)', Q1.toLocaleString(), Q2.toLocaleString(), ((Q1 - Q2).toLocaleString() + ' (' + ((Q1 - Q2) / Q1 * 100).toFixed(1) + '%)')) +
     tr3('全压/压差 (Pa)', P1.toLocaleString(), P2.toLocaleString(), ((P1 - P2).toLocaleString() + ' (' + ((P1 - P2) / P1 * 100).toFixed(1) + '%)')) +
     tr3('风机效率', (e1 * 100).toFixed(1) + '%', (e2 * 100).toFixed(1) + '%', ((e2 - e1) * 100).toFixed(1) + ' 个百分点') +
+    tr3('效率取值来源', (inputPower1M > 0 ? '实测 ' + inputPower1M.toFixed(1) + ' kW 反算（可手改）' : '按机型经验值'), '机型参考值（' + (document.getElementById('fan_newType') ? document.getElementById('fan_newType').value : '—') + '）', '—') +
     tr3('电机效率', (m1 * 100).toFixed(1) + '%', (m2 * 100).toFixed(1) + '%', ((m2 - m1) * 100).toFixed(1) + ' 个百分点') +
     tr3('原始电机功率 (kW)', motorPower1.toFixed(0) + ' kW', '—', '—') +
     tr3('计算轴功率 (kW)', r.shaft1.toFixed(2), r.shaft2.toFixed(2), (r.shaft1 - r.shaft2).toFixed(2) + ' kW') +
-    tr3('计算电机输入功率 (kW)', r.in1.toFixed(2), r.in2.toFixed(2), (r.in1 - r.in2).toFixed(2) + ' kW') +
+    tr3('电机输入功率 (kW)', in1Used.toFixed(2) + (inputPower1M > 0 ? '（实测）' : '（计算）'), r.in2.toFixed(2), (in1Used - r.in2).toFixed(2) + ' kW') +
     tr3('年耗电量 (万kWh)', (r.in1 * g('fan_hours') / 10000).toFixed(2), (r.in2 * g('fan_hours') / 10000).toFixed(2), (r.annualSave / 10000).toFixed(2));
 
   // 电机选型
@@ -1363,6 +1585,7 @@ function calcPump() {
   
   const hours = parseFloat(document.getElementById('pump_hours').value);
   const price = parseFloat(document.getElementById('pump_price').value);
+  const inputPower1M = parseFloat((document.getElementById('pump_inputPower1') || {}).value) || 0;
   
   // 验证输入
   if (!Q1 || !H1 || !pumpEff1 || !motorEff1 || !Q2 || !H2 || !pumpEff2 || !motorEff2) {
@@ -1378,12 +1601,13 @@ function calcPump() {
   const shaftPower1 = (Q1 * H1 * waterDensity * gravity) / (3600 * 1000 * pumpEff1 * transEff1);
   const shaftPower2 = (Q2 * H2 * waterDensity * gravity) / (3600 * 1000 * pumpEff2 * transEff2);
   
-  // 2. 计算电机输入功率
-  const motorInputPower1 = shaftPower1 / motorEff1;
+  // 2. 计算电机输入功率（有实测输入功率时，原侧用实测值）
+  const motorInputPower1Calc = shaftPower1 / motorEff1;
+  const motorInputPower1 = inputPower1M > 0 ? inputPower1M : motorInputPower1Calc;
   const motorInputPower2 = shaftPower2 / motorEff2;
   
-  // 3. 计算节能率（基于轴功率）
-  const savingRate = (shaftPower1 - shaftPower2) / shaftPower1;
+  // 3. 计算节能率（按电机输入功率口径，与年节电量一致）
+  const savingRate = (motorInputPower1 - motorInputPower2) / motorInputPower1;
   
   // 4. 计算年节能量和节电费
   const annualSave = (motorInputPower1 - motorInputPower2) * hours;
@@ -1406,10 +1630,11 @@ function calcPump() {
     tr3('流量 (m³/h)', Q1.toLocaleString(), Q2.toLocaleString(), ((Q1 - Q2).toLocaleString() + ' (' + ((Q1 - Q2)/Q1*100).toFixed(1) + '%)')) +
     tr3('扬程 (m)', H1.toLocaleString(), H2.toLocaleString(), ((H1 - H2).toLocaleString() + ' (' + ((H1 - H2)/H1*100).toFixed(1) + '%)')) +
     tr3('水泵效率', (pumpEff1*100).toFixed(1) + '%', (pumpEff2*100).toFixed(1) + '%', ((pumpEff2 - pumpEff1)*100).toFixed(1) + '个百分点') +
+    tr3('效率取值来源', (inputPower1M > 0 ? '实测 ' + inputPower1M.toFixed(1) + ' kW 反算（可手改）' : '按泵型经验值'), '机型参考值（' + (document.getElementById('pump_newType') ? document.getElementById('pump_newType').value : '—') + '）', '—') +
     tr3('电机效率', (motorEff1*100).toFixed(1) + '%', (motorEff2*100).toFixed(1) + '%', ((motorEff2 - motorEff1)*100).toFixed(1) + '个百分点') +
     tr3('原始电机功率 (kW)', motorPower1.toFixed(0) + ' kW', '—', '—') +
     tr3('计算轴功率 (kW)', shaftPower1.toFixed(2), shaftPower2.toFixed(2), (shaftPower1 - shaftPower2).toFixed(2) + ' kW') +
-    tr3('计算电机输入功率 (kW)', motorInputPower1.toFixed(2), motorInputPower2.toFixed(2), (motorInputPower1 - motorInputPower2).toFixed(2) + ' kW') +
+    tr3('电机输入功率 (kW)', motorInputPower1.toFixed(2) + (inputPower1M > 0 ? '（实测）' : '（计算）'), motorInputPower2.toFixed(2), (motorInputPower1 - motorInputPower2).toFixed(2) + ' kW') +
     tr3('年耗电量 (万kWh)', (motorInputPower1 * hours / 10000).toFixed(2), (motorInputPower2 * hours / 10000).toFixed(2), (annualSave / 10000).toFixed(2));
   
   // 获取推荐电机功率
