@@ -22,6 +22,9 @@ if(t!==path){var q=location.search.replace(/([?&])view=[^&]*/g,"$1").replace(/&{
 <title>流体机械节能测算工具｜柱塞泵·水泵·渣浆泵·风机·磨机·空压机·永磁电机替换节电测算与设备健康评测（免安装）</title>
 <meta name="description" content="流体机械节能测算工具：网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、渣浆泵、风机、磨机、空压机、余热回收的节能测算，以及设备运行健康评测（机械/电气/能效），输出节电率、年节电量、电费与碳减排，并给出电机选型建议。结果仅供参考，工程需现场复核。">
 <link rel="canonical" href="https://jeeftang.github.io/energy-calc-platform/">
+<link rel="alternate" hreflang="zh-CN" href="https://jeeftang.github.io/energy-calc-platform/">
+<link rel="alternate" hreflang="en" href="https://jeeftang.github.io/energy-calc-platform/en/">
+<link rel="alternate" hreflang="x-default" href="https://jeeftang.github.io/energy-calc-platform/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="流体机械节能测算工具｜柱塞泵·水泵·渣浆泵·风机·磨机·空压机节电测算与设备健康评测（免安装）">
 <meta property="og:description" content="柱塞泵/水泵/渣浆泵/风机/磨机/空压机/余热回收 节能测算 + 设备运行健康评测，网页免安装。结果仅供参考，工程需现场复核。">
@@ -78,7 +81,8 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 .note{font-size:12px;color:var(--text2);margin-top:8px;line-height:1.5}
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999;display:none;box-shadow:var(--shadow)}
 .toast.show{display:block}
-.viewswitch{display:flex;justify-content:flex-end;margin:0 0 6px}
+.viewswitch{display:flex;justify-content:flex-end;gap:8px;margin:0 0 6px}
+.lang-switch{font-size:13px;font-weight:700;letter-spacing:.02em}
 .viewswitch a{font-size:13px;color:var(--primary-dark);text-decoration:none;border:1px solid #99f6e4;background:#fff;padding:7px 14px;border-radius:999px;font-weight:600}
 .viewswitch a:active{opacity:.8}
 .health-entry{display:flex;align-items:center;gap:12px;margin:0 0 14px;padding:12px 16px;cursor:pointer;text-decoration:none;
@@ -165,7 +169,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 </head>
 <body>
 <div class="container">
-  <div class="viewswitch"><a href="m/?view=mobile" title="切换到手机版 / Switch to mobile edition">📱 手机版</a></div>
+  <div class="viewswitch"><a class="lang-switch" href="en/" hreflang="en" title="English version">EN</a><a href="m/?view=mobile" title="切换到手机版 / Switch to mobile edition">📱 手机版</a></div>
   <div class="header">
     <img class="brand-logo" src="logo-jeeftang.png" alt="吉孚唐 Jeeftang">
     <div class="brand-sub">工业节能项目FDE服务品牌</div>
@@ -3021,7 +3025,16 @@ window.addEventListener('DOMContentLoaded', function() {
   </div>
 
 
-  <div class="card" id="contact" style="text-align:center">
+    <div class="card" id="sites" style="text-align:center">
+    <div class="section-title" style="justify-content:center">🔗 关联站点</div>
+    <p style="font-size:14px;color:var(--text2);line-height:2">
+      <a href="https://jeeftang.github.io/energy-calc-platform/" style="color:var(--primary-dark);font-weight:600">流体机械节能测算工具</a>
+      ｜ <a href="https://jeeftang.github.io/hongshi/" style="color:var(--primary-dark);font-weight:600">HONGSHI 工业泵出口站（EN/中文）</a>
+      ｜ <a href="https://jeeftang.github.io/BCU/" style="color:var(--primary-dark);font-weight:600">KSTS 沼气与生物能源（EN/BM/中文）</a>
+    </p>
+  </div>
+
+<div class="card" id="contact" style="text-align:center">
     <div class="section-title" style="justify-content:center">📞 免费获取节能改造技术方案</div>
     <p style="font-size:15px;color:var(--text2);line-height:1.9">请联系 零碳小助手 <b>18041136555</b><br>扫码加微信，免费出方案</p>
     <img src="qr-kefu.png" alt="零碳小助手 · 微信加好友二维码" style="width:170px;height:170px;border-radius:10px;border:1px solid var(--border);background:#fff;padding:6px;margin:10px 0" onerror="this.style.display='none'">
