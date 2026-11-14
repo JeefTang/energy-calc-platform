@@ -69,6 +69,16 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 .viewswitch{display:flex;justify-content:flex-end;margin:0 0 6px}
 .viewswitch a{font-size:13px;color:var(--primary-dark);text-decoration:none;border:1px solid #99f6e4;background:#fff;padding:7px 14px;border-radius:999px;font-weight:600}
 .viewswitch a:active{opacity:.8}
+.health-entry{display:flex;align-items:center;gap:12px;margin:0 0 14px;padding:12px 16px;cursor:pointer;
+  background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;border-radius:14px;
+  box-shadow:0 6px 18px rgba(13,148,136,.22);transition:transform .15s,box-shadow .15s}
+.health-entry:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(13,148,136,.3)}
+.health-entry .he-icon{font-size:26px;line-height:1}
+.health-entry .he-text{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.health-entry .he-text b{font-size:16px;font-weight:700}
+.health-entry .he-text small{font-size:12px;opacity:.88;line-height:1.4}
+.health-entry .he-go{font-size:13px;font-weight:700;white-space:nowrap;background:rgba(255,255,255,.18);padding:7px 12px;border-radius:999px}
+.health-entry.on{outline:2px solid #5eead4;outline-offset:2px}
 .tab-btn .chev{font-size:10px;opacity:.65;margin-left:3px}
 .tabs{margin-bottom:12px !important}
 .subnav{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 18px;padding:10px 14px;
@@ -214,6 +224,13 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     <p>基于轴功率计算的节能测算 + 电机选型指导</p>
   </div>
   
+  <!-- 设备运行健康评测：独立入口，置于导航栏上方（2026-11-14 老唐要求） -->
+  <div class="health-entry" id="healthEntry" role="button" tabindex="0"
+       onclick="showTab('health')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showTab('health');}">
+    <span class="he-icon">🩺</span>
+    <span class="he-text"><b>设备运行健康评测</b><small>振动烈度 · 绝缘温度 · 三相不平衡 · 负载率 · 功率因数 · 机组效率</small></span>
+    <span class="he-go">免费评测 →</span>
+  </div>
   <div class="tabs" id="navGroups">
     <button class="tab-btn grp active" data-grp="pump" onclick="navGroup('pump')">💧 水泵<span class="chev">▾</span></button>
     <button class="tab-btn" data-tab="fan" onclick="showTab('fan')">🌬 风机</button>
@@ -221,7 +238,6 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     <button class="tab-btn grp" data-grp="air" onclick="navGroup('air')">🗜️ 压缩机<span class="chev">▾</span></button>
     <button class="tab-btn grp" data-grp="motor" onclick="navGroup('motor')">⚡ 高效电机<span class="chev">▾</span></button>
     <button class="tab-btn" data-tab="heat" onclick="showTab('heat')">♨️ 余热回收</button>
-    <button class="tab-btn" data-tab="health" onclick="showTab('health')">🩺 设备运行健康评测</button>
   </div>
   <div class="subnav" id="subNav" style="display:none">
     <span class="subnav-title" id="subNavTitle">水泵</span>
@@ -1155,6 +1171,9 @@ function showTab(tab, grp, variant, label) {
   var el = document.getElementById(tab + '-tab');
   if (el) el.style.display = 'block';
 
+  var he = document.getElementById('healthEntry');
+  if (he) he.classList.toggle('on', tab === 'health');
+
   renderSubNav(grp);
   applyVariant(tab, variant);
 
@@ -1169,7 +1188,10 @@ function initNav() {
   var tab = h, variant = '';
   if (h.indexOf('-') > 0) { var p = h.split('-'); tab = p[0]; variant = p.slice(1).join('-'); }
   var grp = TAB_GROUP[tab];
-  if (!grp) { pickSub('pump', 0); return; }
+  if (!grp) {
+    if (tab === 'health') { showTab('health'); return; }   // 健康评测已移到导航栏上方
+    pickSub('pump', 0); return;
+  }
   var items = NAVGROUPS[grp] ? NAVGROUPS[grp].items : [];
   var idx = -1;
   for (var i = 0; i < items.length; i++) {
