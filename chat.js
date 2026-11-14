@@ -18,8 +18,8 @@
     escName: "称呼 / 公司（选填）",
     escMail: "电话或邮箱（必填）",
     escBtn: "提交",
-    escOk: "已收到，工程师会尽快联系你。急事可直接打 18041136555（微信同号）。",
-    escFail: "提交失败，请直接联系 零碳小助手 18041136555（微信同号）",
+    escOk: "已收到，工程师会尽快联系你。急的话扫下面的二维码，直接加零碳小助手微信。",
+    escFail: "提交失败，请扫下面的二维码加零碳小助手微信，或稍后再试。",
     escAlt: "或直接联系：",
     typing: "正在输入",
     errNet: "网络不可用，先用本地知识库回答。",
@@ -40,8 +40,8 @@
     escName: "Name / company (optional)",
     escMail: "Phone or email (required)",
     escBtn: "Send",
-    escOk: "Received. An engineer will contact you shortly. Phone/WeChat +86 180 4113 6555.",
-    escFail: "Failed — please contact +86 180 4113 6555 (WeChat same number).",
+    escOk: "Received. An engineer will contact you shortly. You can also scan the WeChat QR code below.",
+    escFail: "Failed — please scan the WeChat QR code below, or try again shortly.",
     escAlt: "Or contact: ",
     typing: "typing",
     errNet: "Network unavailable — answering from the local knowledge base.",
@@ -51,7 +51,7 @@
     aiPaused: "The engineer has your message and will reply here shortly."
   };
 
-  var PHONE = "18041136555";
+  var QR_SRC = "qr-kefu.png";          /* 零碳小助手微信二维码（站点根目录） */
   var EMAIL = "18041136555@189.cn";
 
   /* ---------- 本地知识库：全部为本站已公开口径，勿加未验证数字 ---------- */
@@ -121,8 +121,8 @@
       en: "Calculation data never leaves your browser. Only text you type into this chat is stored for engineer replies; no IP, no cookies, random conversation id only." },
 
     { id: "contact", k: ["联系", "电话", "微信", "方案", "报价", "工程师", "contact", "quote", "proposal"],
-      zh: "零碳小助手：电话/微信 18041136555（同号），邮箱 18041136555@189.cn。\n可以免费出节能改造技术方案，需要这些现场信息：设备铭牌照片、流量/扬程或压力、介质与温度、年运行小时、电价。\n设备报价按具体工况出方案后给，不在网上挂价。",
-      en: "Zero Carbon Assistant: phone/WeChat +86 180 4113 6555, email 18041136555@189.cn. A retrofit proposal is free; send nameplate photos, flow, head/pressure, fluid, temperature, annual hours and tariff. Equipment pricing follows the duty-specific proposal." }
+      zh: "扫下面的二维码，加零碳小助手微信，直接跟工程师说。\n可以免费出节能改造技术方案，需要这些现场信息：设备铭牌照片、流量/扬程或压力、介质与温度、年运行小时、电价。\n设备报价按具体工况出方案后给，不在网上挂价。\n[[QR]]",
+      en: "Scan the WeChat QR code below to add Zero Carbon Assistant and talk to an engineer directly.\nA retrofit proposal is free; send nameplate photos, flow, head/pressure, fluid, temperature, annual hours and tariff. Equipment pricing follows the duty-specific proposal.\n[[QR]]" }
   ];
 
   function norm(s) {
@@ -176,12 +176,27 @@
   function plain(s) {
     return String(s).replace(/\*\*(.+?)\*\*/g, "$1").replace(/^#{1,6}\s*/gm, "").replace(/`/g, "");
   }
+  function renderBubble(b, text) {
+    if (String(text).indexOf("[[QR]]") < 0) { b.textContent = text; return; }
+    var parts = String(text).split("[[QR]]");
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i]) b.appendChild(document.createTextNode(parts[i]));
+      if (i < parts.length - 1) {
+        var q = document.createElement("img");
+        q.className = "ec-qr";
+        q.src = QR_SRC;
+        q.alt = (ZH ? "零碳小助手微信二维码" : "Zero Carbon Assistant WeChat QR code");
+        q.loading = "lazy";
+        b.appendChild(q);
+      }
+    }
+  }
   function add(who, text) {
     var row = document.createElement("div");
     row.className = "ec-msg " + who;
     var b = document.createElement("div");
     b.className = "ec-bubble";
-    b.textContent = who === "bot" ? plain(text) : text;
+    renderBubble(b, who === "bot" ? plain(text) : text);
     row.appendChild(b);
     body.appendChild(row);
     if (who !== "sys") history.push({ role: who === "me" ? "user" : "assistant", content: text });
@@ -220,7 +235,8 @@
       '<input id="ec-name" placeholder="' + T.escName + '" autocomplete="name">' +
       '<input id="ec-mail" placeholder="' + T.escMail + '" autocomplete="email">' +
       '<button type="button">' + T.escBtn + '</button>' +
-      '<div class="ec-alt">' + T.escAlt + '<a href="tel:' + PHONE + '">' + PHONE + '</a> · <a href="mailto:' + EMAIL + '">' + EMAIL + '</a></div>';
+      '<div class="ec-alt">' + T.escAlt + '<a href="mailto:' + EMAIL + '">' + EMAIL + '</a></div>' +
+      '<img class="ec-qr" src="' + QR_SRC + '" alt="' + (ZH ? "零碳小助手微信二维码" : "WeChat QR") + '">';
     body.appendChild(box);
     scroll();
     var nameEl = box.querySelector("#ec-name");
@@ -357,8 +373,8 @@
       return;
     }
     add("bot", ZH
-      ? "这个问题我拿不准，转给工程师更靠谱。留个电话或邮箱，1 个工作日内联系你；急事直接打 18041136555（微信同号）。"
-      : "That one needs an engineer. Leave a phone or email and you will be contacted within one working day.");
+      ? "这个问题我拿不准，转给工程师更靠谱。留个邮箱，1 个工作日内联系你；急的话扫下面二维码加零碳小助手微信。\n[[QR]]"
+      : "That one needs an engineer. Leave an email and you will be contacted within one working day, or scan the WeChat QR code below.\n[[QR]]");
     escalate(text);
   }
 
