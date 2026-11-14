@@ -101,3 +101,12 @@
   .ec-chat-btn span.ec-btn-label { display: none; }
   .ec-chat-btn { padding: 14px; }
 }
+
+/* 微信二维码（2026-11-14：联系方式统一用二维码，不显示电话） */
+.ec-bubble .ec-qr,
+.ec-escalate .ec-qr {
+  display: block; width: 150px; max-width: 100%; height: auto;
+  margin: 8px 0 4px; padding: 4px; background: #fff;
+  border-radius: 8px; border: 1px solid rgba(15,61,58,.10);
+}
+.ec-escalate .ec-qr { width: 130px; margin: 8px auto 2px; }
