@@ -78,6 +78,15 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 .health-entry .he-text small{font-size:12px;opacity:.88;line-height:1.4}
 .health-entry .he-go{font-size:13px;font-weight:700;white-space:nowrap;background:rgba(255,255,255,.18);padding:7px 12px;border-radius:999px}
 .health-entry.on{outline:2px solid #5eead4;outline-offset:2px}
+.mode-switch{display:flex;gap:10px;margin:0 0 14px}
+.mode-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:11px 12px;border-radius:12px;
+  border:1px solid var(--border);background:#f8fafc;color:var(--text2);font-size:14px;font-weight:700;font-family:inherit;cursor:pointer}
+.mode-btn small{font-size:11px;font-weight:500;opacity:.85}
+.mode-btn.on{background:#ecfdf5;border-color:var(--primary);color:var(--primary-dark);box-shadow:0 0 0 2px rgba(13,148,136,.12)}
+.q-only{display:none}
+#health-tab.h-quick .q-only{display:block}
+#health-tab.h-quick span.q-only{display:inline}
+#health-tab.h-quick .q-full{display:none !important}
 .tab-content{scroll-margin-top:12px}
 .he-flash{animation:heFlash 1.6s ease-out}
 @keyframes heFlash{0%{box-shadow:0 0 0 4px rgba(13,148,136,.45)}100%{box-shadow:0 0 0 0 rgba(13,148,136,0)}}
@@ -951,10 +960,14 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 
   <!-- ==================== 设备运行健康评测模块（新增，2026-10-12） ==================== -->
   <div id="health-tab" class="tab-content" style="display:none">
+    <div class="mode-switch" id="hModeSwitch">
+      <button class="mode-btn on" id="hModeQuick" onclick="setHealthMode('quick')">⚡ 快速评测<small>6 项 · 1 分钟出初判</small></button>
+      <button class="mode-btn" id="hModeFull" onclick="setHealthMode('full')">📋 完整评测<small>20+ 项 · 逐项判据</small></button>
+    </div>
     <div class="card">
       <div class="section-title">🩺 一、设备档案</div>
       <div class="form-grid">
-        <div class="form-group"><label>设备名称 / 位号</label><input type="text" id="h_name" value="1#给水泵"></div>
+        <div class="form-group q-full"><label>设备名称 / 位号</label><input type="text" id="h_name" value="1#给水泵"></div>
         <div class="form-group"><label>设备类型</label>
           <select id="h_type" onchange="renderEff()">
             <option value="pump">水泵 / 给水泵</option>
@@ -965,11 +978,11 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           </select>
         </div>
         <div class="form-group"><label>额定功率 <span class="unit">kW</span></label><input type="number" id="h_prated" value="315"></div>
-        <div class="form-group"><label>额定转速 <span class="unit">rpm</span></label><input type="number" id="h_nrated" value="2980"></div>
+        <div class="form-group q-full"><label>额定转速 <span class="unit">rpm</span></label><input type="number" id="h_nrated" value="2980"></div>
         <div class="form-group"><label>绝缘等级</label>
           <select id="h_insul"><option value="B">B 级（130℃）</option><option value="F" selected>F 级（155℃）</option><option value="H">H 级（180℃）</option></select>
         </div>
-        <div class="form-group"><label>年运行小时 <span class="unit">h</span></label><input type="number" id="h_hours" value="7000"></div>
+        <div class="form-group q-full"><label>年运行小时 <span class="unit">h</span></label><input type="number" id="h_hours" value="7000"></div>
       </div>
     </div>
 
@@ -977,8 +990,8 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       <div class="section-title">🔧 二、机械运转参数</div>
       <div class="form-grid">
         <div class="form-group"><label>振动烈度 <span class="unit">mm/s（速度有效值）</span></label><input type="number" id="h_vib" value="3.2" step="0.1"></div>
-        <div class="form-group"><label>实测转速 <span class="unit">rpm</span></label><input type="number" id="h_nact" value="2965"></div>
-        <div class="form-group"><label>噪声 <span class="unit">dB(A)（设备旁1m）</span></label><input type="number" id="h_noise" value="88" step="0.5"></div>
+        <div class="form-group q-full"><label>实测转速 <span class="unit">rpm</span></label><input type="number" id="h_nact" value="2965"></div>
+        <div class="form-group q-full"><label>噪声 <span class="unit">dB(A)（设备旁1m）</span></label><input type="number" id="h_noise" value="88" step="0.5"></div>
       </div>
     </div>
 
@@ -989,19 +1002,23 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         <div class="form-group"><label>电流 A 相 <span class="unit">A</span></label><input type="number" id="h_ia" value="52" step="0.1"></div>
         <div class="form-group"><label>电流 B 相 <span class="unit">A</span></label><input type="number" id="h_ib" value="54" step="0.1"></div>
         <div class="form-group"><label>电流 C 相 <span class="unit">A</span></label><input type="number" id="h_ic" value="55" step="0.1"></div>
-        <div class="form-group"><label>电压 A 相 <span class="unit">V</span></label><input type="number" id="h_ua" value="6000" step="1"></div>
-        <div class="form-group"><label>电压 B 相 <span class="unit">V</span></label><input type="number" id="h_ub" value="6050" step="1"></div>
-        <div class="form-group"><label>电压 C 相 <span class="unit">V</span></label><input type="number" id="h_uc" value="6020" step="1"></div>
+        <div class="form-group q-full"><label>电压 A 相 <span class="unit">V</span></label><input type="number" id="h_ua" value="6000" step="1"></div>
+        <div class="form-group q-full"><label>电压 B 相 <span class="unit">V</span></label><input type="number" id="h_ub" value="6050" step="1"></div>
+        <div class="form-group q-full"><label>电压 C 相 <span class="unit">V</span></label><input type="number" id="h_uc" value="6020" step="1"></div>
         <div class="form-group"><label>有功功率 <span class="unit">kW</span></label><input type="number" id="h_pact" value="285" step="0.1"></div>
         <div class="form-group"><label>功率因数 <span class="unit">cosφ</span></label><input type="number" id="h_pf" value="0.86" step="0.01"></div>
       </div>
     </div>
 
     <div class="card">
-      <div class="section-title">📈 四、能效工况参数（按设备类型 · 可留空）</div>
-      <div class="form-grid" id="h-eff-grid"></div>
+      <div class="section-title"><span class="q-only">📈 四、能效（可留空）</span><span class="q-full">📈 四、能效工况参数（按设备类型 · 可留空）</span></div>
+      <div class="form-grid q-only" id="h-eff-quick">
+        <div class="form-group"><label>机组综合效率 <span class="unit">%（可留空）</span></label><input type="number" id="h_eff_q" placeholder="留空则不判能效" step="0.1" min="0" max="100"><small>现场已有能效测试值就直接填；没有就留空，按振动/温度/电流/负载率/功率因数先判</small></div>
+      </div>
+      <div class="form-grid q-full" id="h-eff-grid"></div>
       <button class="btn-calc" onclick="calcHealth()">开始设备运行健康评测</button>
-      <div class="note">依据公开标准做方向性初判：振动烈度 ISO 10816 / GB/T 6075；绕组温度 GB/T 755 绝缘等级限值；三相不平衡 GB/T 755；能效按 有效功率（泵/风机/空压机）或 电机效率 估算轴功率。结果为方向性参考，非设备诊断结论。</div>
+      <div class="note q-full">依据公开标准做方向性初判：振动烈度 ISO 10816 / GB/T 6075；绕组温度 GB/T 755 绝缘等级限值；三相不平衡 GB/T 755；能效按 有效功率（泵/风机/空压机）或 电机效率 估算轴功率。结果为方向性参考，非设备诊断结论。</div>
+      <div class="note q-only">快速评测只判 6 项关键指标（振动 · 绕组温度 · 三相电流 · 有功功率 · 功率因数 · 机组效率），1 分钟出方向性初判。需要逐项判据（噪声/电压不平衡/转速/比功率）时切「完整评测」。</div>
     </div>
 
     <div id="health-results" class="results">
@@ -1016,6 +1033,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           <div class="metric-card"><div class="value" id="h-plate">—</div><div class="desc">机组综合效率</div></div>
           <div class="metric-card"><div class="value" id="h-axis">—</div><div class="desc">估算轴功率 kW<br><span style="font-size:11px" id="h-axis-note">按泵效率 70%</span></div></div>
         </div>
+        <div class="note" id="h-mode-note">当前模式：⚡ 快速评测（6 项关键指标）</div>
       </div>
 
       <div class="card">
@@ -2289,8 +2307,26 @@ function calcHeat() {
 }
 
 // ==================== 设备运行健康评测模块（新增，2026-10-12） ====================
+// ===== 快速 / 完整评测模式（2026-11-14 老唐要求）=====
+function setHealthMode(mode) {
+  var tab = document.getElementById('health-tab');
+  if (!tab) return;
+  var quick = (mode !== 'full');
+  if (quick) tab.classList.add('h-quick'); else tab.classList.remove('h-quick');
+  var bq = document.getElementById('hModeQuick'), bf = document.getElementById('hModeFull');
+  if (bq) { if (quick) bq.classList.add('on'); else bq.classList.remove('on'); }
+  if (bf) { if (quick) bf.classList.remove('on'); else bf.classList.add('on'); }
+  var nd = document.getElementById('h-mode-note');
+  if (nd) nd.textContent = quick ? '当前模式：⚡ 快速评测（6 项关键指标）' : '当前模式：📋 完整评测（逐项判据）';
+}
+try { setHealthMode('quick'); } catch (e) {}
+
 function calcHealth() {
-  const f = id => { const el = document.getElementById(id); if (!el) return null; const v = parseFloat(el.value); return isNaN(v) ? null : v; };
+  // 快速模式：只判 6 项，隐藏项的默认值不得参与（2026-11-14）
+  const HTAB = document.getElementById('health-tab');
+  const QUICK = !!(HTAB && HTAB.classList.contains('h-quick'));
+  const QHIDE = { h_name: 1, h_noise: 1, h_ua: 1, h_ub: 1, h_uc: 1, h_nact: 1, h_nrated: 1, h_hours: 1 };
+  const f = id => { if (QUICK && QHIDE[id]) return null; const el = document.getElementById(id); if (!el) return null; const v = parseFloat(el.value); return isNaN(v) ? null : v; };
   const ORDER = { '正常': 0, '关注': 1, '预警': 2, '异常': 3 };
   const items = [], suspects = [], actions = [], extra = {};
   const add = (cat, name, level, value, unit, limit, note) => items.push({ cat, name, level, value, unit, limit, note: note || '' });
@@ -2378,19 +2414,27 @@ function calcHealth() {
   }
 
   // 8. 机组综合效率 / 估算轴功率（按设备类型）
+  const effDirect = f('h_eff_q');            // 快速评测：现场能效测试值直接填
+  if (effDirect) {
+    extra.eff = effDirect;
+    const lvE = effDirect >= 75 ? '正常' : effDirect >= 60 ? '关注' : effDirect >= 40 ? '预警' : '异常';
+    add('能效', '机组综合效率', lvE, effDirect.toFixed(1), '%', '≥75%(正常) / ≥60%(关注)', '现场能效测试值');
+    if (lvE === '预警' || lvE === '异常') { push(suspects, '机组效率偏低：泵/风机磨损、选型偏大、节流损失大、与工况不匹配'); push(actions, '做完整节能测算，评估改造（走「节能测算」入口）'); }
+  }
   const dtype = (document.getElementById('h_type') || {}).value || 'pump';
+  const skipTypeEff = QUICK || !!effDirect;   // 快速模式或已直填效率 → 不按类型推算
   const q = f('h_q'), pin = f('h_pin'), pout = f('h_pout'), pt = f('h_pt');
   const etaIn = f('h_eta');
   let pHyd = null, etaUsed = null, effNote = '';
-  if (dtype === 'motor') {
+  if (!skipTypeEff && dtype === 'motor') {
     etaUsed = etaIn || 95;
     if (pact) extra.axis = pact * etaUsed / 100;                 // 电机输出(轴)功率 = 输入 × η
     effNote = '电机效率';
-  } else if (dtype === 'fan') {
+  } else if (!skipTypeEff && dtype === 'fan') {
     etaUsed = etaIn || 70;
     if (q && pt) { pHyd = q * pt / 3.6e6; extra.axis = pHyd / (etaUsed / 100); }   // 风功率 = Q[m³/h]·Pt[Pa]/3.6e6
     effNote = '风功率/输入功率';
-  } else if (dtype === 'compressor') {
+  } else if (!skipTypeEff && dtype === 'compressor') {
     etaUsed = etaIn || 95;
     if (pact) extra.axis = pact * etaUsed / 100;                 // 空压机：轴(输出)功率 = 输入 × η电机
     if (pact && q) {
@@ -2401,7 +2445,7 @@ function calcHealth() {
       if (lvS === '预警' || lvS === '异常') { push(suspects, '空压机比功率偏高：机组老化 / 卸载频繁 / 管网压损大 / 选型偏大'); push(actions, '查泄漏与管网压损，评估变频/余热回收与节能测算'); }
     }
     effNote = '';
-  } else {
+  } else if (!skipTypeEff) {
     etaUsed = etaIn || 70;
     if (q && pin !== null && pout !== null) { pHyd = q * (pout - pin) / 3.6; extra.axis = pHyd / (etaUsed / 100); extra.head = (pout - pin) * 101.97; }
     effNote = 'ρgQH/输入功率';
