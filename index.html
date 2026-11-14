@@ -3,6 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>/* 默认视图 = 手机版 (/m/)；?view=desktop 或 cookie=desktop 留在电脑版
+   规则同 BCU 站：cookie 记选择，桌面页默认跳手机版，手机版页有「电脑版」入口 */
+(function(){try{var K="ecalc_view",p=new URLSearchParams(location.search),f=p.get("view");
+if(f==="mobile"||f==="desktop"){document.cookie=K+"="+f+";path=/;max-age=31536000;SameSite=Lax";}
+var m=document.cookie.match(/(?:^|;\s*)ecalc_view=(mobile|desktop)/),pref=f||(m&&m[1])||"mobile";
+var path=location.pathname;
+if(!(/\/m\//.test(path)||/\/m$/.test(path))&&pref!=="desktop"){
+var t;
+if(/\/$/.test(path)||!/\.[a-z0-9]+$/i.test(path)){t=path.replace(/\/?$/,"/")+"m/";}
+else{t=path.replace(/\/([^\/]+)$/,"/m/$1");}
+if(t!==path){var q=location.search.replace(/([?&])view=[^&]*/g,"$1").replace(/&{2,}/g,"&").replace(/[?&]+$/,"");location.replace(t+q+location.hash);}}
+}catch(e){}})();</script>
+<link rel="alternate" media="only screen and (max-width: 768px)" href="https://jeeftang.github.io/energy-calc-platform/m/">
+
 <title>流体机械节能测算工具｜柱塞泵·水泵·渣浆泵·风机·磨机·空压机·永磁电机替换节电测算与设备健康评测（免安装）</title>
 <meta name="description" content="流体机械节能测算工具：网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、渣浆泵、风机、磨机、空压机、余热回收的节能测算，以及设备运行健康评测（机械/电气/能效），输出节电率、年节电量、电费与碳减排，并给出电机选型建议。结果仅供参考，工程需现场复核。">
 <link rel="canonical" href="https://jeeftang.github.io/energy-calc-platform/">
@@ -49,6 +63,9 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 .note{font-size:12px;color:var(--text2);margin-top:8px;line-height:1.5}
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999;display:none;box-shadow:var(--shadow)}
 .toast.show{display:block}
+.viewswitch{display:flex;justify-content:flex-end;margin:0 0 6px}
+.viewswitch a{font-size:13px;color:var(--primary-dark);text-decoration:none;border:1px solid #99f6e4;background:#fff;padding:7px 14px;border-radius:999px;font-weight:600}
+.viewswitch a:active{opacity:.8}
 @media(max-width:768px){
   .form-grid{grid-template-columns:1fr}
   .metric-row{grid-template-columns:1fr}
@@ -168,6 +185,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 </head>
 <body>
 <div class="container">
+  <div class="viewswitch"><a href="m/?view=mobile" title="切换到手机版 / Switch to mobile edition">📱 手机版</a></div>
   <div class="header">
     <h1>流体机械节能测算工具</h1>
     <p>基于轴功率计算的节能测算 + 电机选型指导</p>
