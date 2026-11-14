@@ -59,54 +59,25 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 .metric-card{background:#f8fafc;border-radius:10px;padding:16px;text-align:center;border:1px solid var(--border)}
 .metric-card .value{font-size:24px;font-weight:700}
 .metric-card .desc{font-size:12px;color:var(--text2);margin-top:2px}
-.detail-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
-.detail-table th,.detail-table td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
-.detail-table th{background:#f1f5f9;font-weight:600;color:var(--text2);font-size:12px}
-.detail-table td:last-child{text-align:right;font-weight:600}
+/* 详细计算结果 v2 重排版（2026-11-14）*/
+.detail-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px;margin-top:12px;table-layout:auto}
+.detail-table th{padding:9px 12px;text-align:left;background:#f1f5f9;font-weight:600;color:var(--text2);font-size:12px;white-space:nowrap;border-bottom:1px solid var(--border)}
+.detail-table th:first-child{border-radius:8px 0 0 0}
+.detail-table th:last-child{border-radius:0 8px 0 0;text-align:right}
+.detail-table td{padding:9px 12px;text-align:left;border-bottom:1px solid #eef2f6;vertical-align:middle;line-height:1.55}
+.detail-table tbody tr:nth-child(even){background:#fafcfd}
+.detail-table tbody tr:hover{background:#f0fdfa}
+.detail-table td:first-child{color:#475569;font-weight:500}
+.detail-table td:last-child{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.detail-table tr.dt-key{background:linear-gradient(90deg,#ecfdf5,#f7fefb)!important}
+.detail-table tr.dt-key td{color:#0f766e;font-weight:700;border-bottom-color:#d7ece7}
+.detail-table tr.dt-key td:first-child{color:#0f766e}
 .note{font-size:12px;color:var(--text2);margin-top:8px;line-height:1.5}
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999;display:none;box-shadow:var(--shadow)}
 .toast.show{display:block}
 .viewswitch{display:flex;justify-content:flex-end;margin:0 0 6px}
 .viewswitch a{font-size:13px;color:var(--primary-dark);text-decoration:none;border:1px solid #99f6e4;background:#fff;padding:7px 14px;border-radius:999px;font-weight:600}
 .viewswitch a:active{opacity:.8}
-.health-entry{display:flex;align-items:center;gap:12px;margin:0 0 14px;padding:12px 16px;cursor:pointer;text-decoration:none;
-  background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;border-radius:14px;
-  box-shadow:0 6px 18px rgba(13,148,136,.22);transition:transform .15s,box-shadow .15s}
-.health-entry:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(13,148,136,.3)}
-.health-entry .he-icon{font-size:26px;line-height:1}
-.health-entry .he-text{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
-.health-entry .he-text b{font-size:16px;font-weight:700}
-.health-entry .he-text small{font-size:12px;opacity:.88;line-height:1.4}
-.health-entry .he-go{font-size:13px;font-weight:700;white-space:nowrap;background:rgba(255,255,255,.18);padding:7px 12px;border-radius:999px}
-.health-entry.on{outline:2px solid #5eead4;outline-offset:2px}
-.mode-switch{display:flex;gap:10px;margin:0 0 14px}
-.mode-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:11px 12px;border-radius:12px;
-  border:1px solid var(--border);background:#f8fafc;color:var(--text2);font-size:14px;font-weight:700;font-family:inherit;cursor:pointer}
-.mode-btn small{font-size:11px;font-weight:500;opacity:.85}
-.mode-btn.on{background:#ecfdf5;border-color:var(--primary);color:var(--primary-dark);box-shadow:0 0 0 2px rgba(13,148,136,.12)}
-.q-only{display:none}
-#health-tab.h-quick .q-only{display:block}
-#health-tab.h-quick span.q-only{display:inline}
-#health-tab.h-quick .q-full{display:none !important}
-.tab-content{scroll-margin-top:12px}
-.he-flash{animation:heFlash 1.6s ease-out}
-@keyframes heFlash{0%{box-shadow:0 0 0 4px rgba(13,148,136,.45)}100%{box-shadow:0 0 0 0 rgba(13,148,136,0)}}
-.health-entry .he-step{font-size:11px;font-weight:700;background:rgba(255,255,255,.22);padding:2px 8px;border-radius:999px;margin-right:4px;vertical-align:2px}
-.step-line{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--text2);margin:2px 0 10px}
-.step-line .step-no{width:18px;height:18px;border-radius:50%;background:var(--primary-light);color:var(--primary-dark);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
-.tab-btn .chev{font-size:10px;opacity:.65;margin-left:3px}
-.tabs{margin-bottom:12px !important}
-.subnav{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 18px;padding:10px 14px;
-  background:#fff;border:1px solid var(--border);border-radius:12px}
-.subnav-title{font-size:12px;font-weight:700;color:var(--primary-dark);background:var(--primary-light);
-  padding:4px 10px;border-radius:999px;white-space:nowrap}
-.subnav-items{display:flex;gap:8px;flex-wrap:wrap}
-.sub-btn{font-size:13px;padding:7px 14px;border-radius:999px;border:1px solid var(--border);
-  background:#f8fafc;color:var(--text2);cursor:pointer;font-weight:600;font-family:inherit}
-.sub-btn:hover{border-color:var(--primary);color:var(--primary-dark)}
-.sub-btn.on{background:var(--primary-dark);border-color:var(--primary-dark);color:#fff}
-.variant-badge{font-size:12px;line-height:1.7;color:#0f766e;background:#f0fdfa;border:1px dashed #99f6e4;
-  border-radius:10px;padding:9px 13px;margin:-8px 0 18px}
 @media(max-width:768px){
   .form-grid{grid-template-columns:1fr}
   .metric-row{grid-template-columns:1fr}
@@ -239,26 +210,17 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     <p>基于轴功率计算的节能测算 + 电机选型指导</p>
   </div>
   
-  <!-- 设备运行健康评测：独立入口，置于导航栏上方（2026-11-14 老唐要求） -->
-  <a class="health-entry" id="healthEntry" href="#health" onclick="return openHealth(event)">
-    <span class="he-icon">🩺</span>
-    <span class="he-text"><b><span class="he-step">第 1 步</span> 先做设备运行健康评测</b><small>先摸清设备能效与运行状况（振动 · 绕组温度 · 电压偏差 · 负载率 · 功率因数 · 机组效率），再选测算模块算节能</small></span>
-    <span class="he-go">开始评测 →</span>
-  </a>
-  <div class="step-line"><span class="step-no">2</span>第 2 步：了解现状后，选择设备测算节能空间</div>
-  <div class="tabs" id="navGroups">
-    <button class="tab-btn grp active" data-grp="pump" onclick="navGroup('pump')">💧 水泵<span class="chev">▾</span></button>
-    <button class="tab-btn" data-tab="fan" onclick="showTab('fan')">🌬 风机</button>
-    <button class="tab-btn grp" data-grp="mill" onclick="navGroup('mill')">🔨 磨机<span class="chev">▾</span></button>
-    <button class="tab-btn grp" data-grp="air" onclick="navGroup('air')">🗜️ 压缩机<span class="chev">▾</span></button>
-    <button class="tab-btn grp" data-grp="motor" onclick="navGroup('motor')">⚡ 高效电机<span class="chev">▾</span></button>
-    <button class="tab-btn" data-tab="heat" onclick="showTab('heat')">♨️ 余热回收</button>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('plunger')">⚙️ 柱塞泵</button>
+    <button class="tab-btn" onclick="showTab('mill')">🔨 磨机</button>
+    <button class="tab-btn" onclick="showTab('air')">🗜️ 空压机</button>
+    <button class="tab-btn" onclick="showTab('heat')">♨️ 余热回收</button>
+    <button class="tab-btn" onclick="showTab('fan')">🌬 风机</button>
+    <button class="tab-btn" onclick="showTab('pump')">💧 水泵</button>
+    <button class="tab-btn" onclick="showTab('slurry')">🪨 渣浆泵</button>
+    <button class="tab-btn" onclick="showTab('motor')">⚡ 永磁电机替换</button>
+    <button class="tab-btn" onclick="showTab('health')">🩺 设备运行健康评测</button>
   </div>
-  <div class="subnav" id="subNav" style="display:none">
-    <span class="subnav-title" id="subNavTitle">水泵</span>
-    <div class="subnav-items" id="subNavItems"></div>
-  </div>
-  <div class="variant-badge" id="variantBadge" style="display:none"></div>
   
   <!-- ==================== 柱塞泵模块 ==================== -->
   <div id="plunger-tab" class="tab-content">
@@ -312,7 +274,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       
       <div class="card">
         <div class="section-title">📊 详细计算结果</div>
-        <table class="detail-table">
+        <table class="detail-table" data-dt="2">
           <thead><tr><th>项目</th><th>数值</th></tr></thead>
           <tbody id="plunger-detailTable"></tbody>
         </table>
@@ -365,7 +327,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       
       <div class="card">
         <div class="section-title">📊 详细计算结果</div>
-        <table class="detail-table">
+        <table class="detail-table" data-dt="2">
           <thead><tr><th>项目</th><th>数值</th></tr></thead>
           <tbody id="mill-detailTable"></tbody>
         </table>
@@ -416,7 +378,6 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           <select id="air_newtype">
             <option value="pm">永磁变频（一级能效）</option>
             <option value="fixed">定频（一级能效）</option>
-            <option value="maglev">磁悬浮离心（一级能效）</option>
           </select>
         </div>
 
@@ -455,7 +416,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 
       <div class="card">
         <div class="section-title">📊 详细计算结果</div>
-        <table class="detail-table">
+        <table class="detail-table" data-dt="2">
           <thead><tr><th>项目</th><th>数值</th></tr></thead>
           <tbody id="air-detailTable"></tbody>
         </table>
@@ -463,7 +424,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 
       <div class="card">
         <div class="section-title">🧮 节电率构成（逐项可核）</div>
-        <table class="detail-table">
+        <table class="detail-table" data-dt="3">
           <thead><tr><th>环节</th><th>功率 kW（前 → 后）</th><th>该环节贡献</th></tr></thead>
           <tbody id="air-stepTable"></tbody>
         </table>
@@ -472,7 +433,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 
       <div class="card">
         <div class="section-title">♻️ 空压机余热回收（可选）</div>
-        <table class="detail-table">
+        <table class="detail-table" data-dt="2">
           <thead><tr><th>项目</th><th>数值</th></tr></thead>
           <tbody id="air-heatTable"></tbody>
         </table>
@@ -544,7 +505,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 
       <div class="card">
         <div class="section-title">📊 详细计算结果</div>
-        <table class="detail-table">
+        <table class="detail-table" data-dt="2">
           <thead><tr><th>项目</th><th>数值</th></tr></thead>
           <tbody id="heat-detailTable"></tbody>
         </table>
@@ -626,7 +587,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       
       <div class="card">
         <div class="section-title">📊 详细计算结果</div>
-        <table class="detail-table">
+        <table class="detail-table" data-dt="4">
           <thead><tr><th>项目</th><th>改造前</th><th>改造后</th><th>节约</th></tr></thead>
           <tbody id="fan-detailTable"></tbody>
         </table>
@@ -634,7 +595,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       
       <div class="card">
         <div class="section-title">⚙️ 电机选型指导</div>
-        <table class="detail-table">
+        <table class="detail-table" data-dt="3">
           <thead><tr><th>项目</th><th>数值</th><th>说明</th></tr></thead>
           <tbody id="fan-motorTable"></tbody>
         </table>
@@ -719,7 +680,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       
       <div class="card">
         <div class="section-title">📊 详细计算结果</div>
-        <table class="detail-table">
+        <table class="detail-table" data-dt="4">
           <thead><tr><th>项目</th><th>改造前</th><th>改造后</th><th>节约</th></tr></thead>
           <tbody id="pump-detailTable"></tbody>
         </table>
@@ -727,7 +688,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       
       <div class="card">
         <div class="section-title">⚙️ 电机选型指导</div>
-        <table class="detail-table">
+        <table class="detail-table" data-dt="3">
           <thead><tr><th>项目</th><th>数值</th><th>说明</th></tr></thead>
           <tbody id="pump-motorTable"></tbody>
         </table>
@@ -840,7 +801,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 
       <div class="card">
         <div class="section-title">📊 详细计算结果</div>
-        <table class="detail-table">
+        <table class="detail-table" data-dt="4">
           <thead><tr><th>项目</th><th>改造前</th><th>改造后</th><th>节约</th></tr></thead>
           <tbody id="slurry-detailTable"></tbody>
         </table>
@@ -852,7 +813,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 
       <div class="card">
         <div class="section-title">⚙️ 电机选型指导</div>
-        <table class="detail-table">
+        <table class="detail-table" data-dt="3">
           <thead><tr><th>项目</th><th>数值</th><th>说明</th></tr></thead>
           <tbody id="slurry-motorTable"></tbody>
         </table>
@@ -871,7 +832,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 
       <div class="card" id="slurry-plungerAdv">
         <div class="section-title">🛡 为什么主推柱塞式浆料泵替换离心式渣浆泵</div>
-        <table class="detail-table">
+        <table class="detail-table" data-dt="3">
           <thead><tr><th>对比项</th><th>传统离心式渣浆泵</th><th>柱塞式浆料泵</th></tr></thead>
           <tbody>
             <tr><td>过流件寿命</td><td>叶轮 / 护套 / 蜗壳 3~6 个月（磨蚀性强的矿浆更短）</td><td>阀组 / 密封 / 柱塞 12 个月以上，过流件寿命通常为离心式 2~3 倍</td></tr>
@@ -911,14 +872,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           </select>
         </div>
         <div class="form-group"><label>原电机铭牌效率 <span class="unit">%（没有就留空，按类型取默认）</span></label><input type="number" id="motor_etaN" step="0.1" min="80" max="99" placeholder="留空自动取默认值"></div>
-        <div class="form-group"><label>拟用新电机类型</label>
-          <select id="motor_newtype" onchange="motorNewTypeChange()">
-            <option value="pm">永磁同步电机（ηn 97.5%）</option>
-            <option value="ie4">一级能效异步电机 IE4（ηn 96.0%）</option>
-            <option value="vfd">变频异步电机（ηn 96.5%）</option>
-            <option value="bdfg">无刷双馈电机（ηn 97.2%）</option>
-          </select><small>选类型自动填满效率与参考单价，可手改；同一损耗分离模型，差异在满效率与单价</small></div>
-        <div class="form-group"><label>拟用新电机额定效率 <span class="unit">%（随类型自动填，可手改）</span></label><input type="number" id="motor_eta2" value="97.5" step="0.1" min="94" max="99"></div>
+        <div class="form-group"><label>拟用永磁电机额定效率 <span class="unit">%（默认 97.5）</span></label><input type="number" id="motor_eta2" value="97.5" step="0.1" min="94" max="99"></div>
         <div class="form-group"><label>永磁电机设备单价参考 <span class="unit">元/kW（含税）</span></label><input type="number" id="motor_unitprice" value="430" step="10" min="200"></div>
       </div>
       <div class="note">
@@ -1044,7 +998,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 
       <div class="card">
         <div class="section-title">📊 逐项判据</div>
-        <table class="detail-table">
+        <table class="detail-table" data-dt="5">
           <thead><tr><th>类别</th><th>项目</th><th>实测</th><th>判据</th><th>结论</th></tr></thead>
           <tbody id="h-items"></tbody>
         </table>
@@ -1090,170 +1044,12 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 
 <script>
 // 标签切换
-// ===== 导航分组（2026-11-14）=====
-var NAVGROUPS = {
-  pump:  {title: '水泵', items: [
-    {tab: 'plunger', label: '给/注水泵', variant: 'feed'},
-    {tab: 'pump',    label: '排水泵',    variant: 'drain'},
-    {tab: 'slurry',  label: '渣浆泵'}]},
-  mill:  {title: '磨机', items: [
-    {tab: 'mill', label: '球磨机', variant: 'ball'},
-    {tab: 'mill', label: '立磨机', variant: 'vertical'}]},
-  air:   {title: '压缩机', items: [
-    {tab: 'air', label: '通用空压机', variant: 'screw'},
-    {tab: 'air', label: '磁悬浮压缩机', variant: 'maglev'}]},
-  motor: {title: '高效电机', items: [
-    {tab: 'motor', label: '一级能效电机', variant: 'ie4'},
-    {tab: 'motor', label: '变频电机', variant: 'vfd'},
-    {tab: 'motor', label: '无刷双馈电机', variant: 'bdfg'}]}
-};
-var TAB_GROUP = {pump: 'pump', plunger: 'pump', slurry: 'pump', mill: 'mill', air: 'air', motor: 'motor'};
-var CUR = {tab: '', grp: '', variant: '', label: ''};
-
-function setVal(id, v) { var el = document.getElementById(id); if (el) el.value = v; }
-
-function renderSubNav(grp) {
-  var box = document.getElementById('subNav'), items = document.getElementById('subNavItems');
-  if (!box || !items) return;
-  var g = NAVGROUPS[grp];
-  if (!g) { box.style.display = 'none'; return; }
-  document.getElementById('subNavTitle').textContent = g.title;
-  var h = '';
-  for (var i = 0; i < g.items.length; i++) {
-    var it = g.items[i];
-    var on = (it.tab === CUR.tab && (it.variant || '') === (CUR.variant || '')) ? ' on' : '';
-    h += '<button class="sub-btn' + on + '" data-i="' + i + '" onclick="pickSub(\'' + grp + '\',' + i + ')">' + it.label + '</button>';
-  }
-  items.innerHTML = h;
-  box.style.display = '';
-}
-
-function pickSub(grp, i) {
-  var g = NAVGROUPS[grp]; if (!g || !g.items[i]) return;
-  var it = g.items[i];
-  showTab(it.tab, grp, it.variant || '', it.label);
-}
-
-function openHealth(e) {
-  if (e && e.preventDefault) e.preventDefault();
-  showTab('health');
-  var el = document.getElementById('health-tab');
-  if (el) {
-    try { el.scrollIntoView({behavior: 'smooth', block: 'start'}); } catch (err) { el.scrollIntoView(true); }
-    el.classList.remove('he-flash');
-    void el.offsetWidth;
-    el.classList.add('he-flash');
-    setTimeout(function () { el.classList.remove('he-flash'); }, 1600);
-  }
-  return false;
-}
-
-function goCalc(grp) {
-  if (NAVGROUPS[grp]) navGroup(grp); else showTab(grp);
-  try { window.scrollTo({top: 0, behavior: 'smooth'}); } catch (e) { window.scrollTo(0, 0); }
-}
-
-function navGroup(grp) {
-  if (!NAVGROUPS[grp]) return;
-  if (CUR.grp === grp) { renderSubNav(grp); return; }
-  pickSub(grp, 0);   // 水泵组默认进「给/注水泵」（与原有柱塞泵测算模块同一套模型）
-}
-
-function applyVariant(tab, variant) {
-  var badge = document.getElementById('variantBadge');
-  var txt = '';
-  if (tab === 'mill') {
-    if (variant === 'vertical') {
-      setVal('mill_oldName', '旧立磨机'); setVal('mill_newName', '高效同步立磨机');
-      txt = '磨机类型：立磨机 — 与球磨机共用同一测算模型（电机效率 × 负载率），差异在粉磨系统选型与电耗基准';
-    } else {
-      setVal('mill_oldName', '旧球磨机'); setVal('mill_newName', '高效同步球磨机');
-      txt = '磨机类型：球磨机 — 按电机效率与负载率测算，不含衬板与研磨体改造';
-    }
-  } else if (tab === 'air') {
-    if (variant === 'maglev') {
-      var m = document.getElementById('air_method');
-      if (m) { m.value = 'replace'; if (typeof airMethodChange === 'function') airMethodChange(); }
-      setVal('air_newtype', 'maglev');
-      var sp = document.getElementById('air_sp2');
-      if (sp) sp.placeholder = '留空=比现机改善15%；磁悬浮离心 0.8MPa 参考 5.5~6.2 kW/(m³/min)';
-      txt = '改造后机型：磁悬浮离心压缩机（已切到「整机替换」；比功率留空按现机改善 15%）';
-    } else {
-      var m2 = document.getElementById('air_method');
-      if (m2) { m2.value = 'vfd'; if (typeof airMethodChange === 'function') airMethodChange(); }
-      setVal('air_newtype', 'pm');
-      txt = '通用空压机（螺杆 / 活塞 / 离心）— 按加卸载工况与改造方式测算';
-    }
-  } else if (tab === 'plunger') {
-    if (variant === 'feed') {
-      txt = '给/注水泵 — 锅炉给水 / 油田注水 / 高压补水，按进出口压差与台账电耗反算原泵效率；改造方案默认柱塞泵';
-    }
-  } else if (tab === 'pump') {
-    if (variant === 'drain') {
-      txt = '排水泵 — 矿井排水 / 循环水 / 污水提升，按扬程与实测输入功率反算原泵效率；改造机型可选柱塞泵或高效离心泵';
-    }
-  } else if (tab === 'motor') {
-    var map = {ie4: 'ie4', vfd: 'vfd', bdfg: 'bdfg'};
-    if (map[variant]) {
-      var s = document.getElementById('motor_newtype');
-      if (s) { s.value = variant; if (typeof motorNewTypeChange === 'function') motorNewTypeChange(); }
-      txt = {
-        ie4: '拟用电机：一级能效异步电机 IE4（满载 96.0%，轻载效率下降快于永磁）',
-        vfd: '拟用电机：变频异步电机（满载 96.5%，变频器损耗按需自行扣减）',
-        bdfg: '拟用电机：无刷双馈电机（只处理转差功率，部分负荷效率接近永磁，需小容量变流器）'
-      }[variant];
-    }
-  }
-  if (badge) {
-    if (txt) { badge.textContent = txt; badge.style.display = ''; }
-    else { badge.style.display = 'none'; }
-  }
-}
-
-function showTab(tab, grp, variant, label) {
-  grp = grp || TAB_GROUP[tab] || '';
-  variant = variant || '';
-  CUR.tab = tab; CUR.grp = grp; CUR.variant = variant; CUR.label = label || '';
-
-  document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
-  document.querySelectorAll('.tab-content').forEach(function (c) { c.style.display = 'none'; });
-
-  var gbtn = document.querySelector('#navGroups [data-grp="' + grp + '"]');
-  var tbtn = document.querySelector('#navGroups [data-tab="' + tab + '"]');
-  if (gbtn) gbtn.classList.add('active');
-  if (tbtn) tbtn.classList.add('active');
-
-  var el = document.getElementById(tab + '-tab');
-  if (el) el.style.display = 'block';
-
-  var he = document.getElementById('healthEntry');
-  if (he) he.classList.toggle('on', tab === 'health');
-
-  renderSubNav(grp);
-  applyVariant(tab, variant);
-
-  try {
-    var h = '#' + tab + (variant ? '-' + variant : '');
-    if (location.hash !== h) history.replaceState(null, '', h);
-  } catch (e) {}
-}
-
-function initNav() {
-  var h = (location.hash || '').replace('#', '');
-  var tab = h, variant = '';
-  if (h.indexOf('-') > 0) { var p = h.split('-'); tab = p[0]; variant = p.slice(1).join('-'); }
-  var grp = TAB_GROUP[tab];
-  if (!grp) {
-    if (!tab || tab === 'health') { showTab('health'); return; }   // 首次进入/#health：引导先做健康评测
-    pickSub('pump', 0); return;
-  }
-  var items = NAVGROUPS[grp] ? NAVGROUPS[grp].items : [];
-  var idx = -1;
-  for (var i = 0; i < items.length; i++) {
-    if (items[i].tab === tab && (variant ? items[i].variant === variant : true)) { idx = i; break; }
-  }
-  if (idx < 0) idx = 0;
-  pickSub(grp, idx);
+function showTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+  
+  document.querySelector(`[onclick="showTab('${tab}')"]`).classList.add('active');
+  document.getElementById(`${tab}-tab`).style.display = 'block';
 }
 
 // 显示提示
@@ -1264,17 +1060,23 @@ function showToast(msg) {
   setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
-// 表格行辅助函数
+// 表格行辅助函数（v2：关键行自动高亮，2026-11-14）
+const DT_KEY_KW = ['综合节电率', '节电率', '功率降低', '年节电费'];
+function dtKeyCls(label) {
+  const s = String(label).replace(/\s+/g, '');
+  return DT_KEY_KW.some(k => s.includes(k)) ? ' class="dt-key"' : '';
+}
+
 function tr(label, val) {
-  return `<tr><td>${label}</td><td>${val}</td></tr>`;
+  return `<tr${dtKeyCls(label)}><td>${label}</td><td>${val}</td></tr>`;
 }
 
 function tr3(label, val1, val2, save) {
-  return `<tr><td>${label}</td><td>${val1}</td><td>${val2}</td><td>${save}</td></tr>`;
+  return `<tr${dtKeyCls(label)}><td>${label}</td><td>${val1}</td><td>${val2}</td><td>${save}</td></tr>`;
 }
 
 function tr2(label, val, desc) {
-  return `<tr><td>${label}</td><td>${val}</td><td>${desc}</td></tr>`;
+  return `<tr${dtKeyCls(label)}><td>${label}</td><td>${val}</td><td>${desc}</td></tr>`;
 }
 
 // ==================== 效率自动取值 v1.2（2026-11-14）====================
@@ -2834,21 +2636,6 @@ function motorEtaAtLoad(pn, etaN, beta, a) {
   return pOut / (pOut + loss);
 }
 
-var MOTOR_NEW = {
-  pm:   {eta: 97.5, price: 430, name: '永磁同步电机'},
-  ie4:  {eta: 96.0, price: 300, name: '一级能效异步电机 IE4'},
-  vfd:  {eta: 96.5, price: 350, name: '变频异步电机'},
-  bdfg: {eta: 97.2, price: 600, name: '无刷双馈电机'}
-};
-function motorNewTypeChange() {
-  var t = document.getElementById('motor_newtype');
-  if (!t) return;
-  var cfg = MOTOR_NEW[t.value];
-  if (!cfg) return;
-  setVal('motor_eta2', cfg.eta);
-  setVal('motor_unitprice', cfg.price);
-}
-
 function motorTypeChange() {
   const t = document.getElementById('motor_type').value;
   const cfg = MOTOR_TYPES[t];
@@ -2965,7 +2752,7 @@ function motorCalc() {
 // 页面加载时初始化
 window.addEventListener('DOMContentLoaded', function() {
   // 默认显示柱塞泵标签
-  initNav();
+  showTab('plunger');
   // 初始化柱塞泵电机功率
   updatePlungerMotorPower();
 });
