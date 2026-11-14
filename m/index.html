@@ -1017,8 +1017,8 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 // ===== 导航分组（2026-11-14）=====
 var NAVGROUPS = {
   pump:  {title: '水泵', items: [
-    {tab: 'pump',    label: '普通离心泵'},
-    {tab: 'plunger', label: '柱塞泵'},
+    {tab: 'plunger', label: '给/注水泵', variant: 'feed'},
+    {tab: 'pump',    label: '排水泵',    variant: 'drain'},
     {tab: 'slurry',  label: '渣浆泵'}]},
   mill:  {title: '磨机', items: [
     {tab: 'mill', label: '球磨机', variant: 'ball'},
@@ -1061,7 +1061,7 @@ function pickSub(grp, i) {
 function navGroup(grp) {
   if (!NAVGROUPS[grp]) return;
   if (CUR.grp === grp) { renderSubNav(grp); return; }
-  pickSub(grp, grp === 'pump' ? 1 : 0);   // 水泵组默认仍进柱塞泵（保持原默认）
+  pickSub(grp, 0);   // 水泵组默认进「给/注水泵」（与原有柱塞泵测算模块同一套模型）
 }
 
 function applyVariant(tab, variant) {
@@ -1088,6 +1088,14 @@ function applyVariant(tab, variant) {
       if (m2) { m2.value = 'vfd'; if (typeof airMethodChange === 'function') airMethodChange(); }
       setVal('air_newtype', 'pm');
       txt = '通用空压机（螺杆 / 活塞 / 离心）— 按加卸载工况与改造方式测算';
+    }
+  } else if (tab === 'plunger') {
+    if (variant === 'feed') {
+      txt = '给/注水泵 — 锅炉给水 / 油田注水 / 高压补水，按进出口压差与台账电耗反算原泵效率；改造方案默认柱塞泵';
+    }
+  } else if (tab === 'pump') {
+    if (variant === 'drain') {
+      txt = '排水泵 — 矿井排水 / 循环水 / 污水提升，按扬程与实测输入功率反算原泵效率；改造机型可选柱塞泵或高效离心泵';
     }
   } else if (tab === 'motor') {
     var map = {ie4: 'ie4', vfd: 'vfd', bdfg: 'bdfg'};
@@ -1137,7 +1145,7 @@ function initNav() {
   var tab = h, variant = '';
   if (h.indexOf('-') > 0) { var p = h.split('-'); tab = p[0]; variant = p.slice(1).join('-'); }
   var grp = TAB_GROUP[tab];
-  if (!grp) { pickSub('pump', 1); return; }
+  if (!grp) { pickSub('pump', 0); return; }
   var items = NAVGROUPS[grp] ? NAVGROUPS[grp].items : [];
   var idx = -1;
   for (var i = 0; i < items.length; i++) {
