@@ -116,3 +116,18 @@ body{
 
 /* 锚点定位避开吸顶条 */
 .card[id],#contact,#disclaimer,#tech,#about,#faq{scroll-margin-top:calc(66px + env(safe-area-inset-top))}
+
+/* ---------- 二级导航（分组子项，2026-11-14） ---------- */
+.subnav{
+  display:flex !important;align-items:center;gap:8px;flex-wrap:nowrap !important;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  margin:0 -12px 12px !important;padding:0 12px 8px !important;
+  border:0 !important;background:transparent !important;
+}
+.subnav::-webkit-scrollbar{display:none}
+.subnav-title{font-size:11px !important;padding:3px 9px !important;flex:0 0 auto}
+.subnav-items{display:flex !important;gap:8px !important;flex-wrap:nowrap !important}
+.sub-btn{flex:0 0 auto;font-size:13px !important;padding:8px 13px !important;white-space:nowrap}
+.sub-btn.on{background:var(--primary-dark,#0f766e) !important;color:#fff !important}
+.variant-badge{font-size:12px !important;margin:0 0 12px !important;padding:8px 11px !important}
+.tab-btn .chev{font-size:9px;opacity:.6;margin-left:2px}
