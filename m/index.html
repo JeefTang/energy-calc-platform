@@ -756,17 +756,26 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         <div class="form-group"><label>流量 Q₂ <span class="unit">m³/h</span></label><input type="number" id="slurry_Q2" value="86.4" step="0.1"></div>
         <div class="form-group"><label>扬程 H₂ <span class="unit">m</span></label><input type="number" id="slurry_H2" value="40"></div>
         <div class="form-group"><label>浆体密度 ρ₂ <span class="unit">kg/m³</span></label><input type="number" id="slurry_rho2" value="1300" step="10"></div>
-        <div class="form-group"><label>泵效率 η<sub>泵2</sub> <span class="unit">%（浆体工况）</span></label><input type="number" id="slurry_pumpEff2" value="66" step="0.5"></div>
+        <div class="form-group"><label>改造机型（新设备）</label>
+          <select id="slurry_newType" onchange="slurryNewTypeChange()">
+            <option value="柱塞式渣浆泵">柱塞式浆料泵（容积式）· 参考 88%（主推）</option>
+            <option value="高效离心渣浆泵">高效离心渣浆泵（水力模型优化）· 参考 75%</option>
+            <option value="变频调速">变频调速（保留原泵）· 效率同原泵</option>
+            <option value="叶轮切削">叶轮切削 / 降速（保留原泵）· 效率同原泵</option>
+            <option value="custom">自定义（手动填效率）</option>
+          </select><small id="slurry_newType_tip">柱塞式浆料泵整机效率参考 88%（浆体工况，容积式）；叶轮/护套磨损后效率衰减远小于离心式</small></div>
+        <div class="form-group"><label>泵效率 η<sub>泵2</sub> <span class="unit">%（浆体工况）</span></label><input type="number" id="slurry_pumpEff2" value="88" step="0.5"></div>
         <div class="form-group"><label>传动效率 η<sub>传2</sub> <span class="unit">%</span></label><input type="number" id="slurry_transEff2" value="98" step="0.1"></div>
         <div class="form-group"><label>电机效率 η<sub>电2</sub> <span class="unit">%</span></label><input type="number" id="slurry_motorEff2" value="97.2" step="0.1"></div>
       </div>
       <div class="note">
-        <strong>渣浆泵三条常见改造路径：</strong><br>
-        ① <b>高效水力模型 / 整泵替换</b>——效率由 60%~65% 提升到 72%~78%（同时改善过流件材质与磨损寿命）；<br>
-        ② <b>变频调速</b>——工况流量长期低于额定（或需按矿量调节）时，按相似定律 Q∝n、H∝n²、P∝n³ 降速运行；<br>
-        ③ <b>叶轮切削 / 降速</b>——扬程长期过剩时切小叶轮外径，避免靠阀门或回流憋压。<br>
+        <strong>渣浆泵四条常见改造路径：</strong><br>
+        ① <b>柱塞式浆料泵替换（主推）</b>——容积式做功，浆体工况整机效率可取 85%~90%（离心式现场多为 45%~55%）；阀组/密封/柱塞过流件寿命通常为离心式叶轮护套的 2~3 倍，且磨损后效率衰减慢，高浓度、高扬程工况优势最明显；<br>
+        ② <b>高效水力模型 / 整泵替换</b>——离心式效率由 60%~65% 提升到 72%~78%（同时改善过流件材质与磨损寿命）；<br>
+        ③ <b>变频调速</b>——工况流量长期低于额定（或需按矿量调节）时，按相似定律 Q∝n、H∝n²、P∝n³ 降速运行；<br>
+        ④ <b>叶轮切削 / 降速</b>——扬程长期过剩时切小叶轮外径，避免靠阀门或回流憋压。<br>
         ⚠️ 降流量须校核<b>临界沉降流速</b>（一般 1.5~2.5 m/s，粗颗粒取高值），不得低于沉积流速，否则堵管。<br>
-        ⚠️ <b>口径提示</b>：本页按离心式渣浆泵口径计算。若改造为<b>柱塞（容积式）浆料泵</b>，轴功率应按 P = Q × ΔP ÷ (3.6 × η<sub>泵</sub>) 计算（压力已含密度影响），与密度无关，不能套用本页公式。
+        ⚠️ <b>口径提示</b>：本页轴功率按 P = ρ·g·Q·H ÷ (3.6×10⁶ × η<sub>泵</sub> × η<sub>传</sub>) 计算。选<b>柱塞式浆料泵</b>时系统自动折算出口压差 ΔP = ρ·g·H（MPa），等价于 P = Q × ΔP ÷ (3.6 × η<sub>泵</sub>)，结果中会单列 ΔP 供选型用。
       </div>
     </div>
 
@@ -827,6 +836,21 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           <strong style="font-size: 16px;">免费获取节能改造技术方案</strong><br>
           <span style="font-size: 14px;">请联系 零碳小助手 18041136555（加好友二维码见页尾）</span>
         </div>
+      </div>
+
+      <div class="card" id="slurry-plungerAdv">
+        <div class="section-title">🛡 为什么主推柱塞式浆料泵替换离心式渣浆泵</div>
+        <table class="detail-table">
+          <thead><tr><th>对比项</th><th>传统离心式渣浆泵</th><th>柱塞式浆料泵</th></tr></thead>
+          <tbody>
+            <tr><td>过流件寿命</td><td>叶轮 / 护套 / 蜗壳 3~6 个月（磨蚀性强的矿浆更短）</td><td>阀组 / 密封 / 柱塞 12 个月以上，过流件寿命通常为离心式 2~3 倍</td></tr>
+            <tr><td>效率衰减</td><td>叶轮磨损后效率快速下降，常掉 10 个百分点以上</td><td>容积式做功，磨损对流量影响小，效率衰减慢</td></tr>
+            <tr><td>高浓度 / 高扬程</td><td>浓度与扬程同时升高时，效率与寿命同步恶化</td><td>含固 30% 以上、高扬程场景优势最明显</td></tr>
+            <tr><td>能耗</td><td>清水效率 71%~78%，浆体工况常见 45%~55%</td><td>浆体工况整机效率 85%~90%</td></tr>
+            <tr><td>调节方式</td><td>靠阀门 / 变频 / 切削叶轮</td><td>变转速或变冲程，低流量工况不易憋压</td></tr>
+          </tbody>
+        </table>
+        <div class="note">以上为行业经验区间，不作为合同承诺；实际寿命与选型须按浆体粒度、磨蚀性、浓度和运行制度现场核定。</div>
       </div>
 
       <div class="card" style="background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;text-align:center">
@@ -2471,6 +2495,30 @@ function slurryExpEff() {
   return { etaW: etaW, eta: eta };
 }
 
+var SLURRY_NEW_TYPE = {
+  '柱塞式渣浆泵': { eff: 88, tip: '柱塞式浆料泵整机效率参考 88%（浆体工况，容积式）；过流件寿命通常为离心式 2~3 倍，磨损后效率衰减慢' },
+  '高效离心渣浆泵': { eff: 75, tip: '高效水力模型离心式渣浆泵，浆体工况参考 75%（清水 78%~82%）；过流件建议选高铬合金' },
+  '变频调速': { eff: null, tip: '保留原泵，节电来自降速：请按相似定律 Q∝n、H∝n²、P∝n³ 把 Q₂/H₂ 改为实际运行工况，效率默认同原泵' },
+  '叶轮切削': { eff: null, tip: '保留原泵，节电来自切削叶轮消除过剩扬程：请把 H₂ 改为切削后实际扬程，效率默认同原泵' },
+  'custom': { eff: null, tip: '自定义：直接手填改造后泵效率（浆体工况）' }
+};
+
+function slurryNewTypeChange() {
+  var sel = document.getElementById('slurry_newType');
+  var t = sel ? sel.value : '柱塞式渣浆泵';
+  var cfg = SLURRY_NEW_TYPE[t] || {};
+  var eff = document.getElementById('slurry_pumpEff2');
+  var tip = document.getElementById('slurry_newType_tip');
+  if (tip) tip.textContent = cfg.tip || '';
+  if (eff && cfg.eff) eff.value = cfg.eff;
+  if (eff && !cfg.eff && (t === '变频调速' || t === '叶轮切削')) {
+    var e1 = parseFloat((document.getElementById('slurry_pumpEff1') || {}).value);
+    if (!isNaN(e1)) eff.value = e1;
+  }
+  var adv = document.getElementById('slurry-plungerAdv');
+  if (adv) adv.style.display = (t === '柱塞式渣浆泵') ? '' : 'none';
+}
+
 function slurryEffModeChange() {
   var mode = document.getElementById('slurry_effMode').value;
   var box = document.getElementById('slurry-measureBox');
@@ -2590,11 +2638,20 @@ function calcSlurry() {
     effRow = tr3('原泵效率（实测反算核对）', (etaCalc * 100).toFixed(1) + '%', (pumpEff1 * 100).toFixed(1) + '%', devTxt);
   }
 
+  // 改造机型（柱塞式主推 / 高效离心 / 变频 / 切削）
+  var newType = (document.getElementById('slurry_newType') || {}).value || '柱塞式渣浆泵';
+  var isPlunger = (newType === '柱塞式渣浆泵');
+  var dP1 = rho1 * 9.81 * H1 / 1e6, dP2 = rho2 * 9.81 * H2 / 1e6;
+  var adv = document.getElementById('slurry-plungerAdv');
+  if (adv) adv.style.display = isPlunger ? '' : 'none';
+
   document.getElementById('slurry-detailTable').innerHTML =
+    tr3('改造机型', '离心式渣浆泵（原泵）', newType === 'custom' ? '自定义' : newType, '—') +
     tr3('流量 (m³/h)', Q1.toLocaleString(), Q2.toLocaleString(), (Q2 - Q1 === 0 ? '持平' : ((Q2 - Q1).toLocaleString() + ' (' + sign(pct(Q1, Q2)) + ')'))) +
     tr3('扬程 (m)', H1.toLocaleString(), H2.toLocaleString(), (H2 - H1 === 0 ? '持平' : ((H2 - H1).toLocaleString() + ' (' + sign(pct(H1, H2)) + ')'))) +
     tr3('浆体密度 (kg/m³)', rho1.toFixed(0), rho2.toFixed(0), (rho2 - rho1 === 0 ? '持平' : ((rho2 - rho1).toFixed(0) + ' (' + sign(pct(rho1, rho2)) + ')'))) +
     tr3('泵效率（浆体工况）', (pumpEff1 * 100).toFixed(1) + '%', (pumpEff2 * 100).toFixed(1) + '%', ((pumpEff2 - pumpEff1) * 100).toFixed(1) + ' 个百分点') +
+    (isPlunger ? tr3('出口压差 ΔP (MPa)', dP1.toFixed(2), dP2.toFixed(2), (dP1 - dP2).toFixed(2) + ' MPa') : '') +
     effRow +
     tr3('传动效率', (transEff1 * 100).toFixed(1) + '%', (transEff2 * 100).toFixed(1) + '%', ((transEff2 - transEff1) * 100).toFixed(1) + ' 个百分点') +
     tr3('电机效率', (motorEff1 * 100).toFixed(1) + '%', (motorEff2 * 100).toFixed(1) + '%', ((motorEff2 - motorEff1) * 100).toFixed(1) + ' 个百分点') +
