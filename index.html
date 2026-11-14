@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>/* 默认视图 = 手机版 (/m/)；?view=desktop 或 cookie=desktop 留在电脑版
-   规则同 BCU 站：cookie 记选择，桌面页默认跳手机版，手机版页有「电脑版」入口 */
+<script>/* 视图切换规则同 BCU 站：cookie ecalc_view 记选择；?view=desktop / ?view=mobile 强制；
+   未选过时按设备判断（手机/窄屏 → /m/ 手机版，电脑 → 电脑版）；手机版页有「电脑版」入口 */
 (function(){try{var K="ecalc_view",p=new URLSearchParams(location.search),f=p.get("view");
 if(f==="mobile"||f==="desktop"){document.cookie=K+"="+f+";path=/;max-age=31536000;SameSite=Lax";}
-var m=document.cookie.match(/(?:^|;\s*)ecalc_view=(mobile|desktop)/),pref=f||(m&&m[1])||"mobile";
+var m=document.cookie.match(/(?:^|;\s*)ecalc_view=(mobile|desktop)/);
+var dev=(/Mobi|Android|iPhone|iPad|iPod|Windows Phone|IEMobile|HarmonyOS/i.test(navigator.userAgent)||(window.innerWidth<=768))?"mobile":"desktop";
+var pref=f||(m&&m[1])||dev;
 var path=location.pathname;
 if(!(/\/m\//.test(path)||/\/m$/.test(path))&&pref!=="desktop"){
 var t;
