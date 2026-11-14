@@ -171,13 +171,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 </div>
 <div class="container">
   <div class="viewswitch"><a href="m/?view=mobile" title="切换到手机版 / Switch to mobile edition">📱 手机版</a></div>
-  <div class="header">
-    <img src="../logo-jeeftang.png" alt="吉孚唐 Jeeftang" style="display:block;width:160px;max-width:56%;height:auto;margin:0 auto 6px">
-    <div style="width:160px;max-width:56%;margin:0 auto 14px;text-align:right;font-size:9px;font-weight:700;letter-spacing:.06em;color:#0f766e;white-space:nowrap">工业节能项目 FDE 服务商</div>
-    <h1>流体机械节能测算工具</h1>
-    <p>基于轴功率计算的节能测算 + 电机选型指导</p>
-    <div style="margin-top:8px;font-size:12px;color:#64748b">测算与咨询由 <b style="color:#0f766e">零碳小助手</b> · 流体机械工业智能体提供</div>
-  </div>
+  <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">流体机械节能测算工具 —— 基于轴功率计算的节能测算 + 电机选型指导（零碳小助手 · 流体机械工业智能体）</h1>
   
   <!-- 设备运行健康评测：独立入口，置于导航栏上方（2026-11-14 老唐要求） -->
   <a class="health-entry" id="healthEntry" href="#health" onclick="return openHealth(event)">
@@ -3198,5 +3192,9 @@ if(f==="mobile"){document.cookie="ecalc_view=mobile;path=/;max-age=31536000;Same
 if(f){var q=location.search.replace(/([?&])view=[^&]*/g,"$1").replace(/[?&]+$/,"");
 history.replaceState(null,"",location.pathname+q+location.hash);}}catch(e){}})();
 </script>
+<div style="position:fixed;right:10px;bottom:74px;z-index:60;display:flex;align-items:center;gap:4px;pointer-events:none;background:rgba(255,255,255,.93);padding:4px 8px 4px 5px;border-radius:999px;box-shadow:0 2px 8px rgba(15,118,110,.10)">
+  <img src="../logo-jeeftang.png" alt="吉孚唐 Jeeftang" style="display:block;width:96px;height:auto">
+  <span style="font-size:8.5px;font-weight:700;letter-spacing:.02em;color:#0f766e;white-space:nowrap">工业节能项目 FDE 服务商</span>
+</div>
 </body>
 </html>
