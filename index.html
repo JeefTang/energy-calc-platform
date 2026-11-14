@@ -78,6 +78,9 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 .health-entry .he-text small{font-size:12px;opacity:.88;line-height:1.4}
 .health-entry .he-go{font-size:13px;font-weight:700;white-space:nowrap;background:rgba(255,255,255,.18);padding:7px 12px;border-radius:999px}
 .health-entry.on{outline:2px solid #5eead4;outline-offset:2px}
+.health-entry .he-step{font-size:11px;font-weight:700;background:rgba(255,255,255,.22);padding:2px 8px;border-radius:999px;margin-right:4px;vertical-align:2px}
+.step-line{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--text2);margin:2px 0 10px}
+.step-line .step-no{width:18px;height:18px;border-radius:50%;background:var(--primary-light);color:var(--primary-dark);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
 .tab-btn .chev{font-size:10px;opacity:.65;margin-left:3px}
 .tabs{margin-bottom:12px !important}
 .subnav{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 18px;padding:10px 14px;
@@ -220,9 +223,10 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
   <div class="health-entry" id="healthEntry" role="button" tabindex="0"
        onclick="showTab('health')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showTab('health');}">
     <span class="he-icon">🩺</span>
-    <span class="he-text"><b>设备运行健康评测</b><small>振动烈度 · 绝缘温度 · 三相不平衡 · 负载率 · 功率因数 · 机组效率</small></span>
-    <span class="he-go">免费评测 →</span>
+    <span class="he-text"><b><span class="he-step">第 1 步</span> 先做设备运行健康评测</b><small>先摸清设备能效与运行状况（振动 · 绝缘温度 · 三相不平衡 · 功率因数 · 机组效率），再选测算模块算节能</small></span>
+    <span class="he-go">开始评测 →</span>
   </div>
+  <div class="step-line"><span class="step-no">2</span>第 2 步：了解现状后，选择设备测算节能空间</div>
   <div class="tabs" id="navGroups">
     <button class="tab-btn grp active" data-grp="pump" onclick="navGroup('pump')">💧 水泵<span class="chev">▾</span></button>
     <button class="tab-btn" data-tab="fan" onclick="showTab('fan')">🌬 风机</button>
@@ -1031,6 +1035,20 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         <div class="note" id="h-disclaimer"></div>
       </div>
 
+      <div class="card" style="border:1px dashed #5eead4;background:#f0fdfa">
+        <div class="section-title">➡️ 下一步：测算这台设备的节能空间</div>
+        <p style="font-size:14px;color:var(--text2);line-height:1.8;margin:6px 0 12px">
+          已经摸清现状（能效、机械与电气状况）→ 选择对应设备，测算改造后的节电率、年节电量与回收期。
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="tab-btn" style="background:var(--primary-dark);color:#fff;border-color:var(--primary-dark)" onclick="goCalc('pump')">💧 水泵节能测算</button>
+          <button class="tab-btn" onclick="goCalc('fan')">🌬 风机节能测算</button>
+          <button class="tab-btn" onclick="goCalc('air')">🗜️ 压缩机节能测算</button>
+          <button class="tab-btn" onclick="goCalc('mill')">🔨 磨机节能测算</button>
+          <button class="tab-btn" onclick="goCalc('motor')">⚡ 高效电机替换</button>
+        </div>
+      </div>
+
       <div class="card" style="background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;text-align:center">
         <div style="font-size:18px;font-weight:700;margin-bottom:6px">免费获取节能改造技术方案</div>
         <div style="font-size:14px;opacity:.95;margin-bottom:8px">请联系 零碳小助手 <b>18041136555</b></div>
@@ -1088,6 +1106,11 @@ function pickSub(grp, i) {
   var g = NAVGROUPS[grp]; if (!g || !g.items[i]) return;
   var it = g.items[i];
   showTab(it.tab, grp, it.variant || '', it.label);
+}
+
+function goCalc(grp) {
+  if (NAVGROUPS[grp]) navGroup(grp); else showTab(grp);
+  try { window.scrollTo({top: 0, behavior: 'smooth'}); } catch (e) { window.scrollTo(0, 0); }
 }
 
 function navGroup(grp) {
@@ -1181,7 +1204,7 @@ function initNav() {
   if (h.indexOf('-') > 0) { var p = h.split('-'); tab = p[0]; variant = p.slice(1).join('-'); }
   var grp = TAB_GROUP[tab];
   if (!grp) {
-    if (tab === 'health') { showTab('health'); return; }   // 健康评测已移到导航栏上方
+    if (!tab || tab === 'health') { showTab('health'); return; }   // 首次进入/#health：引导先做健康评测
     pickSub('pump', 0); return;
   }
   var items = NAVGROUPS[grp] ? NAVGROUPS[grp].items : [];
