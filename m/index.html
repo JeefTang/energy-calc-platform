@@ -70,8 +70,9 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 .detail-table td:first-child{color:#475569;font-weight:500}
 .detail-table td:last-child{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
 .detail-table tr.dt-key{background:linear-gradient(90deg,#ecfdf5,#f7fefb)!important}
-.detail-table tr.dt-key td{color:#0f766e;font-weight:700;border-bottom-color:#d7ece7}
 .detail-table tr.dt-key td:first-child{color:#0f766e}
+.detail-table tr.dt-group td{background:#f0fdfa;color:#0f766e;font-weight:700;font-size:12px;letter-spacing:.03em;padding:7px 12px;border-bottom:1px solid #d7ece7;text-align:left!important}
+.detail-table tr.dt-warn td{background:#fff7ed;color:#b45309;font-weight:600;font-size:12.5px;line-height:1.65;border-bottom-color:#fed7aa;text-align:left}
 .note{font-size:12px;color:var(--text2);margin-top:8px;line-height:1.5}
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999;display:none;box-shadow:var(--shadow)}
 .toast.show{display:block}
@@ -230,9 +231,9 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         <div class="form-group"><label>设备名称（旧设备）</label><input type="text" id="plunger_oldName" value="旧注水泵"></div>
         <div class="form-group"><label>匹配设备名称（新设备）</label><input type="text" id="plunger_newName" value="永磁变频注水泵"></div>
         <div class="form-group"><label>平均日注水量 <span class="unit">m³</span></label><input type="number" id="plunger_dailyWater" value="500" oninput="updatePlungerFromDaily()"><small>按台账填，自动折算平均流量与输入功率</small></div>
-        <div class="form-group"><label>平均日耗电量 <span class="unit">kWh</span></label><input type="number" id="plunger_dailyPower" value="1200" oninput="updatePlungerFromDaily()"><small>电表/台账读数，自动折算平均输入功率</small></div>
-        <div class="form-group"><label>平均流量 <span class="unit">m³/h</span></label><input type="number" id="plunger_avgFlow" value="25" oninput="updatePlungerMotorPower()"></div>
-        <div class="form-group"><label>平均输入功率 <span class="unit">kW</span></label><input type="number" id="plunger_avgInputPower" value="50"></div>
+        <div class="form-group"><label>平均日耗电量 <span class="unit">kWh</span></label><input type="number" id="plunger_dailyPower" value="3240" oninput="updatePlungerFromDaily()"><small>电表/台账读数，自动折算平均输入功率</small></div>
+        <div class="form-group"><label>平均流量 <span class="unit">m³/h</span></label><input type="number" id="plunger_avgFlow" value="20.8" oninput="updatePlungerMotorPower()"></div>
+        <div class="form-group"><label>平均输入功率 <span class="unit">kW</span></label><input type="number" id="plunger_avgInputPower" value="135"></div>
         <div class="form-group"><label>进口压力 <span class="unit">MPa</span></label><input type="number" id="plunger_inPressure" value="0.1" step="0.01" oninput="updatePlungerMotorPower()"></div>
         <div class="form-group"><label>出口压力 <span class="unit">MPa</span></label><input type="number" id="plunger_outPressure" value="15" step="0.01" oninput="updatePlungerMotorPower()"></div>
         <div class="form-group"><label>运行天数 <span class="unit">天</span></label><input type="number" id="plunger_runDays" value="300"></div>
@@ -1079,6 +1080,57 @@ function tr2(label, val, desc) {
   return `<tr${dtKeyCls(label)}><td>${label}</td><td>${val}</td><td>${desc}</td></tr>`;
 }
 
+// 物理自洽告警行（2026-11-14）：实测输入功率与工况矛盾 / 电机超载时插在表格顶部
+function dtWarnRow(msg) {
+  return '<tr class="dt-warn"><td colspan="4">⚠️ ' + msg + '</td></tr>';
+}
+
+// ===== 详细计算结果：自动分组排版（2026-11-14 v3）=====
+// 不改各测算函数，统一在 innerHTML 赋值时按关键词归组 + 插分组标题
+const DT_GROUPS = [   // 顺序 = 匹配优先级 = 显示顺序
+  ['工况参数', /流量|扬程|压力|压差|风量|全压|密度|温度|电价|运行|台数|设备|压缩性|介质|比热|转速|工况|比功率/],
+  ['效率参数', /效率|取值来源|负载率/],
+  ['功率与选型', /功率|电机|变频器|传动|选型|安全系数/],
+  ['节能效益', /节电|节约|减排|CO₂|CO2|耗电量|年效益|回收期|标准煤|省电/]
+];
+function dtGroupHtml(html) {
+  const src = String(html || '');
+  const rows = [...src.matchAll(/<tr[\s\S]*?<\/tr>/g)].map(m => m[0]);
+  if (rows.length < 6) return src;                       // 行太少不必分组
+  const head = src.replace(/<tr[\s\S]*?<\/tr>/g, '');   // 表格外的告警块等
+  const buckets = new Map(), rest = [], keep = [];
+  rows.forEach(r => {
+    if (/dt-warn/.test(r)) { keep.push(r); return; }
+    const first = ((r.match(/<td[^>]*>([\s\S]*?)<\/td>/) || [, ''])[1] || '').replace(/<[^>]+>/g, '');
+    const g = DT_GROUPS.find(x => x[1].test(first));
+    if (g) { if (!buckets.has(g[0])) buckets.set(g[0], []); buckets.get(g[0]).push(r); }
+    else rest.push(r);
+  });
+  let out = keep.join('');
+  DT_GROUPS.forEach(([name]) => {
+    if (buckets.has(name)) out += '<tr class="dt-group"><td colspan="4">' + name + '</td></tr>' + buckets.get(name).join('');
+  });
+  if (rest.length) out += '<tr class="dt-group"><td colspan="4">其他</td></tr>' + rest.join('');
+  return head + out;
+}
+function dtInstallGrouper() {
+  ['plunger', 'mill', 'fan', 'pump', 'air', 'heat', 'slurry'].forEach(function (n) {
+    const el = document.getElementById(n + '-detailTable');
+    if (!el || el.__dtGrouped) return;
+    let val = el.innerHTML || '';
+    try {
+      Object.defineProperty(el, 'innerHTML', {
+        get: function () { return val; },
+        set: function (v) { val = dtGroupHtml(v); },
+        configurable: true
+      });
+      el.__dtGrouped = true;
+    } catch (e) { }
+  });
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', dtInstallGrouper);
+else setTimeout(dtInstallGrouper, 0);
+
 // ==================== 效率自动取值 v1.2（2026-11-14）====================
 // 目的：销售现场不懂效率也能把账算出来
 //   ① 原设备效率：填了「实测电机输入功率」→ 有效功率 ÷ 实测输入功率（再折算到设备本体）
@@ -1354,7 +1406,10 @@ function calcPlunger() {
   document.getElementById('plunger-yearlyMoney').textContent = (yearlyMoney / 10000).toFixed(2);
   
   // 详细表格
-  document.getElementById('plunger-detailTable').innerHTML = 
+  const dtWarnP = (oldEfficiency > 1.02)
+    ? dtWarnRow('实测输入功率 ' + avgInputPower.toFixed(0) + ' kW 与工况矛盾：按 ' + flow.toFixed(1) + ' m³/h、压差 ' + deltaP.toFixed(0) + ' kPa 至少需 ' + (shaftPower / motorEff / vfdEff).toFixed(0) + ' kW（反算原泵效率 ' + (oldEfficiency * 100).toFixed(0) + '% 已超 100%）。请核对电表读数、压力单位（MPa）与日注水量。')
+    : '';
+  document.getElementById('plunger-detailTable').innerHTML = dtWarnP +
     tr('平均流量', flow.toFixed(1) + ' m³/h') +
     tr('进口压力', inPressure.toFixed(2) + ' MPa') +
     tr('出口压力', outPressure.toFixed(2) + ' MPa') +
@@ -1714,7 +1769,12 @@ function calcPump() {
   document.getElementById('pump-CO2').textContent = co2Reduction.toFixed(1);
   
   // 详细结果表格
-  document.getElementById('pump-detailTable').innerHTML = 
+  const dtWarnU = (motorInputPower1 > motorPower1 * 1.02)
+    ? dtWarnRow('计算轴功率需电机输入 ' + motorInputPower1.toFixed(1) + ' kW，已超原电机额定 ' + motorPower1.toFixed(0) + ' kW——请核对流量/扬程/泵效率，或原电机确有长期过载。')
+    : (motorInputPower1 < motorPower1 * 0.45
+      ? dtWarnRow('电机额定 ' + motorPower1.toFixed(0) + ' kW 但工况只需 ' + motorInputPower1.toFixed(1) + ' kW（负载率 ' + (motorInputPower1 / motorPower1 * 100).toFixed(0) + '%）——典型「大马拉小车」，节能空间主要来自选型与调节，不只是换泵。')
+      : '');
+  document.getElementById('pump-detailTable').innerHTML = dtWarnU +
     tr3('流量 (m³/h)', Q1.toLocaleString(), Q2.toLocaleString(), ((Q1 - Q2).toLocaleString() + ' (' + ((Q1 - Q2)/Q1*100).toFixed(1) + '%)')) +
     tr3('扬程 (m)', H1.toLocaleString(), H2.toLocaleString(), ((H1 - H2).toLocaleString() + ' (' + ((H1 - H2)/H1*100).toFixed(1) + '%)')) +
     tr3('水泵效率', (pumpEff1*100).toFixed(1) + '%', (pumpEff2*100).toFixed(1) + '%', ((pumpEff2 - pumpEff1)*100).toFixed(1) + '个百分点') +
@@ -2249,13 +2309,20 @@ function calcHealth() {
 
   const q = f('h_q'), pin = f('h_pin'), pout = f('h_pout'), pt = f('h_pt');
   const etaIn = f('h_eta');
+  // 口径统一（2026-11-14）：与「节能测算」模块一致
+  //   机组综合效率 = 水力/有用功率 ÷ 电机输入功率（含电机 + 传动）
+  //   本体效率     = 机组综合效率 ÷ (电机效率 × 传动效率) → 再与模块同一个经验值比
+  const META_DEF = { pump: 94.5, fan: 95.3, compressor: 95, motor: 95, other: 94.5 };
+  const metaEff = (f('h_meta') || META_DEF[dtype] || 95) / 100;
+  const transEff = (dtype === 'motor') ? 1 : 0.98;              // 直连传动 98%（模块同口径）
+  const BODY_BASE = { pump: 72, fan: 75, other: 72 };           // 模块经验值：多级离心泵 72 / 离心风机 75
   let pHyd = null, etaUsed = null, effNote = '';
   if (dtype === 'motor') {
     etaUsed = etaIn || 95;
     if (pact) extra.axis = pact * etaUsed / 100;                 // 电机输出(轴)功率 = 输入 × η
     effNote = '电机效率';
   } else if (dtype === 'fan') {
-    etaUsed = etaIn || 70;
+    etaUsed = etaIn || 75;
     if (q && pt) { pHyd = q * pt / 3.6e6; extra.axis = pHyd / (etaUsed / 100); }   // 风功率 = Q[m³/h]·Pt[Pa]/3.6e6
     effNote = '风功率/输入功率';
   } else if (dtype === 'compressor') {
@@ -2270,19 +2337,45 @@ function calcHealth() {
     }
     effNote = '';
   } else {
-    etaUsed = etaIn || 70;
+    etaUsed = etaIn || 72;
     if (q && pin !== null && pout !== null) { pHyd = q * (pout - pin) / 3.6; extra.axis = pHyd / (etaUsed / 100); extra.head = (pout - pin) * 101.97; }
     effNote = 'ρgQH/输入功率';
   }
   if (etaUsed) extra.axisEta = etaUsed;
   if (pHyd !== null && pact) {
-    const eff = pHyd / pact * 100;
+    const eff = pHyd / pact * 100;                              // 机组综合效率（含电机+传动）
     extra.eff = eff;
-    let lv = eff >= 75 ? '正常' : eff >= 60 ? '关注' : eff >= 40 ? '预警' : '异常';
-    let note = effNote + '（含电机）';
+    const effBody = eff / (metaEff * transEff);                 // 本体效率（泵/风机叶轮侧）
+    extra.effBody = effBody;
+    const base = BODY_BASE[dtype];
+    const diff = base ? effBody - base : null;
+    let lv, limitTxt, note = effNote + '（含电机 ' + (metaEff * 100).toFixed(1) + '% · 传动 ' + (transEff * 100).toFixed(0) + '%）';
+    if (diff !== null) {
+      // 与模块同一套经验值比：±2 个点内算正常，往下逐级判（与离心泵/风机行业口径一致）
+      lv = diff >= -2 ? '正常' : diff >= -8 ? '关注' : diff >= -15 ? '预警' : '异常';
+      limitTxt = '本体效率对标 ' + base + '%（同机型经验值）：≥' + (base - 2) + '%(正常) / ≥' + (base - 8) + '%(关注) / ≥' + (base - 15) + '%(预警)';
+      note += ' · 本体效率 ' + effBody.toFixed(1) + '%，' + (diff >= 0 ? '高于' : '低于') + '经验值 ' + Math.abs(diff).toFixed(1) + ' 个百分点';
+    } else {
+      lv = eff >= 75 ? '正常' : eff >= 60 ? '关注' : eff >= 40 ? '预警' : '异常';
+      limitTxt = '≥75%(正常) / ≥60%(关注)';
+    }
     if (eff > 95) { lv = '关注'; note += ' · 数值偏高，请核对功率口径/单位'; push(suspects, '效率偏高(>95%)：功率口径可能不是电机输入功率，或单位/扬程有误'); }
-    add('能效', '机组综合效率', lv, eff.toFixed(1), '%', '≥75%(正常) / ≥60%(关注)', note);
+    add('能效', '机组综合效率', lv, eff.toFixed(1), '%', limitTxt, note);
     if (lv === '预警' || lv === '异常') { push(suspects, '机组效率偏低：泵/风机磨损、选型偏大、节流损失大、与工况不匹配'); push(actions, '做完整节能测算，评估改造（走「节能测算」入口）'); }
+
+    // 效率项改造空间：与模块同一套改造机型效率（泵→柱塞泵 90% / 风机→永磁一体化 82%）
+    if (diff !== null) {
+      const newEta = dtype === 'fan' ? 0.82 : 0.90;
+      const bodySave = Math.max(0, (1 - (effBody / 100) / newEta) * 100);
+      extra.bodySave = bodySave;
+      add('能效', '效率项改造空间', bodySave >= 8 ? '关注' : '正常', bodySave.toFixed(1), '%',
+        '仅效率项：' + (dtype === 'fan' ? '永磁一体化 82%' : '柱塞泵 90%') + ' 对标本体效率 ' + effBody.toFixed(1) + '%',
+        '流量/扬程同步下调时，总节电率高于此值（以节能测算模块为准）');
+      if (bodySave >= 8) {
+        push(suspects, '效率项可挖空间约 ' + bodySave.toFixed(1) + '%（本体效率 ' + effBody.toFixed(1) + '% → ' + (newEta * 100).toFixed(0) + '%）');
+        push(actions, '进「' + (dtype === 'fan' ? '风机' : '水泵') + '节能测算」按实测流量/扬程算完整节电率与回收期');
+      }
+    }
   }
 
   // 9. 转速偏差（机械）
@@ -2304,7 +2397,10 @@ function calcHealth() {
   document.getElementById('h-warn').textContent = warn;
   document.getElementById('h-plate').textContent = extra.eff !== undefined ? extra.eff.toFixed(1) + '%' : '—';
   document.getElementById('h-axis').textContent = extra.axis !== undefined ? extra.axis.toFixed(1) : '—';
-  if (extra.axisEta) { const nAx = document.getElementById('h-axis-note'); if (nAx) nAx.textContent = '按泵效率 ' + extra.axisEta + '%'; }
+  if (extra.axis) {
+    const nAx = document.getElementById('h-axis-note');
+    if (nAx) nAx.textContent = '按' + ({ pump: '泵效率', other: '泵效率', fan: '风机效率', compressor: '电机效率', motor: '电机效率' }[dtype] || '效率') + ' ' + (extra.axisEta || 95) + '%';
+  }
 
   document.getElementById('h-items').innerHTML = items.map(it =>
     '<tr><td>' + it.cat + '</td><td>' + it.name + '</td><td>' + it.value + ' ' + it.unit + '</td><td style="font-size:12px;color:#64748b">' + it.limit + (it.note ? '<br>' + it.note : '') + '</td><td style="text-align:center;font-weight:700;color:' +
@@ -2321,11 +2417,11 @@ function calcHealth() {
 
 // ==================== 能效参数按设备类型动态切换 ====================
 const H_EFF = {
-  pump:       [['h_q', '实测流量', 'm³/h', 180, 0.1], ['h_pin', '进口压力', 'MPa', 0.2, 0.01], ['h_pout', '出口压力', 'MPa', 4.0, 0.01], ['h_eta', '泵效率', '%（离心泵约60~80）', 70, 1]],
-  fan:        [['h_q', '风量', 'm³/h', 240000, 100], ['h_pt', '全压', 'Pa', 3000, 10], ['h_eta', '风机效率', '%（约60~80）', 70, 1]],
+  pump:       [['h_q', '实测流量', 'm³/h', 180, 0.1], ['h_pin', '进口压力', 'MPa', 0.2, 0.01], ['h_pout', '出口压力', 'MPa', 4.0, 0.01], ['h_eta', '泵本体效率', '%（离心泵约60~80）', 72, 1], ['h_meta', '电机效率', '%（默认94.5）', 94.5, 0.1]],
+  fan:        [['h_q', '风量', 'm³/h', 240000, 100], ['h_pt', '全压', 'Pa', 3000, 10], ['h_eta', '风机本体效率', '%（约60~80）', 75, 1], ['h_meta', '电机效率', '%（默认95.3）', 95.3, 0.1]],
   compressor: [['h_q', '排气量', 'm³/min', 45, 1], ['h_pout', '排气压力', 'MPa', 0.8, 0.01], ['h_eta', '电机效率', '%（默认95）', 95, 1]],
   motor:      [['h_eta', '电机效率', '%（默认95）', 95, 1]],
-  other:      [['h_q', '实测流量', 'm³/h', 180, 0.1], ['h_pin', '进口压力', 'MPa', 0.2, 0.01], ['h_pout', '出口压力', 'MPa', 4.0, 0.01], ['h_eta', '泵效率', '%（约70）', 70, 1]]
+  other:      [['h_q', '实测流量', 'm³/h', 180, 0.1], ['h_pin', '进口压力', 'MPa', 0.2, 0.01], ['h_pout', '出口压力', 'MPa', 4.0, 0.01], ['h_eta', '泵本体效率', '%（约70）', 72, 1], ['h_meta', '电机效率', '%（默认94.5）', 94.5, 0.1]]
 };
 let hvals = {}, hPrevType = null;
 function renderEff() {
