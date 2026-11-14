@@ -85,8 +85,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
   .tab-btn{width:100%}
 }
 </style>
-<script type="application/ld+json">
-{
+<script type="application/ld+json">{
   "@context": "https://schema.org",
   "@graph": [
     {
@@ -120,80 +119,9 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         "availableLanguage": "zh-CN"
       },
       "disclaimer": "本平台为工程辅助测算工具，测算结果仅供参考，实际改造工程需以现场勘察与复核数据为准，不构成任何承诺或交易要约。"
-    },
-    {
-      "@type": "FAQPage",
-      "@id": "https://jeeftang.github.io/energy-calc-platform/#faq",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "流体机械节能测算工具是什么？",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "流体机械节能测算工具是一个网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、风机、磨机四类设备，按轴功率法测算节电率、年节电量、电费与碳减排，并给出电机选型建议。网址：https://jeeftang.github.io/energy-calc-platform/ 。"
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "平台支持哪些设备和输出哪些指标？",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "支持柱塞泵、水泵、风机、磨机四类设备。输出综合节电率、年节电量（万kWh）、年节电费（万元）、CO₂减排量（吨），并给出推荐电机功率与类型。"
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "柱塞泵/水泵/风机的轴功率怎么计算？",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "柱塞泵轴功率 P = Q × ΔP ÷ (3.6 × η泵)；水泵轴功率 = (Q × H × 1000 × 9.81) ÷ (3600 × 1000 × η泵 × η传)；风机轴功率 = (Q × P) ÷ (3600 × 1000 × η风 × η传)。其中 Q 为流量（m³/h），ΔP 为压差（MPa），H 为扬程（m），P 为风压（Pa）。"
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "电机选型的安全系数怎么取？",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "平台按功率分档：计算轴功率 <5 kW 取 1.1；<10 kW 取 1.15；>100 kW 取 1.25；默认 1.2；风机或水泵功率 >50 kW 另加 0.05。安全系数整体落在 1.1–1.25 区间。计算额定功率 = 计算轴功率 × 安全系数，再向上取就近的标准功率档。"
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "碳减排量怎么折算？",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "平台按每万 kWh 节电约 4 t CO₂ 折算，即 0.4 kg CO₂/kWh。"
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "平台测算结果能直接用于工程决策吗？",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "不能直接用于最终决策。平台属工程辅助测算工具，结果仅供参考，实际改造工程需以现场勘察与复核数据为准。"
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "平台需要安装吗？",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "不需要。平台为网页形态，浏览器打开网址即可使用，支持移动端访问。"
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "如何咨询工业节能改造？",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "免费获取节能改造技术方案，请联系零碳小助手 18041136555（加好友二维码见页面底部）。"
-          }
-        }
-      ]
     }
   ]
-}
-</script>
+}</script>
 </head>
 <body>
 <div class="container">
@@ -2846,45 +2774,6 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 </script>
   <!-- ==================== GEO 可见内容区（新增，纯展示，不含脚本） ==================== -->
-  <div class="card" id="about">
-    <div class="section-title">📘 平台算法说明</div>
-    <p>本平台采用轴功率法进行节能测算，覆盖柱塞泵、水泵、渣浆泵、风机、磨机、空压机六类设备，并支持余热回收测算与设备运行健康评测。</p>
-    <ul style="margin:10px 0 0 20px;line-height:1.9;font-size:14px;">
-      <li>柱塞泵轴功率：P = Q × ΔP ÷ (3.6 × η<sub>泵</sub>)（Q：m³/h；ΔP：MPa）</li>
-      <li>水泵轴功率：(Q × H × 1000 × 9.81) ÷ (3600 × 1000 × η<sub>泵</sub> × η<sub>传</sub>)</li>
-      <li>风机轴功率：(Q × P) ÷ (3600 × 1000 × η<sub>风</sub> × η<sub>传</sub>)</li>
-      <li>磨机：按原/新电机效率与原/新负载率对比测算</li>
-      <li>永磁电机替换：按损耗分离模型 η(β) = βPn ÷ [βPn + a·P损n + (1−a)·P损n·β²] 折算负载率下的实际运行效率（a 为恒定损耗占比，异步机 0.35~0.45、永磁机 0.55），节电率 = 1 − η异步 ÷ η永磁；适用于搅拌机、密炼机、螺旋输送机等<b>恒转矩机械传动负载</b>——此类负载变频调速本身不省电，节能点在于电机本体在轻载工况下的效率与功率因数；绕线转子电机另计入滑环、碳刷维护收益</li>
-      <li>渣浆泵：按浆体密度、流量、扬程与浆体工况效率算轴功率（P = ρgQH ÷ (3.6×10⁶ × η<sub>泵</sub> × η<sub>传</sub>)），浆体密度可由固含量换算（ρ = 1 ÷ (Cw/ρs + (1−Cw)/1000)）；另输出单位电耗（kWh/m³浆）与吨干矿电耗（kWh/t），供矿山按处理量对标</li>
-      <li>空压机：现状按加载率对功率做时间加权（加载段满功率 + 卸载段按卸载功率占比），改造后按改造方式用物理关系推算——变频按功率∝排气量并计入变频损耗，联控按卸载占比下降并计入分级匹配损失，整机替换按比功率对标，泄漏治理按需求下降折算；<b>综合节电率 = 1 − 改造后平均功率 ÷ 现状平均功率，由参数自动计算</b>；排气压力每降 0.1 MPa 轴功率约降 7%；变频按螺杆机部分负荷功率曲线 f=0.2+0.8×流量比折算（50% 流量约 60% 功率），并把电机+传动效率（默认 98.3%）计入电输入功率。余热按输入功率 × 回收率估算</li>
-      <li>余热回收：热功率 Q = 流量 × 比热 × 温差 ÷ 3600，按利用方式折算年热收益</li>
-      <li>设备运行健康评测：振动烈度（ISO 10816）、绝缘温度限值、三相不平衡、负载率、功率因数、机组效率 ρgQH/P</li>
-      <li>电机选型安全系数：&lt;5 kW 取 1.1；&lt;10 kW 取 1.15；&gt;100 kW 取 1.25；默认 1.2；风机或水泵 &gt;50 kW 另加 0.05（整体落在 1.1–1.25）</li>
-      <li>推荐电机功率：计算轴功率 × 安全系数 → 向上取就近的标准功率档 → 建议永磁同步电机</li>
-      <li>碳减排折算：每万 kWh 节电约 4 t CO₂（0.4 kg CO₂/kWh）</li>
-    </ul>
-  </div>
-
-  <div class="card" id="faq">
-    <div class="section-title">❓ 常见问题</div>
-    <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q1 平台是什么？</h3>
-    <p style="font-size:14px;color:var(--text2)">流体机械节能测算工具是一个网页免安装的工业节能测算工具，覆盖柱塞泵、水泵、渣浆泵、风机、磨机、空压机六类设备的节能测算，并支持余热回收测算与设备运行健康评测，按轴功率法测算节电率、年节电量、电费与碳减排，并给出电机选型建议。</p>
-    <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q2 支持哪些设备、输出哪些指标？</h3>
-    <p style="font-size:14px;color:var(--text2)">支持柱塞泵、水泵、渣浆泵、风机、磨机、空压机、余热回收七类测算，以及设备运行健康评测。输出综合节电率、年节电量（万kWh）、年节电费（万元）、CO₂减排量（吨），并给出推荐电机功率与类型；渣浆泵额外输出单位电耗与吨干矿电耗。</p>
-    <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q3 轴功率怎么计算？</h3>
-    <p style="font-size:14px;color:var(--text2)">柱塞泵：P = Q × ΔP ÷ (3.6 × η<sub>泵</sub>)；水泵：(Q × H × 1000 × 9.81) ÷ (3600 × 1000 × η<sub>泵</sub> × η<sub>传</sub>)；风机：(Q × P) ÷ (3600 × 1000 × η<sub>风</sub> × η<sub>传</sub>)。</p>
-    <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q4 电机选型的安全系数怎么取？</h3>
-    <p style="font-size:14px;color:var(--text2)">计算轴功率 &lt;5 kW 取 1.1；&lt;10 kW 取 1.15；&gt;100 kW 取 1.25；默认 1.2；风机或水泵 &gt;50 kW 另加 0.05。整体落在 1.1–1.25 区间。</p>
-    <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q5 碳减排量怎么折算？</h3>
-    <p style="font-size:14px;color:var(--text2)">按每万 kWh 节电约 4 t CO₂ 折算，即 0.4 kg CO₂/kWh。</p>
-    <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q6 结果能直接用于工程决策吗？</h3>
-    <p style="font-size:14px;color:var(--text2)">不能直接用于最终决策。平台属工程辅助测算工具，结果仅供参考，实际改造工程需以现场勘察与复核数据为准。</p>
-    <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q7 需要安装吗？</h3>
-    <p style="font-size:14px;color:var(--text2)">不需要。平台为网页形态，浏览器打开网址即可使用，支持移动端访问。</p>
-    <h3 style="font-size:14px;margin:14px 0 4px;color:var(--primary-dark)">Q8 如何咨询？</h3>
-    <p style="font-size:14px;color:var(--text2)">免费获取节能改造技术方案，请联系零碳小助手 18041136555（加好友二维码见页面底部）。</p>
-  </div>
-
   <div class="card" id="disclaimer">
     <div class="section-title">⚠️ 边界声明</div>
     <p style="font-size:13px;color:var(--text2);line-height:1.8">本平台为工程辅助测算工具，测算结果仅供参考，实际改造工程需以现场勘察与复核数据为准。平台为网页免安装工具，不构成任何承诺或交易要约。</p>
