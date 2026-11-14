@@ -1,0 +1,118 @@
+/* 流体机械节能测算工具 · 手机版样式（/m/）
+   与桌面版共用同一份 HTML/JS，只做版式重排：
+   单栏表单、横向滚动页签、卡片全宽、表格可横滑、大号点击区、底部固定操作条。
+   切换规则同 BCU：cookie ecalc_view + ?view=desktop / ?view=mobile */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  padding:0 0 calc(70px + env(safe-area-inset-bottom)) !important;
+  background:var(--bg,#f0fdfa);
+  font:16px/1.65 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  color:var(--text,#1e293b);
+}
+
+/* ---------- 顶部条 ---------- */
+.m-top{
+  position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;
+  padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));
+  background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;
+  box-shadow:0 2px 10px rgba(15,118,110,.18);
+}
+.m-top .brand{display:flex;align-items:center;gap:8px;color:#fff;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:.01em}
+.m-top .brand svg{width:26px;height:26px;flex:0 0 auto}
+.m-top .brand small{display:block;font-weight:400;font-size:10px;opacity:.82;letter-spacing:.05em}
+.m-top .sp{flex:1}
+.m-top a.switch{
+  color:#fff;font-size:13px;padding:7px 12px;border-radius:999px;white-space:nowrap;text-decoration:none;
+  border:1px solid rgba(255,255,255,.55);
+}
+.m-top a.switch:active{background:rgba(255,255,255,.16)}
+
+/* ---------- 容器 / 标题 ---------- */
+.container{max-width:100% !important;margin:0 auto;padding:0 12px}
+.header{margin:16px 0 10px !important;text-align:left !important}
+.header h1{font-size:22px !important;line-height:1.35 !important;margin:0 0 6px !important}
+.header p{font-size:13px !important;color:var(--text2,#64748b)}
+.viewswitch{display:none !important}
+
+/* ---------- 页签 → 横向滑动胶囊（吸顶） ---------- */
+.tabs{
+  display:flex !important;flex-direction:row !important;flex-wrap:nowrap !important;
+  gap:8px !important;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  padding:8px 12px 10px !important;margin:0 -12px 14px !important;
+  position:sticky;top:calc(48px + env(safe-area-inset-top));z-index:40;
+  background:rgba(240,253,250,.96);backdrop-filter:blur(8px);
+  border-bottom:1px solid #d7ece7;scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab-btn{
+  flex:0 0 auto;width:auto !important;font-size:14px !important;padding:9px 14px !important;
+  white-space:nowrap;border-radius:999px !important;background:#fff !important;
+  border:1px solid #d7e7e3 !important;color:#0f766e !important;font-weight:600;
+}
+.tab-btn.active{
+  background:#0d9488 !important;color:#fff !important;border-color:#0d9488 !important;
+  box-shadow:0 4px 12px rgba(13,148,136,.28);
+}
+
+/* ---------- 卡片 / 表单 ---------- */
+.card{
+  padding:16px !important;border-radius:14px !important;margin-bottom:14px !important;
+  overflow-x:auto;
+}
+.section-title{font-size:15px !important;margin-bottom:14px !important;line-height:1.5}
+.form-grid{grid-template-columns:1fr !important;gap:12px !important}
+.form-group{gap:5px !important}
+.form-group label{font-size:13px !important;line-height:1.5}
+.form-group input,.form-group select{
+  font-size:16px !important;              /* ≥16px 防 iOS 自动放大 */
+  padding:12px 14px !important;border-radius:10px !important;background:#fff !important;
+}
+.form-group small{font-size:12px;line-height:1.6;color:var(--text2,#64748b)}
+.btn-calc{padding:15px !important;font-size:16px !important;border-radius:12px !important}
+.note{font-size:12px}
+
+/* ---------- 结果 ---------- */
+.result-highlight .big-num{font-size:44px !important}
+.result-highlight .big-num .pct{font-size:24px !important}
+.metric-row{grid-template-columns:1fr 1fr !important;gap:10px !important}
+.metric-card{padding:12px 8px !important}
+.metric-card .value{font-size:19px !important}
+.metric-card .desc{font-size:11px !important}
+.detail-table{font-size:13px !important}
+.detail-table th,.detail-table td{padding:9px 8px !important;white-space:normal}
+.detail-table td:last-child{white-space:nowrap}
+
+/* ---------- 弹层 ---------- */
+.toast{width:88%;text-align:center;font-size:13px}
+
+/* ---------- 底部固定操作条 ---------- */
+.m-bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:70;display:flex;
+  background:#fff;border-top:1px solid #dbeae6;
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  box-shadow:0 -6px 18px rgba(15,118,110,.08);
+}
+.m-bar a,.m-bar button{
+  flex:1;display:block;text-align:center;font-size:11px;line-height:1.35;
+  color:#0f766e;text-decoration:none;background:none;border:0;padding:6px 2px;
+  font-family:inherit;font-weight:600;
+}
+.m-bar b{display:block;font-size:17px;line-height:1.15;margin-bottom:1px}
+.m-bar a.cta{color:#0d9488}
+.m-bar .on{color:#0d9488;background:#f0fdfa;border-radius:10px}
+
+/* 在线咨询气泡上移，避免被底栏压住 */
+.ec-chat-btn{bottom:calc(84px + env(safe-area-inset-bottom)) !important;right:14px !important}
+.ec-chat-panel{bottom:calc(78px + env(safe-area-inset-bottom)) !important}
+
+/* 窄屏再收一档 */
+@media(max-width:360px){
+  .header h1{font-size:20px !important}
+  .metric-row{grid-template-columns:1fr !important}
+  .result-highlight .big-num{font-size:38px !important}
+}
+
+/* 锚点定位避开吸顶条 */
+.card[id],#contact,#disclaimer,#tech,#about,#faq{scroll-margin-top:calc(66px + env(safe-area-inset-top))}
