@@ -390,7 +390,7 @@
     escalate(text);
   }
 
-  function openPanel() {
+  function openPanel(noFocus) {
     panel.classList.add("open");
     btn.style.display = "none";
     if (!opened) {
@@ -400,14 +400,17 @@
       loadConfig();
     }
     startPoll();
-    ta.focus();
+    if (!noFocus) ta.focus();
   }
   function closePanel() {
     panel.classList.remove("open");
     btn.style.display = "";
   }
 
-  btn.addEventListener("click", openPanel);
+  btn.addEventListener("click", function () { openPanel(false); });
+  // 供外部按钮调用（如手机底栏「方案咨询」：跳转二维码区 + 同时弹开对话框）
+  window.ecChatOpen = function (noFocus) { openPanel(noFocus !== false); return true; };
+  window.ecChatClose = closePanel;
   panel.querySelector(".ec-close").addEventListener("click", closePanel);
   send.addEventListener("click", function () {
     var v = ta.value;
