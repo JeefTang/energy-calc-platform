@@ -7,7 +7,7 @@
  */
 (function () {
   'use strict';
-  var DEFAULT_EP = 'https://drainage-tell-picture-lecture.trycloudflare.com';
+  var DEFAULT_EP = 'https://rank-author-bolt-consultant.trycloudflare.com';
   var CFG = (document.currentScript && document.currentScript.getAttribute('data-cfg')) || 'analytics-config.json';
 
   var cached = '';
@@ -53,8 +53,21 @@
   }
   window.ecTrack = send;
 
-  /* ---- 1. 页面浏览 ---- */
-  send('pageview');
+  /* 首屏 pageview：等 config 解析完再发，避免打到已失效的旧隧道
+     （2026-11-15 实测坑：立即发会走写死的 DEFAULT_EP，旧隧道一停就全丢）*/
+  var _sent = false;
+  function firstView() {
+    if (_sent) return;
+    _sent = true;
+    send('pageview');
+  }
+  var _t = setTimeout(firstView, 1500);
+  try {
+    fetch(CFG, { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (c) {
+      if (c && c.endpoint) setEp(c.endpoint);
+      clearTimeout(_t); firstView();
+    }).catch(function () { clearTimeout(_t); firstView(); });
+  } catch (e) { firstView(); }
 
   /* ---- 2. 模块使用：包装全局 showTab ---- */
   function hookTabs() {
