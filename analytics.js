@@ -37,13 +37,18 @@
     if (data) for (var k in data) if (Object.prototype.hasOwnProperty.call(data, k)) p[k] = data[k];
     var body = JSON.stringify(p);
     var url = (window.ECALC_ENDPOINT || EP) + '/api/event';
+    /* 主通道 fetch(keepalive)：可靠性高、可观测；sendBeacon 仅作兜底
+       （实测：部分环境 sendBeacon 返回 true 但请求并不发出，不能当主通道）*/
     try {
-      if (navigator.sendBeacon) {
-        if (navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }))) return;
-      }
+      fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true, mode: 'cors' }).catch(function () { beacon(url, body); });
+      return;
     } catch (e) {}
+    beacon(url, body);
+  }
+
+  function beacon(url, body) {
     try {
-      fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true, mode: 'cors' }).catch(function () {});
+      if (navigator.sendBeacon) navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }));
     } catch (e) {}
   }
   window.ecTrack = send;
