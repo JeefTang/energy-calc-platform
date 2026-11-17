@@ -18,8 +18,8 @@
     escName: "称呼 / 公司（选填）",
     escMail: "电话或邮箱（必填）",
     escBtn: "提交",
-    escOk: "已收到，工程师会尽快联系你。急的话扫下面的二维码，直接加零碳小助手微信。",
-    escFail: "提交失败，请扫下面的二维码加零碳小助手微信，或稍后再试。",
+    escOk: "已收到，工程师会尽快联系你。急事可直接打 18041136555（微信同号）。",
+    escFail: "提交失败，请直接联系 零碳小助手 18041136555（微信同号）",
     escAlt: "或直接联系：",
     typing: "正在输入",
     errNet: "网络不可用，先用本地知识库回答。",
@@ -40,8 +40,8 @@
     escName: "Name / company (optional)",
     escMail: "Phone or email (required)",
     escBtn: "Send",
-    escOk: "Received. An engineer will contact you shortly. You can also scan the WeChat QR code below.",
-    escFail: "Failed — please scan the WeChat QR code below, or try again shortly.",
+    escOk: "Received. An engineer will contact you shortly. Phone/WeChat +86 180 4113 6555.",
+    escFail: "Failed — please contact +86 180 4113 6555 (WeChat same number).",
     escAlt: "Or contact: ",
     typing: "typing",
     errNet: "Network unavailable — answering from the local knowledge base.",
@@ -51,20 +51,8 @@
     aiPaused: "The engineer has your message and will reply here shortly."
   };
 
-  /* 零碳小助手微信二维码：按 chat.js 自身路径解析，兼容 /m/ 手机页与 Pages 子路径 */
-  var QR_SRC = (function () {
-    try {
-      var s = document.currentScript, list = document.getElementsByTagName("script");
-      if (!s || !/chat\.js(\?|$)/.test(s.src || "")) {
-        for (var i = list.length - 1; i >= 0; i--) {
-          if (/chat\.js(\?|$)/.test(list[i].src || "")) { s = list[i]; break; }
-        }
-      }
-      if (s && s.src) return s.src.replace(/chat\.js(\?.*)?$/, "qr-kefu.png");
-    } catch (e) {}
-    return "qr-kefu.png";
-  })();
-  var EMAIL = "18041136555@189.cn";
+  var PHONE = "18041136555";
+  var EMAIL = "419480861@qq.com";
 
   /* ---------- 本地知识库：全部为本站已公开口径，勿加未验证数字 ---------- */
   var KB = [
@@ -133,8 +121,8 @@
       en: "Calculation data never leaves your browser. Only text you type into this chat is stored for engineer replies; no IP, no cookies, random conversation id only." },
 
     { id: "contact", k: ["联系", "电话", "微信", "方案", "报价", "工程师", "contact", "quote", "proposal"],
-      zh: "扫下面的二维码，加零碳小助手微信，直接跟工程师说。\n可以免费出节能改造技术方案，需要这些现场信息：设备铭牌照片、流量/扬程或压力、介质与温度、年运行小时、电价。\n设备报价按具体工况出方案后给，不在网上挂价。\n[[QR]]",
-      en: "Scan the WeChat QR code below to add Zero Carbon Assistant and talk to an engineer directly.\nA retrofit proposal is free; send nameplate photos, flow, head/pressure, fluid, temperature, annual hours and tariff. Equipment pricing follows the duty-specific proposal.\n[[QR]]" }
+      zh: "零碳小助手：电话/微信 18041136555（同号），邮箱 419480861@qq.com。\n可以免费出节能改造技术方案，需要这些现场信息：设备铭牌照片、流量/扬程或压力、介质与温度、年运行小时、电价。\n设备报价按具体工况出方案后给，不在网上挂价。",
+      en: "Zero Carbon Assistant: phone/WeChat +86 180 4113 6555, email 419480861@qq.com. A retrofit proposal is free; send nameplate photos, flow, head/pressure, fluid, temperature, annual hours and tariff. Equipment pricing follows the duty-specific proposal." }
   ];
 
   function norm(s) {
@@ -188,27 +176,12 @@
   function plain(s) {
     return String(s).replace(/\*\*(.+?)\*\*/g, "$1").replace(/^#{1,6}\s*/gm, "").replace(/`/g, "");
   }
-  function renderBubble(b, text) {
-    if (String(text).indexOf("[[QR]]") < 0) { b.textContent = text; return; }
-    var parts = String(text).split("[[QR]]");
-    for (var i = 0; i < parts.length; i++) {
-      if (parts[i]) b.appendChild(document.createTextNode(parts[i]));
-      if (i < parts.length - 1) {
-        var q = document.createElement("img");
-        q.className = "ec-qr";
-        q.src = QR_SRC;
-        q.alt = (ZH ? "零碳小助手微信二维码" : "Zero Carbon Assistant WeChat QR code");
-        q.loading = "lazy";
-        b.appendChild(q);
-      }
-    }
-  }
   function add(who, text) {
     var row = document.createElement("div");
     row.className = "ec-msg " + who;
     var b = document.createElement("div");
     b.className = "ec-bubble";
-    renderBubble(b, who === "bot" ? plain(text) : text);
+    b.textContent = who === "bot" ? plain(text) : text;
     row.appendChild(b);
     body.appendChild(row);
     if (who !== "sys") history.push({ role: who === "me" ? "user" : "assistant", content: text });
@@ -247,8 +220,7 @@
       '<input id="ec-name" placeholder="' + T.escName + '" autocomplete="name">' +
       '<input id="ec-mail" placeholder="' + T.escMail + '" autocomplete="email">' +
       '<button type="button">' + T.escBtn + '</button>' +
-      '<div class="ec-alt">' + T.escAlt + '<a href="mailto:' + EMAIL + '">' + EMAIL + '</a></div>' +
-      '<img class="ec-qr" src="' + QR_SRC + '" alt="' + (ZH ? "零碳小助手微信二维码" : "WeChat QR") + '">';
+      '<div class="ec-alt">' + T.escAlt + '<a href="tel:' + PHONE + '">' + PHONE + '</a> · <a href="mailto:' + EMAIL + '">' + EMAIL + '</a></div>';
     body.appendChild(box);
     scroll();
     var nameEl = box.querySelector("#ec-name");
@@ -267,8 +239,7 @@
   function answerFor(text) {
     var hit = match(text);
     if (hit) {
-      // 2026-11-15 老唐定：官网咨询回复一律中英文对照（中文在前，英文紧随）
-      var a = hit.zh && hit.en ? (hit.zh + "\n" + hit.en) : (ZH ? hit.zh : hit.en);
+      var a = ZH ? hit.zh : hit.en;
       add("bot", a);
       logKB(text, a);
       return true;
@@ -318,6 +289,11 @@
   }
   var lastId = 0, mode = "ai", polling = false;
 
+  /* 2026-11-17: 访客第一个问题，先固定回这一句（中英对照），再正常作答 */
+  var ACK = "请稍等，我为您连线工程师。\n\nPlease wait a moment while I connect you with an engineer.";
+  var ackKey = "hs_ack_" + convId, ackSent = false;
+  try { ackSent = localStorage.getItem(ackKey) === "1"; } catch (e) {}
+
   function api(path, body) {
     return fetch(endpoint.replace(/\/$/, "") + path, {
       method: "POST",
@@ -359,6 +335,7 @@
     text = (text || "").trim();
     if (!text) return;
     add("me", text);
+    if (!ackSent) { ackSent = true; try { localStorage.setItem(ackKey, "1"); } catch (e) {} add("bot", ACK); }
     if (HUMAN_RE.test(text) && endpoint) { handoff(text).catch(function () {}); return; }
     if (mode === "human" && endpoint) { api("/chat", { conv: convId, message: text, lang: ZH ? "zh" : "en" }).catch(function () {}); startPoll(); return; }
     if (answerFor(text)) return;
@@ -386,12 +363,12 @@
       return;
     }
     add("bot", ZH
-      ? "这个问题我拿不准，转给工程师更靠谱。留个邮箱，1 个工作日内联系你；急的话扫下面二维码加零碳小助手微信。\n[[QR]]"
-      : "That one needs an engineer. Leave an email and you will be contacted within one working day, or scan the WeChat QR code below.\n[[QR]]");
+      ? "这个问题我拿不准，转给工程师更靠谱。留个电话或邮箱，1 个工作日内联系你；急事直接打 18041136555（微信同号）。"
+      : "That one needs an engineer. Leave a phone or email and you will be contacted within one working day.");
     escalate(text);
   }
 
-  function openPanel(noFocus) {
+  function openPanel() {
     panel.classList.add("open");
     btn.style.display = "none";
     if (!opened) {
@@ -401,17 +378,14 @@
       loadConfig();
     }
     startPoll();
-    if (!noFocus) ta.focus();
+    ta.focus();
   }
   function closePanel() {
     panel.classList.remove("open");
     btn.style.display = "";
   }
 
-  btn.addEventListener("click", function () { openPanel(false); });
-  // 供外部按钮调用（如手机底栏「方案咨询」：跳转二维码区 + 同时弹开对话框）
-  window.ecChatOpen = function (noFocus) { openPanel(noFocus !== false); return true; };
-  window.ecChatClose = closePanel;
+  btn.addEventListener("click", openPanel);
   panel.querySelector(".ec-close").addEventListener("click", closePanel);
   send.addEventListener("click", function () {
     var v = ta.value;
