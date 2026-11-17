@@ -335,37 +335,21 @@
     text = (text || "").trim();
     if (!text) return;
     add("me", text);
-    if (!ackSent) { ackSent = true; try { localStorage.setItem(ackKey, "1"); } catch (e) {} add("bot", ACK); }
-    if (HUMAN_RE.test(text) && endpoint) { handoff(text).catch(function () {}); return; }
-    if (mode === "human" && endpoint) { api("/chat", { conv: convId, message: text, lang: ZH ? "zh" : "en" }).catch(function () {}); startPoll(); return; }
-    if (answerFor(text)) return;
-    if (endpoint) {
-      typing(true);
-      api("/chat", { conv: convId, message: text, lang: ZH ? "zh" : "en" })
-        .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
-        .then(function (j) {
-          typing(false);
-          if (j.mode) mode = j.mode;
-          if (j.id && j.id > lastId) lastId = j.id;
-          if (j.reply) {
-            add("bot", j.reply);
-            if (j.escalate) escalate(text);
-          } else if (j.mode === "human") {
-            add("bot", T.aiPaused);
-          } else { throw new Error("empty"); }
-          if (mode === "human") startPoll();
-        })
-        .catch(function () {
-          typing(false);
-          add("bot", T.errNet);
-          escalate(text);
-        });
+    if (!ackSent) {
+      ackSent = true;
+      try { localStorage.setItem(ackKey, "1"); } catch (e) {}
+      add("bot", ACK);
+    }
+    /* 2026-11-17 老唐定：AI 只回这一句，不再作答，后面全部转人工 */
+    if (!endpoint) { add("bot", T.waitHuman); return; }
+    if (mode === "human") {
+      api("/chat", { conv: convId, message: text, lang: ZH ? "zh" : "en" }).catch(function () {});
+      startPoll();
       return;
     }
-    add("bot", ZH
-      ? "这个问题我拿不准，转给工程师更靠谱。留个电话或邮箱，1 个工作日内联系你；急事直接打 18041136555（微信同号）。"
-      : "That one needs an engineer. Leave a phone or email and you will be contacted within one working day.");
-    escalate(text);
+    api("/handoff", { conv: convId, message: text, lang: ZH ? "zh" : "en" })
+      .then(function () { mode = "human"; add("bot", T.waitHuman); startPoll(); })
+      .catch(function () { add("bot", T.waitHuman); });
   }
 
   function openPanel() {
