@@ -230,6 +230,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         <div class="form-group"><label>新泵效率 <span class="unit">%（自动填写，可手改）</span></label><input type="number" id="plunger_pumpEff" value="0.90" step="0.01" min="0.1" max="1" oninput="updatePlungerMotorPower()"></div>
         <div class="form-group"><label>电机效率 <span class="unit">%</span></label><input type="number" id="plunger_motorEff" value="0.92" step="0.01" min="0.1" max="1" oninput="updatePlungerMotorPower()"></div>
         <div class="form-group"><label>变频器效率 <span class="unit">%</span></label><input type="number" id="plunger_vfdEff" value="0.97" step="0.01" min="0.1" max="1" oninput="updatePlungerMotorPower()"></div>
+        <div class="form-group"><label>选型余量</label><label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="plunger_selMargin" checked onchange="updatePlungerMotorPower()" style="width:auto"> 流量 +10%、压差 +1 MPa（型号档位余量，推荐）</label><small>勾选后电机 = 选型点轴功率 × 1.10；不勾 = 运行点轴功率 × 1.10</small></div>
         <div class="form-group"><label>配套电机功率 <span class="unit">kW</span></label><input type="number" id="plunger_motorPower" value="55" readonly></div>
       </div>
       <div class="note">注：配套电机功率根据流量和压力自动计算。<b>原泵效率不用你填</b>——系统按「原工况有效功率 ÷ 实测平均输入功率」自动反算，结果直接列在下面明细里。</div>
@@ -607,6 +608,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           <option value="柱塞泵">柱塞泵（往复式）</option>
         </select><small>不确定就选默认，系统按类型给经验效率</small></div>
         <div class="form-group"><label>电机功率 <span class="unit">kW</span></label><input type="number" id="pump_motorPower1" value="500"><small>铭牌功率，仅作选型参照</small></div>
+        <div class="form-group"><label>选型余量</label><label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="pump_selMargin" checked style="width:auto"> 流量 +10%、压差 +1 MPa（型号档位余量，推荐）</label><small>勾选后电机 = 选型点轴功率 × 1.10；不勾 = 运行点轴功率 × 1.10</small></div>
         <div class="form-group"><label>实测电机输入功率 <span class="unit">kW</span></label><input type="number" id="pump_inputPower1" step="0.1" placeholder="有电表/功率表读数就填" oninput="pumpEta1Auto()"><small>★ 填这一项，原泵效率自动算出来，不用懂效率</small></div>
         <div class="form-group"><label>原泵效率 η<sub>泵1</sub> <span class="unit">%</span></label><input type="number" id="pump_pumpEff1" value="0.72" step="0.01" min="0.2" max="0.95" oninput="pumpEta1SourceManual()"><small id="pump_eta1_tip">有实测输入功率 → 自动反算；没有 → 按原泵类型给经验值（可手改）</small></div>
         <div class="form-group"><label>传动效率 η<sub>传1</sub> <span class="unit">%（默认 98%）</span></label><input type="number" id="pump_transEff1" value="0.98" step="0.01" oninput="pumpEta1Auto()"></div>
@@ -1456,6 +1458,20 @@ function plungerNewTypeChange() {
 
 // ==================== 柱塞泵模块 ====================
 // 根据流量和压力自动计算电机功率
+// ⭐ 电机选型统一口径（老唐 2026-11-17 定）：
+//    泵型号档位留余量（流量 +10%、压差 +1 MPa）→ 选型点轴功率 × 1.10 → 向上取标准档；
+//    不留余量时 = 运行点轴功率 × 1.10。与内网节能改造方案系统 engine.py 同源同参。
+const MOTOR_STD_PUMP = [0.75, 1.1, 1.5, 2.2, 3, 4, 5.5, 7.5, 11, 15, 18.5, 22, 30, 37, 45, 55, 75, 90, 110, 132, 160, 185, 200, 220, 250, 280, 315, 355, 400, 450, 500, 560, 630, 710, 800, 900, 1000, 1120, 1250];
+function pickMotorByMargin(Q, dP_MPa, etaPump, useMargin) {
+  const q = useMargin ? Q * 1.10 : Q;
+  const dp = useMargin ? dP_MPa + 1.0 : dP_MPa;
+  const shaftSel = (q * dp) / (3.6 * etaPump);
+  const raw = shaftSel * 1.10;
+  let pick = MOTOR_STD_PUMP.find(function (x) { return x >= raw; });
+  if (!pick) pick = Math.ceil(raw / 50) * 50;
+  return { marginOn: !!useMargin, q: q, dp: dp, shaftSel: shaftSel, raw: raw, pick: pick };
+}
+
 function updatePlungerMotorPower() {
   const flow = parseFloat(document.getElementById('plunger_avgFlow').value) || 0;
   const inPressure = parseFloat(document.getElementById('plunger_inPressure').value) || 0;
@@ -1475,11 +1491,10 @@ function updatePlungerMotorPower() {
     // 计算变频器输入功率：P_vfd = P_motor ÷ η_vfd
     const vfdPower = motorPower / vfdEff;
     
-    // 推荐电机功率 = 变频器输入功率 × 1.1
-    const recommendedPower = vfdPower * 1.1;
-    
-    // 更新电机功率显示
-    document.getElementById('plunger_motorPower').value = Math.ceil(recommendedPower);
+    // 推荐电机功率：型号档位留余量（流量+10%、ΔP+1MPa）后的轴功率 × 1.10 → 标准档
+    const useMargin = document.getElementById('plunger_selMargin') ? document.getElementById('plunger_selMargin').checked : true;
+    const sel = pickMotorByMargin(flow, outPressure - inPressure, pumpEff, useMargin);
+    document.getElementById('plunger_motorPower').value = sel.pick;
   }
 }
 
@@ -1840,7 +1855,7 @@ function calcFanInner() {
     if (calculatedShaftPower > 100) safetyFactor = 1.25;
     if (equipmentType === 'fan' && calculatedShaftPower > 50) safetyFactor += 0.05;
     const recommendedPower = calculatedShaftPower * safetyFactor;
-    const standardPowers = [0.75, 1.1, 1.5, 2.2, 3, 4, 5.5, 7.5, 11, 15, 18.5, 22, 30, 37, 45, 55, 75, 90, 110, 132, 160, 200, 250, 315, 355, 400, 450, 500, 560, 630, 710, 800, 900, 1000];
+    const standardPowers = [0.75, 1.1, 1.5, 2.2, 3, 4, 5.5, 7.5, 11, 15, 18.5, 22, 30, 37, 45, 55, 75, 90, 110, 132, 160, 185, 200, 220, 250, 280, 315, 355, 400, 450, 500, 560, 630, 710, 800, 900, 1000, 1120, 1250];
     let selectedPower = null;
     for (const power of standardPowers) { if (power >= recommendedPower) { selectedPower = power; break; } }
     if (!selectedPower) selectedPower = Math.ceil(recommendedPower / 50) * 50;
@@ -1945,7 +1960,7 @@ function calcPump() {
     if (equipmentType === 'pump' && calculatedShaftPower > 50) safetyFactor += 0.05;
     
     const recommendedPower = calculatedShaftPower * safetyFactor;
-    const standardPowers = [0.75, 1.1, 1.5, 2.2, 3, 4, 5.5, 7.5, 11, 15, 18.5, 22, 30, 37, 45, 55, 75, 90, 110, 132, 160, 200, 250, 315, 355, 400, 450, 500, 560, 630, 710, 800, 900, 1000];
+    const standardPowers = [0.75, 1.1, 1.5, 2.2, 3, 4, 5.5, 7.5, 11, 15, 18.5, 22, 30, 37, 45, 55, 75, 90, 110, 132, 160, 185, 200, 220, 250, 280, 315, 355, 400, 450, 500, 560, 630, 710, 800, 900, 1000, 1120, 1250];
     
     let selectedPower = null;
     for (const power of standardPowers) {
@@ -1962,16 +1977,21 @@ function calcPump() {
     return { calculatedShaftPower, safetyFactor, recommendedPower, selectedPower };
   }
   
-  const motorSelection = getRecommendedMotorPower(shaftPower2, 'pump');
+  const pumpUseMargin = document.getElementById('pump_selMargin') ? document.getElementById('pump_selMargin').checked : true;
+  const pumpSel = pickMotorByMargin(Q2, H2 * 0.00981, pumpEff2 * transEff2, pumpUseMargin);
+  const motorSelection = { calculatedShaftPower: pumpSel.shaftSel, safetyFactor: 1.10,
+                            recommendedPower: pumpSel.raw, selectedPower: pumpSel.pick,
+                            marginOn: pumpSel.marginOn, qSpec: pumpSel.q, dpSpec: pumpSel.dp };
   const originalMatch = ((shaftPower1 / motorEff1) / motorPower1 * 100).toFixed(1);
   
   // 电机选型表格
   document.getElementById('pump-motorTable').innerHTML = 
     tr2('原始电机功率', motorPower1 + ' kW', '用户输入的原始设备电机功率') +
-    tr2('计算轴功率', motorSelection.calculatedShaftPower.toFixed(2) + ' kW', '改造后水泵所需轴功率') +
-    tr2('安全系数', motorSelection.safetyFactor.toFixed(2), '根据功率大小自动选择') +
-    tr2('计算额定功率', motorSelection.recommendedPower.toFixed(2) + ' kW', '计算轴功率 × 安全系数') +
-    tr2('推荐电机功率', motorSelection.selectedPower + ' kW', '就近的标准功率等级') +
+    tr2('选型点', motorSelection.qSpec.toFixed(1) + ' m³/h / ' + motorSelection.dpSpec.toFixed(2) + ' MPa', motorSelection.marginOn ? '已含选型余量：流量 +10%、压差 +1 MPa' : '未含余量（按运行点）') +
+    tr2('选型点轴功率', motorSelection.calculatedShaftPower.toFixed(2) + ' kW', '选型点 Q × ΔP ÷ (3.6 × η泵 × η传)') +
+    tr2('安全系数', motorSelection.safetyFactor.toFixed(2), '统一取 1.10，不再叠加其他余量') +
+    tr2('计算额定功率', motorSelection.recommendedPower.toFixed(2) + ' kW', '选型点轴功率 × 1.10') +
+    tr2('推荐电机功率', motorSelection.selectedPower + ' kW', '向上取标准功率档') +
     tr2('推荐电机类型', '永磁同步电机', '效率高、功率因数高') +
     tr2('原始设备匹配度', originalMatch + '%', '计算功率/原始功率 × 100%');
   
