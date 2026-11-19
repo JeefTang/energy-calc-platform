@@ -517,7 +517,11 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         <div class="form-group"><label>电机功率 <span class="unit">kW</span></label><input type="number" id="fan_motorPower1" value="710"><small>铭牌功率，仅作选型参照</small></div>
         <div class="form-group"><label>实测电机输入功率 <span class="unit">kW</span></label><input type="number" id="fan_inputPower1" step="0.1" placeholder="有电表/功率表读数就填" oninput="fanEta1Auto()"><small>★ 填这一项，原风机效率自动算出来，不用懂效率</small></div>
         <div class="form-group"><label>风机效率 η<sub>风1</sub> <span class="unit">%</span></label><input type="number" id="fan_fanEff1" value="0.75" step="0.01"><small id="fan_eta1_tip">有实测输入功率 → 自动反算；没有 → 按原风机类型给经验值（可手改）</small></div>
-        <div class="form-group"><label>传动效率 η<sub>传1</sub> <span class="unit">%（默认 98%）</span></label><input type="number" id="fan_transEff1" value="0.98" step="0.01" oninput="fanEta1Auto()"></div>
+        <div class="form-group"><label>传动型式（改造前）</label><select id="fan_drive1" onchange="fanDriveChange(1)">
+          <option value="D" selected>D式 联轴器（效率 98%）</option>
+          <option value="A">A式 电机直连（效率 100%）</option>
+          <option value="C">C式 皮带轮（效率 95%）</option>
+        </select><input type="hidden" id="fan_transEff1" value="0.98"><small>看现场：电机与风机之间是皮带轮选 C，有联轴器选 D，电机轴直插叶轮选 A</small></div>
         <div class="form-group"><label>电机效率 η<sub>电1</sub> <span class="unit">%（默认 95.3%）</span></label><input type="number" id="fan_motorEff1" value="0.953" step="0.001" oninput="fanEta1Auto()"></div>
       </div>
     </div>
@@ -537,7 +541,10 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           <option value="custom">自定义（手动填效率）</option>
         </select><small id="fan_newType_tip">通用低压风机改永磁一体化：整机效率 ≥80%（参考取 82%）（已自动填入 82% / 电机 97.6%）</small></div>
         <div class="form-group"><label>风机效率 η<sub>风2</sub> <span class="unit">%（自动填写，可手改）</span></label><input type="number" id="fan_fanEff2" value="0.82" step="0.01"></div>
-        <div class="form-group"><label>传动效率 η<sub>传2</sub> <span class="unit">%（默认 98%）</span></label><input type="number" id="fan_transEff2" value="0.98" step="0.01"></div>
+        <div class="form-group"><label>传动型式（改造后）</label><select id="fan_drive2" onchange="fanDriveChange(2)">
+          <option value="same" selected>保持与改造前相同（默认）</option>
+          <option value="A">改为 A式电机直连（传动改造，白赚 3~5 个点）</option>
+        </select><input type="hidden" id="fan_transEff2" value="0.98"><small id="fan_drive_tip">改造后传动型式；选「改为直连」即新增的传动改造路线</small></div>
         <div class="form-group"><label>电机效率 η<sub>电2</sub> <span class="unit">%（默认 97.6%）</span></label><input type="number" id="fan_motorEff2" value="0.976" step="0.001"></div>
       </div>
     </div>
@@ -562,6 +569,9 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           <div class="metric-card"><div class="value" id="fan-annualSave">0</div><div class="desc">年节电量 万kWh</div></div>
           <div class="metric-card"><div class="value" id="fan-annualMoney">0</div><div class="desc">年节电费 万元</div></div>
           <div class="metric-card"><div class="value" id="fan-CO2">0</div><div class="desc">CO₂减排 吨</div></div>
+        </div>
+        <div id="fan-data-grade" style="margin-top:12px;padding:10px 12px;background:#f6f8fa;border:1px dashed #d0d7de;border-radius:8px;font-size:12.5px;color:#57606a;line-height:1.7">
+          <strong>数据等级：客户自报（预筛结论）</strong> —— 以上按填报参数测算，未做现场测量；现场皮托管/功率表复测后，出具可承诺的节电值与改造方案。
         </div>
       </div>
       
@@ -1375,6 +1385,34 @@ function pumpNewTypeChange() {
   if (tip) tip.textContent = cfg.note + '（已自动填入 ' + (cfg.eta * 100).toFixed(0) + '% / 电机 ' + (cfg.motor * 100).toFixed(1) + '%，可按样本改）';
 }
 
+// ---------- 风机：传动型式（v1.2 · 2026-11-19）----------
+const FAN_DRIVE_ETA = { A: 1.00, D: 0.98, C: 0.95 };
+function fanDriveChange(which) {
+  const sel = document.getElementById(which === 1 ? 'fan_drive1' : 'fan_drive2');
+  const t1box = document.getElementById('fan_transEff1');
+  const t2box = document.getElementById('fan_transEff2');
+  if (!sel || !t1box || !t2box) return;
+  if (which === 1) {
+    const v = FAN_DRIVE_ETA[sel.value] || 0.98;
+    t1box.value = v.toFixed(2);
+    const d2 = document.getElementById('fan_drive2');
+    if (d2 && d2.value === 'same') t2box.value = v.toFixed(2);
+    fanEta1Auto();
+  } else {
+    t2box.value = (sel.value === 'same' ? t1 : (FAN_DRIVE_ETA[sel.value] || 0.98)).toFixed(2);
+  }
+  const t1 = parseFloat(t1box.value) || 0.98;
+  const t2 = parseFloat(t2box.value) || 0.98;
+  const tip = document.getElementById('fan_drive_tip');
+  if (tip) {
+    const gain = t2 > 0 ? (1 - t1 / t2) * 100 : 0;
+    tip.textContent = sel.value === 'same'
+      ? '传动效率 ' + (t1 * 100).toFixed(0) + '%（跟随改造前）'
+      : '传动效率 ' + (t1 * 100).toFixed(0) + '% → ' + (t2 * 100).toFixed(0) + '%'
+        + (gain > 0.1 ? '｜单传动改造即可降输入功率约 ' + gain.toFixed(1) + '%' : '');
+  }
+}
+
 // ---------- 风机：原风机效率自动取值 ----------
 function fanEta1Auto() {
   const Q = effNum('fan_Q1', 0);
@@ -1700,7 +1738,7 @@ function calcMill() {
   showToast('✅ 磨机节能测算完成');
 }
 
-// ==================== 风机计算（v1.1 · 2026-11-13：类型 / 压缩性 / 禁区） ====================
+// ==================== 风机计算（v1.2 · 2026-11-19：传动型式 / 数据等级C预筛） ====================
 // 设备类型 → 改造后效率基准 + 可用改造路线（罗茨/真空泵为容积式，不做叶轮改型）
 const FAN_KIND_CFG = {
   '离心风机':   { eff: 0.82, allow: ['叶轮改造', '整机替换', '变频改造'], tip: '送/引/一次/除尘/冷却风机主力机型，最成熟' },
@@ -1818,6 +1856,12 @@ function calcFanInner() {
     r.co2 = r.annualSave * 0.4 / 1000;
   }
 
+  // 数据等级声明：填了实测功率则说明功率实测、风量/全压仍为填报
+  const dgEl = document.getElementById('fan-data-grade');
+  if (dgEl) dgEl.innerHTML = inputPower1M > 0
+    ? '<strong>数据等级：客户自报（预筛结论）</strong> —— 电机输入功率为实测值（功率表读数），风量/全压仍为填报值；现场皮托管复测后，出具可承诺的节电值与改造方案。'
+    : '<strong>数据等级：客户自报（预筛结论）</strong> —— 以上按填报参数测算，未做现场测量；现场皮托管/功率表复测后，出具可承诺的节电值与改造方案。';
+
   // 显示结果
   document.getElementById('fan-savingRate').innerHTML = (r.rate * 100).toFixed(2) + '<span class="pct">%</span>';
   document.getElementById('fan-annualSave').textContent = (r.annualSave / 10000).toFixed(2);
@@ -1833,6 +1877,7 @@ function calcFanInner() {
 
   document.getElementById('fan-detailTable').innerHTML = warnRow +
     tr3('设备类型 / 用途', r.kind, '—', '—') +
+    tr3('数据等级', '客户自报（C · 仅预筛）', '—', '现场复测后出承诺值') +
     tr3('压缩性口径', r.mode + '（压比 ' + r.ratio.toFixed(2) + '，吸气 ' + r.p1kpa.toFixed(1) + ' kPa）', '—',
         r.mode === '等熵压缩' ? '不可压缩式会高估至 ' + r.inc1.toFixed(1) + ' kW，已纠正' : '压比 ≤1.2，简化式误差 <7%') +
     tr3('风量 (m³/h)', Q1.toLocaleString(), Q2.toLocaleString(), ((Q1 - Q2).toLocaleString() + ' (' + ((Q1 - Q2) / Q1 * 100).toFixed(1) + '%)')) +
